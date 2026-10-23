@@ -168,41 +168,100 @@
     });
   }
 
-  /* ===== 6. 主页右上角点歌台（模板无条件渲染、默认 hidden；JS 按路径仅主页显示） ===== */
+  /* ===== 6. 音乐台（全站右下角：悬浮球 + 歌单面板 + 后台播放） ===== */
   var musicBtn = document.getElementById("music-entry");
   var musicPanel = document.getElementById("music-panel");
-  var onHome = location.pathname === "/" || location.pathname === "/index.html";
-  if (musicBtn && musicPanel && onHome) {
-    musicBtn.hidden = false; /* 主页：显示点歌台图标 */
-  }
-  if (musicBtn && musicPanel && onHome && !musicBtn.dataset.bound) {
-    musicBtn.dataset.bound = "1";
+  var musicFrame = document.getElementById("music-frame");
+  if (musicBtn && musicPanel && musicFrame) {
+    musicBtn.hidden = false; /* 全站显示 */
+
     var musicOnKey = null;
+    var musicAutoMinTimer = null;
+    var musicHovering = false;
+    var musicStarted = false;
+
+    function musicLoadList(listId) {
+      musicFrame.src =
+        musicFrame.dataset.srcPrefix + listId + musicFrame.dataset.srcSuffix;
+      musicStarted = true;
+      musicBtn.classList.add("playing");
+      scheduleAutoMin();
+    }
+
+    /* 切歌单后自动最小化：播放器加载完 6 秒收起（悬停面板时顺延），后台继续播 */
+    function scheduleAutoMin() {
+      clearTimeout(musicAutoMinTimer);
+      musicAutoMinTimer = setTimeout(function () {
+        if (!musicHovering && musicPanel.classList.contains("show")) {
+          musicMinimize();
+        }
+      }, 6000);
+    }
+
+    function musicExpand() {
+      if (!musicStarted) { musicLoadList("3778678"); } /* 首次打开：热歌榜 */
+      musicPanel.classList.add("show");
+      musicBtn.classList.add("expanded");
+      clearTimeout(musicAutoMinTimer);
+    }
+
+    function musicMinimize() {
+      musicPanel.classList.remove("show");
+      musicBtn.classList.remove("expanded");
+      /* 最小化≠停止：iframe 不动，音乐继续 */
+    }
+
+    function musicStop() {
+      clearTimeout(musicAutoMinTimer);
+      musicPanel.classList.remove("show");
+      musicBtn.classList.remove("expanded", "playing");
+      musicFrame.src = "about:blank";
+      musicStarted = false;
+    }
 
     musicBtn.addEventListener("click", function () {
-      if (musicPanel.classList.contains("show")) { closeMusic(); return; }
-
-      /* 懒加载：每次打开都重新加载播放器（从头播放） */
-      var frame = musicPanel.querySelector("iframe");
-      if (frame && frame.dataset.src) {
-        frame.src = frame.dataset.src;
-      }
-      musicPanel.classList.add("show");
-      musicBtn.classList.add("active");
-
-      musicOnKey = function (ev) { if (ev.key === "Escape") closeMusic(); };
-      document.addEventListener("keydown", musicOnKey);
+      if (musicPanel.classList.contains("show")) { musicMinimize(); }
+      else { musicExpand(); }
     });
 
-    musicPanel.querySelector(".music-close").addEventListener("click", closeMusic);
+    /* 歌单切换（可点击、可换类型） */
+    var musicTabs = musicPanel.querySelectorAll(".music-tab");
+    musicTabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        musicTabs.forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+        musicLoadList(tab.dataset.list);
+      });
+    });
 
-    function closeMusic() {
-      musicPanel.classList.remove("show");
-      musicBtn.classList.remove("active");
-      if (musicOnKey) { document.removeEventListener("keydown", musicOnKey); musicOnKey = null; }
-      /* 关闭即停止播放 */
-      var frame = musicPanel.querySelector("iframe");
-      if (frame) { frame.src = "about:blank"; }
-    }
+    /* 播放器加载完成后启动"自动最小化"倒计时；悬停面板则不打断操作 */
+    musicFrame.addEventListener("load", scheduleAutoMin);
+    musicPanel.addEventListener("mouseenter", function () {
+      musicHovering = true;
+      clearTimeout(musicAutoMinTimer);
+    });
+    musicPanel.addEventListener("mouseleave", function () {
+      musicHovering = false;
+      if (musicStarted) { scheduleAutoMin(); }
+    });
+
+    /* 最小化按钮 */
+    document.getElementById("music-min").addEventListener("click", musicMinimize);
+    /* 关闭 = 停止播放 */
+    document.getElementById("music-stop").addEventListener("click", musicStop);
+    /* ESC = 最小化（后台继续播放） */
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && musicPanel.classList.contains("show")) {
+        musicMinimize();
+      }
+    });
+    /* 去网易云搜歌（新标签，不中断当前播放） */
+    document.getElementById("music-search").addEventListener("click", function () {
+      window.open("https://music.163.com/#/search/m/", "_blank", "noopener");
+    });
+    /* 独立播放页：在新标签常驻播放，浏览博客任意导航都不中断 */
+    document.getElementById("music-standalone").addEventListener("click", function () {
+      window.open("/music/", "_blank", "noopener");
+    });
   }
 })();

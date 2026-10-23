@@ -342,17 +342,17 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 :root[data-bs-theme='light'] .qr-modal-box { background: #ffffff; }
 :root[data-bs-theme='light'] .qr-modal-box p { color: #3a4350; }
 
-/* ===== 主页右上角点歌台（网易云音乐外链播放器） ===== */
+/* ===== 音乐台（全站右下角悬浮球 + 面板，网易云音乐外链播放器） ===== */
 /* hidden 属性特异性兜底：ID选择器 display:flex 会压过 UA 的 [hidden]{display:none} */
 #music-entry[hidden] { display: none !important; }
 #music-entry {
-  position: fixed; top: 14px; right: 16px; z-index: 1050;
-  width: 44px; height: 44px; border-radius: 50%;
+  position: fixed; bottom: 88px; right: 20px; z-index: 1060;
+  width: 48px; height: 48px; border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: linear-gradient(135deg, #7c4dff, #448aff);
   color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.25s;
 }
@@ -360,47 +360,97 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   transform: translateY(-2px) scale(1.06);
   box-shadow: 0 6px 22px rgba(124, 77, 255, 0.45);
 }
-#music-entry i { animation: musicBeat 1.6s ease-in-out infinite; }
-@keyframes musicBeat {
-  0%, 100% { transform: rotate(-8deg) scale(1); }
-  50% { transform: rotate(8deg) scale(1.15); }
+/* 播放中：音符律动 + 光环 */
+#music-entry.playing i { animation: musicBeat 1.1s ease-in-out infinite; }
+#music-entry.playing::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(124, 77, 255, 0.55);
+  animation: musicRipple 1.8s ease-out infinite;
 }
-#music-entry.active { background: linear-gradient(135deg, #9d6bff, #5c9bff); }
+@keyframes musicBeat {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(10deg) scale(1.18); }
+}
+@keyframes musicRipple {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+#music-entry.expanded { background: linear-gradient(135deg, #9d6bff, #5c9bff); }
 
 #music-panel {
-  position: fixed; top: 66px; right: 16px; z-index: 1049;
-  width: 360px; max-width: calc(100vw - 32px);
+  position: fixed; bottom: 146px; right: 20px; z-index: 1059;
+  width: 380px; max-width: calc(100vw - 32px);
   background: rgba(13, 17, 23, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  opacity: 0; transform: translateY(-8px) scale(0.98);
+  opacity: 0; transform: translateY(10px) scale(0.98);
   pointer-events: none;
   transition: opacity 0.22s ease, transform 0.22s ease;
 }
 #music-panel.show { opacity: 1; transform: none; pointer-events: auto; }
 .music-head {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.9rem;
   background: linear-gradient(90deg, rgba(124, 77, 255, 0.28), rgba(68, 138, 255, 0.18));
   color: #e8edf3; font-size: 0.92rem; font-weight: 500;
 }
 .music-head i { margin-right: 0.4rem; color: #c5a8ff; }
-.music-close {
+.music-head-btns { display: flex; align-items: center; gap: 0.15rem; }
+.music-ico-btn {
   background: none; border: none; color: #aab7c4;
-  font-size: 1.25rem; line-height: 1; cursor: pointer; padding: 0 0.2rem;
+  font-size: 0.85rem; line-height: 1; cursor: pointer; padding: 0.25rem 0.35rem;
+  border-radius: 6px; transition: color 0.15s, background 0.15s;
 }
-.music-close:hover { color: #fff; }
+.music-ico-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+.music-close { font-size: 1.15rem; }
+
+/* 歌单切换 tabs */
+.music-tabs {
+  display: flex; gap: 0.4rem; padding: 0.5rem 0.75rem 0.45rem;
+  overflow-x: auto; scrollbar-width: none;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.music-tabs::-webkit-scrollbar { display: none; }
+.music-tab {
+  flex: 0 0 auto; padding: 0.28rem 0.7rem; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent; color: #aab7c4;
+  font-size: 0.8rem; cursor: pointer; white-space: nowrap;
+  transition: all 0.18s ease;
+}
+.music-tab:hover { color: #e8edf3; border-color: rgba(124, 77, 255, 0.6); }
+.music-tab.active {
+  background: linear-gradient(135deg, #7c4dff, #448aff);
+  color: #fff; border-color: transparent;
+}
+
 #music-panel iframe { display: block; border: 0; background: #f5f5f7; }
+.music-tip {
+  padding: 0.4rem 0.9rem 0.5rem; font-size: 0.74rem; color: #7d8a99;
+  background: rgba(255, 255, 255, 0.02);
+}
 
 @media (max-width: 576px) {
-  #music-entry { top: 10px; right: 12px; width: 40px; height: 40px; font-size: 0.95rem; }
-  #music-panel { top: 58px; right: 12px; width: calc(100vw - 24px); }
+  #music-entry { bottom: 76px; right: 14px; width: 42px; height: 42px; font-size: 0.95rem; }
+  #music-panel { bottom: 128px; right: 12px; width: calc(100vw - 24px); }
+  .music-tab { padding: 0.25rem 0.6rem; font-size: 0.76rem; }
 }
 :root[data-bs-theme='light'] #music-panel {
   background: #ffffff; border-color: rgba(0, 0, 0, 0.08);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
 }
 :root[data-bs-theme='light'] .music-head { color: #2a3340; background: linear-gradient(90deg, rgba(124, 77, 255, 0.12), rgba(68, 138, 255, 0.08)); }
-:root[data-bs-theme='light'] .music-close { color: #7a8694; }
-:root[data-bs-theme='light'] .music-close:hover { color: #2a3340; }
+:root[data-bs-theme='light'] .music-ico-btn { color: #7a8694; }
+:root[data-bs-theme='light'] .music-ico-btn:hover { color: #2a3340; background: rgba(0, 0, 0, 0.06); }
+:root[data-bs-theme='light'] .music-tabs { background: rgba(0, 0, 0, 0.02); border-bottom-color: rgba(0, 0, 0, 0.05); }
+:root[data-bs-theme='light'] .music-tab { color: #5a6673; border-color: rgba(0, 0, 0, 0.12); }
+:root[data-bs-theme='light'] .music-tab:hover { color: #2a3340; border-color: rgba(124, 77, 255, 0.55); }
+:root[data-bs-theme='light'] .music-tip { color: #8b96a3; background: rgba(0, 0, 0, 0.015); }
+
+/* 独立播放页 /music/ */
+.music-page-picker {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0.75rem;
+}
+.music-page-picker .music-tab { font-size: 0.9rem; padding: 0.4rem 1rem; }
