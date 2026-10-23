@@ -27,6 +27,10 @@
   icon: "fas fa-circle-question"
   url: "https://segmentfault.com/u/lcmg_sty" # 思否
 
+- type: stack-overflow
+  icon: "fab fa-stack-overflow"
+  url: "https://stackoverflow.com/users/10996066" # Stack Overflow
+
 - type: weibo
   icon: "fab fa-weibo"
   url: "https://weibo.com/u/6378807392" # 微博

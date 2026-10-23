@@ -32,6 +32,7 @@ order: 4
 | ☁️ 码云 | [gitee.com/s2249858789](https://gitee.com/s2249858789) |
 | 🔴 微博 | [weibo.com/u/6378807392](https://weibo.com/u/6378807392) |
 | ❓ 思否 | [segmentfault.com/u/lcmg_sty](https://segmentfault.com/u/lcmg_sty) |
+| 📚 Stack Overflow | [stackoverflow.com/users/10996066](https://stackoverflow.com/users/10996066) |
 | 💬 评论区 | 任意文章底部留言（Giscus 配置中） |
 | 📱 微信公众号 | 陆沉盲瞽（搜索关注，二维码稍后补上） |
 
