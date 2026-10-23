@@ -1,6 +1,6 @@
 ---
 ---
-@import "jekyll-theme-chirpy";
+@use "jekyll-theme-chirpy" as *;
 
 /* ===== 自定义主题色（覆盖 Chirpy 默认配色） ===== */
 :root {
