@@ -11,18 +11,27 @@
 
 /* ---------- 全站背景图（超高清） ---------- */
 body {
-  background: url('/assets/img/background.jpg') no-repeat center center !important;
+  background: url('/assets/img/background.jpg') no-repeat center center fixed !important;
   background-size: cover !important;
-  background-attachment: fixed !important;
 }
 
-/* ---------- 侧边栏：深色毛玻璃，与背景图衔接 ---------- */
-#sidebar {
-  background: rgba(21, 26, 48, 0.88) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* 半透明遮罩层：保证背景图可见的同时，正文清晰可读 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(247, 248, 252, 0.42);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
-.sidebar { background: transparent !important; }
+
+/* ---------- 侧边栏：完整展示背景图（竖版人像契合高侧栏） ---------- */
+#sidebar,
+.sidebar {
+  background: linear-gradient(rgba(18, 22, 42, 0.55), rgba(18, 22, 42, 0.78)),
+              url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+}
 
 /* ---------- 顶部栏：半透明毛玻璃 ---------- */
 #topbar-wrapper {
@@ -54,24 +63,36 @@ body {
 }
 
 /* ---------- 深色模式适配（Chirpy 7.6 使用 data-bs-theme 切换） ---------- */
-:root[data-bs-theme='dark'] #main-wrapper main { background: rgba(27, 30, 38, 0.84); }
+:root[data-bs-theme='dark'] body::before { background: rgba(15, 18, 30, 0.50); }
+:root[data-bs-theme='dark'] #sidebar,
+:root[data-bs-theme='dark'] .sidebar {
+  background: linear-gradient(rgba(10, 12, 24, 0.55), rgba(10, 12, 24, 0.80)),
+              url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+}
+:root[data-bs-theme='dark'] #main-wrapper main { background: rgba(27, 30, 38, 0.80); }
 :root[data-bs-theme='dark'] #topbar {
-  background: rgba(27, 30, 38, 0.78) !important;
+  background: rgba(27, 30, 38, 0.80) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 :root[data-bs-theme='dark'] .card {
-  background: rgba(63, 67, 79, 0.55) !important;
+  background: rgba(63, 67, 79, 0.50) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-bs-theme]) #main-wrapper main { background: rgba(27, 30, 38, 0.84); }
+  :root:not([data-bs-theme]) body::before { background: rgba(15, 18, 30, 0.50); }
+  :root:not([data-bs-theme]) #sidebar,
+  :root:not([data-bs-theme]) .sidebar {
+    background: linear-gradient(rgba(10, 12, 24, 0.55), rgba(10, 12, 24, 0.80)),
+                url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+  }
+  :root:not([data-bs-theme]) #main-wrapper main { background: rgba(27, 30, 38, 0.80); }
   :root:not([data-bs-theme]) #topbar {
-    background: rgba(27, 30, 38, 0.78) !important;
+    background: rgba(27, 30, 38, 0.80) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
   :root:not([data-bs-theme]) .card {
-    background: rgba(63, 67, 79, 0.55) !important;
+    background: rgba(63, 67, 79, 0.50) !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
   }
 }
