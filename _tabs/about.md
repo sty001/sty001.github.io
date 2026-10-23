@@ -28,9 +28,12 @@ order: 4
 |------|------|
 | 📮 邮箱 | lcmg.sty@gmail.com |
 | 🐙 GitHub | [@sty001](https://github.com/sty001) |
+| ⛏️ 掘金 | [juejin.cn/user/4125023357905832](https://juejin.cn/user/4125023357905832) |
+| ☁️ 码云 | [gitee.com/s2249858789](https://gitee.com/s2249858789) |
+| 🔴 微博 | [weibo.com/u/6378807392](https://weibo.com/u/6378807392) |
+| ❓ 思否 | [segmentfault.com/u/lcmg_sty](https://segmentfault.com/u/lcmg_sty) |
 | 💬 评论区 | 任意文章底部留言（Giscus 配置中） |
 | 📱 微信公众号 | 陆沉盲瞽（搜索关注，二维码稍后补上） |
-| ⛏️ 掘金 / ❓思否 / ❤️小红书 / ☁️码云 | 见左侧边栏社交图标（链接完善中） |
 
 ### 3. 想追更新
 
