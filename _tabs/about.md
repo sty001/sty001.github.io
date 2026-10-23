@@ -4,22 +4,48 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-> 路虽远，行则将至；事虽难，做则必成。
+> 路虽远，行则将至；事虽难，做则必成。这里是**陆沉盲瞽**的第二大脑——把学习笔记、项目复盘和零散思考沉淀成可检索的知识库。
 
-## 👋 你好，我是陆沉盲瞽
+## 关于我
 
-一名热爱折腾的开发者（GitHub：[@sty001](https://github.com/sty001)），日常游走在**软件 ↔ 嵌入式 ↔ 硬件**之间：既能写上层应用，也愿意蹲在示波器前面看波形。这个博客是我给自己搭的**第二大脑**——把学习笔记、项目复盘和零散思考系统性地沉淀下来。
+一名热爱折腾的开发者（GitHub：[@sty001](https://github.com/sty001)），日常游走在**软件 ↔ 嵌入式 ↔ 硬件**之间：既能写上层应用，也愿意蹲在示波器前面看波形。
 
-- 🔧 **技能方向**：FPGA（Quartus / Verilog）、EDA（Cadence / Keil）、Web 全栈、大模型应用
-- 📌 **正在深入**：汽车电子总线、无人机飞控、具身智能
-- 🐙 **GitHub**：<https://github.com/sty001>
-- 📮 **邮箱**：lcmg.sty@gmail.com
+| 方向 | 具体内容 |
+|------|----------|
+| 🔧 技能方向 | FPGA（Quartus / Verilog）、EDA（Cadence / Keil）、Web 全栈、大模型应用 |
+| 📌 正在深入 | 汽车电子总线、无人机飞控、具身智能 |
+| 🎯 博客目标 | 每个技术方向一个专栏，按子栏目持续填充，形成体系 |
 
-## 🧭 博客框架
+## Quick Start
 
-本站内容按「专栏 → 子栏目 → 文章」三级组织，完整规划见 **[博客总目录](/posts/blogmap/)**：
+### 1. 第一次来
 
-| 专栏 | 关注点 |
+看置顶的 **[Start Here · 博客总目录](/posts/blogmap/)**，一页了解全站八个专栏和阅读路径。
+
+### 2. 想交流
+
+- 📮 邮箱：lcmg.sty@gmail.com
+- 💬 任意文章底部留言（评论区配置中）
+- 🐙 GitHub：[@sty001](https://github.com/sty001)
+
+### 3. 想追更新
+
+订阅站点的 RSS / Atom（页脚链接），或在 GitHub 上 Watch 本站仓库。
+
+## 本站架构
+
+本站本身也是一个项目，架构如下：
+
+| 组件 | 选型 |
+|------|------|
+| 静态站点生成器 | [Jekyll](https://jekyllrb.com/) |
+| 主题 | [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy)（深度自定义：深空主题 / 阅读排版） |
+| 构建与部署 | GitHub Actions → GitHub Pages |
+| 功能 | 深浅色模式 · 全文搜索 · TOC · PWA 离线 · RSS · 评论 |
+
+## 内容地图
+
+| 专栏 | 一句话 |
 |------|--------|
 | [软件](/categories/%E8%BD%AF%E4%BB%B6/) | 语言、算法、架构与工程效能 |
 | [嵌入式](/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/) | MCU、RTOS、驱动与调试 |
@@ -29,17 +55,5 @@ order: 4
 | [无人机](/categories/%E6%97%A0%E4%BA%BA%E6%9C%BA/) | 飞控、动力与行业应用 |
 | [具身机器人](/categories/%E5%85%B7%E8%BA%AB%E6%9C%BA%E5%99%A8%E4%BA%BA/) | 运动控制、SLAM、具身智能 |
 | [生活分享](/categories/%E7%94%9F%E6%B4%BB%E5%88%86%E4%BA%AB/) | 读书、折腾与年度总结 |
-
-## ✍️ 写作计划
-
-- 每个专栏从首篇概览笔记开始，按子栏目逐个填充
-- 优先更新：**嵌入式** 与 **硬件开发**（当前主攻方向）
-- 系列文章会在标题中带序号（如「XX 系列 03」），方便追更
-
-## 🛠 关于本站
-
-- 基于 [Jekyll](https://jekyllrb.com/) + [Chirpy 主题](https://github.com/cotes2020/jekyll-theme-chirpy)构建
-- 由 GitHub Actions 自动构建，部署在 GitHub Pages
-- 支持深色模式、全文搜索、PWA 离线访问与文章评论
 
 > 内容持续更新中，欢迎通过邮箱或文章评论区交流 ✨

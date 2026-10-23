@@ -1,128 +1,195 @@
-/* ===== 自定义主题色 + 全站背景 UI（在 Chirpy 默认样式之后加载，覆盖生效） ===== */
+/* ==========================================================================
+   陆沉盲瞽的博客 · 深空主题 v3
+   设计原则：可读性优先。深色底 + 高对比文字 + 克制的强调色。
+   ========================================================================== */
 
 :root {
-  --link-color: #3457d5;
-  --link-hover-color: #23389c;
-  --btn-active-bg: #3457d5;
+  /* 强调色：取自壁纸的冷色星光，避免高饱和刺眼 */
+  --link-color: #6cb6ff;
+  --link-hover-color: #8ec2ff;
+  --accent-color: #58a6ff;
+  --btn-active-bg: #316dca;
   --btn-active-color: #ffffff;
-  --body-bg: #f7f8fc;
-  --text-color: #2a2e37;
+
+  /* 中文字体栈：优先系统字体，保证 Win / macOS / Linux 都清晰 */
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --body-bg: #0d1117;
+  --text-color: #e6edf3;
 }
 
-/* ---------- 全站背景图（超高清） ---------- */
+/* ---------- 全站背景：深空宇航员壁纸（4K），整体压暗保证文字对比度 ---------- */
 body {
   background: url('/assets/img/background.jpg') no-repeat center center fixed !important;
   background-size: cover !important;
+  background-color: #0d1117;
 }
 
-/* 半透明遮罩层：保证背景图可见的同时，正文清晰可读 */
+/* 深色遮罩：图片只作氛围底，不与文字抢对比度 */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(247, 248, 252, 0.42);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(8, 11, 18, 0.72);
 }
 
-/* ---------- 侧边栏：完整展示背景图（竖版人像契合高侧栏） ---------- */
+/* ---------- 侧边栏：半透明深色玻璃 ---------- */
 #sidebar,
 .sidebar {
-  background: linear-gradient(rgba(18, 22, 42, 0.55), rgba(18, 22, 42, 0.78)),
-              url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+  background: rgba(10, 14, 21, 0.78) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(240, 246, 252, 0.08);
 }
 
-/* ---------- 顶部栏：半透明毛玻璃 ---------- */
-#topbar-wrapper {
-  background: transparent !important;
-}
+/* ---------- 顶部栏 ---------- */
+#topbar-wrapper { background: transparent !important; }
 #topbar {
-  background: rgba(255, 255, 255, 0.78) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(10, 14, 21, 0.82) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(240, 246, 252, 0.08);
   border-radius: 0 0 14px 14px;
 }
 
-/* ---------- 主内容面板：半透明玻璃卡片 ---------- */
+/* ---------- 主内容面板：深色半透明，高对比正文 ---------- */
 #main-wrapper main {
-  background: rgba(255, 255, 255, 0.84);
+  background: rgba(13, 17, 23, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(240, 246, 252, 0.08);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(15, 25, 60, 0.14);
-  padding-top: 1.75rem;
-  padding-bottom: 1.75rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
-/* 首页文章卡片融入面板 */
+/* ---------- 阅读体验：字号、行距、段落 ---------- */
+.content {
+  font-size: 1.02rem;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+}
+.post-content {
+  font-size: 1.03rem;
+  line-height: 1.9;
+}
+.post-content p { margin-bottom: 1.1rem; }
+h1, h2, h3, h4 { letter-spacing: 0.015em; }
+
+/* 链接：下划线偏移更易读 */
+.content a,
+.post-content a {
+  color: var(--link-color);
+  text-underline-offset: 3px;
+}
+.content a:hover,
+.post-content a:hover { color: var(--link-hover-color); }
+
+/* 引用块：柔和强调 */
+blockquote {
+  border-left: 3px solid var(--accent-color) !important;
+  background: rgba(88, 166, 255, 0.07);
+  border-radius: 0 10px 10px 0;
+  padding: 0.6rem 1.1rem;
+  color: #c9d5e1 !important;
+}
+blockquote p { margin-bottom: 0.2rem; }
+
+/* 卡片（首页文章列表） */
 .card {
-  background: rgba(255, 255, 255, 0.55) !important;
-  border-color: rgba(52, 87, 213, 0.12) !important;
+  background: rgba(240, 246, 252, 0.04) !important;
+  border-color: rgba(240, 246, 252, 0.1) !important;
+  border-radius: 12px !important;
+}
+.post-preview a:hover .post-title { color: var(--link-hover-color) !important; }
+
+/* 分类 / 标签胶囊：低调描边 */
+.post-tags a,
+.taxonomy .taxonomy-title {
+  border-color: rgba(108, 182, 255, 0.4);
+  color: var(--link-color);
+  border-radius: 20px;
 }
 
-/* ---------- 深色模式适配（Chirpy 7.6 使用 data-bs-theme 切换） ---------- */
-:root[data-bs-theme='dark'] body::before { background: rgba(15, 18, 30, 0.50); }
-:root[data-bs-theme='dark'] #sidebar,
-:root[data-bs-theme='dark'] .sidebar {
-  background: linear-gradient(rgba(10, 12, 24, 0.55), rgba(10, 12, 24, 0.80)),
-              url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+/* 表格：细边框 + 隔行微底色，长表格也好读 */
+.post-content table,
+.content table {
+  border-color: rgba(240, 246, 252, 0.12) !important;
+  font-size: 0.95rem;
 }
-:root[data-bs-theme='dark'] #main-wrapper main { background: rgba(27, 30, 38, 0.80); }
-:root[data-bs-theme='dark'] #topbar {
-  background: rgba(27, 30, 38, 0.80) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-:root[data-bs-theme='dark'] .card {
-  background: rgba(63, 67, 79, 0.50) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
+.post-content table th { background: rgba(240, 246, 252, 0.06); }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-bs-theme]) body::before { background: rgba(15, 18, 30, 0.50); }
+/* 行内代码与代码块 */
+code { background: rgba(110, 118, 129, 0.22) !important; }
+.highlight { border-radius: 10px; }
+
+/* ---------- 亮色模式兜底（用户手动切到浅色时依然可读） ---------- */
+:root[data-bs-theme='light'] body::before { background: rgba(247, 248, 252, 0.6); }
+:root[data-bs-theme='light'] #sidebar,
+:root[data-bs-theme='light'] .sidebar {
+  background: rgba(252, 253, 255, 0.88) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+:root[data-bs-theme='light'] #topbar {
+  background: rgba(252, 253, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+:root[data-bs-theme='light'] #main-wrapper main {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+:root[data-bs-theme='light'] .card {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+:root[data-bs-theme='light'] blockquote {
+  background: rgba(88, 166, 255, 0.06);
+  color: #3a4350 !important;
+}
+:root[data-bs-theme='light'] .content a,
+:root[data-bs-theme='light'] .post-content a { color: #1f6feb; }
+:root[data-bs-theme='light'] .content a:hover,
+:root[data-bs-theme='light'] .post-content a:hover { color: #175bc7; }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-bs-theme]) body::before { background: rgba(247, 248, 252, 0.6); }
   :root:not([data-bs-theme]) #sidebar,
   :root:not([data-bs-theme]) .sidebar {
-    background: linear-gradient(rgba(10, 12, 24, 0.55), rgba(10, 12, 24, 0.80)),
-                url('/assets/img/background.jpg') center / cover no-repeat fixed !important;
+    background: rgba(252, 253, 255, 0.88) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
   }
-  :root:not([data-bs-theme]) #main-wrapper main { background: rgba(27, 30, 38, 0.80); }
   :root:not([data-bs-theme]) #topbar {
-    background: rgba(27, 30, 38, 0.80) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(252, 253, 255, 0.9) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  :root:not([data-bs-theme]) #main-wrapper main {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
   :root:not([data-bs-theme]) .card {
-    background: rgba(63, 67, 79, 0.50) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
   }
 }
 
-/* ---------- 强调色（沿用） ---------- */
+/* ---------- 侧栏强调 ---------- */
 #sidebar-trigger,
 .topbar a:hover,
-.nav-link.active { color: #3457d5 !important; }
-
-.content a,
-.post-content a,
-.post-meta a,
-.taxonomy .taxonomy-title a { color: #3457d5; }
-.content a:hover,
-.post-content a:hover { color: #23389c; }
-
-.post-preview a:hover .post-title { color: #3457d5; }
-
-blockquote { border-left-color: #3457d5 !important; }
-
-.post-tags a,
-.taxonomy .taxonomy-title { border-color: #3457d5; color: #3457d5; }
+.nav-link.active { color: var(--accent-color) !important; }
+#sidebar .site-title { color: #f0f6fc; }
+#sidebar .site-subtitle { color: #9aa7b6; }
 
 /* ---------- 头像 ---------- */
 #avatar {
   border-radius: 18% !important;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35), 0 6px 18px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 3px rgba(108, 182, 255, 0.35), 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* ---------- 移动端优化：减弱毛玻璃开销 ---------- */
+/* ---------- 移动端：关闭毛玻璃开销，面板提高不透明度保读 ---------- */
 @media (max-width: 576px) {
   #main-wrapper main,
   #topbar,
@@ -130,5 +197,6 @@ blockquote { border-left-color: #3457d5 !important; }
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  #main-wrapper main { background: rgba(255, 255, 255, 0.92); }
+  #main-wrapper main { background: rgba(13, 17, 23, 0.94); }
+  body::before { background: rgba(8, 11, 18, 0.82); }
 }
