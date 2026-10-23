@@ -16,18 +16,18 @@ lang: fr
 
 ## Écosystème du blog
 
-| Domaine | Rubrique | Axes du contenu | Articles |
-|---------|----------|-----------------|----------|
-| Software | Logiciel | Langages · Algorithmes · Architecture · Efficacité d'ingénierie | 5 sous-thèmes |
-| Embedded | Systèmes embarqués | MCU · RTOS · Pilotes · Débogage | 5 sous-thèmes |
-| Hardware | Développement matériel | Schémas · PCB · Alimentation · Intégrité du signal | 5 sous-thèmes |
-| Process | Procédés de fabrication | Fabrication · Encapsulation · Lignes de production · Qualité | 5 sous-thèmes |
-| Automotive | Électronique automobile | ECU automobile · AUTOSAR · Sécurité fonctionnelle | 5 sous-thèmes |
-| Drone | Drones | Contrôle de vol · Motorisation · Applications métier | 5 sous-thèmes |
-| Robotics | Robotique incarnée | Commande de mouvement · SLAM · IA incarnée | 5 sous-thèmes |
-| Life | Vie quotidienne | Lecture · Bricolage · Bilans annuels | 4 sous-thèmes |
+| Domaine | Rubrique | Axes du contenu | Article |
+|---------|----------|-----------------|---------|
+| Software | [Logiciel](/fr/posts/software-notes/) | Langages · Algorithmes · Architecture · Efficacité d'ingénierie | Présentation |
+| Embedded | [Systèmes embarqués](/fr/posts/embedded-notes/) | MCU · RTOS · Pilotes · Débogage | Présentation |
+| Hardware | [Développement matériel](/fr/posts/hardware-notes/) | Schémas · PCB · Alimentation · Intégrité du signal | Présentation |
+| Process | [Procédés de fabrication](/fr/posts/process-notes/) | Fabrication · Encapsulation · Lignes de production · Qualité | Présentation |
+| Automotive | [Électronique automobile](/fr/posts/automotive-notes/) | ECU automobile · AUTOSAR · Sécurité fonctionnelle | Présentation |
+| Drone | [Drones](/fr/posts/drone-notes/) | Contrôle de vol · Motorisation · Applications métier | Présentation |
+| Robotics | [Robotique incarnée](/fr/posts/embodied-notes/) | Commande de mouvement · SLAM · IA incarnée | Présentation |
+| Life | [Vie quotidienne](/fr/posts/life-notes/) | Lecture · Bricolage · Bilans annuels | Présentation |
 
-> ℹ️ Les rubriques chinoises ci-dessus pointent vers des notes détaillées en chinois. Les traductions françaises des articles de présentation arrivent progressivement — commencez par [Bienvenue sur mon blog](/fr/posts/welcome/).
+> ℹ️ Chaque rubrique ci-dessus ouvre sur son article de présentation en français. Les notes approfondies en chinois se trouvent derrière les pages de catégories chinoises — voir l'[index chinois](/). Tous les articles français sont listés dans les [archives françaises](/fr/archives/).
 
 ## Formats de contenu
 

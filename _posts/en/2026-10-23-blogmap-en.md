@@ -18,16 +18,16 @@ lang: en
 
 | Area | Column | Focus | Entries |
 |------|--------|-------|---------|
-| Software | Software | Languages · Algorithms · Architecture · Engineering efficiency | 5 sub-topics |
-| Embedded | Embedded Systems | MCU · RTOS · Drivers · Debugging | 5 sub-topics |
-| Hardware | Hardware Development | Schematics · PCB · Power · Signal Integrity | 5 sub-topics |
-| Process | Manufacturing Process | Fabrication · Packaging · Production lines · Quality | 5 sub-topics |
-| Automotive | Automotive Electronics | Automotive-grade ECU · AUTOSAR · Functional Safety | 5 sub-topics |
-| Drone | Drones | Flight control · Powertrain · Industry applications | 5 sub-topics |
-| Robotics | Embodied Robotics | Motion control · SLAM · Embodied AI | 5 sub-topics |
-| Life | Life & Hobbies | Reading · Tinkering · Annual reviews | 4 sub-topics |
+| Software | [Software](/en/posts/software-notes/) | Languages · Algorithms · Architecture · Engineering efficiency | Overview |
+| Embedded | [Embedded Systems](/en/posts/embedded-notes/) | MCU · RTOS · Drivers · Debugging | Overview |
+| Hardware | [Hardware Development](/en/posts/hardware-notes/) | Schematics · PCB · Power · Signal Integrity | Overview |
+| Process | [Manufacturing Process](/en/posts/process-notes/) | Fabrication · Packaging · Production lines · Quality | Overview |
+| Automotive | [Automotive Electronics](/en/posts/automotive-notes/) | Automotive-grade ECU · AUTOSAR · Functional Safety | Overview |
+| Drone | [Drones](/en/posts/drone-notes/) | Flight control · Powertrain · Industry applications | Overview |
+| Robotics | [Embodied Robotics](/en/posts/embodied-notes/) | Motion control · SLAM · Embodied AI | Overview |
+| Life | [Life & Hobbies](/en/posts/life-notes/) | Reading · Tinkering · Annual reviews | Overview |
 
-> ℹ️ The Chinese columns above link to in-depth Chinese notes. English translations of the column overview articles are being rolled out progressively — start with [Welcome to My Blog](/en/posts/welcome/).
+> ℹ️ Each column above opens with its English overview article. The deeper Chinese notes live behind the Chinese category pages — see the [Chinese index](/). Browse all English articles in the [English archives](/en/archives/).
 
 ## Content Formats
 
