@@ -264,4 +264,30 @@
       window.open("/music/", "_blank", "noopener");
     });
   }
+
+  /* ===== 7. 右上角语言切换器（全站；各语言版本由 Chirpy page.lang 构建时静态输出） ===== */
+  var langSwitcher = document.getElementById("lang-switcher");
+  var langBtn = document.getElementById("lang-btn");
+  var langMenu = document.getElementById("lang-menu");
+  if (langSwitcher && langBtn && langMenu) {
+    /* 按路径高亮当前语言：/ = 中文，/en/ /ja/ /fr/ = 对应版本 */
+    var currentLang = "zh";
+    var p = location.pathname;
+    if (p.indexOf("/en/") === 0 || p === "/en") { currentLang = "en"; }
+    else if (p.indexOf("/ja/") === 0 || p === "/ja") { currentLang = "ja"; }
+    else if (p.indexOf("/fr/") === 0 || p === "/fr") { currentLang = "fr"; }
+    var currentLink = langMenu.querySelector('a[data-lang="' + currentLang + '"]');
+    if (currentLink) { currentLink.classList.add("current"); }
+
+    langBtn.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      langMenu.classList.toggle("open");
+    });
+    document.addEventListener("click", function (ev) {
+      if (!langSwitcher.contains(ev.target)) { langMenu.classList.remove("open"); }
+    });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") { langMenu.classList.remove("open"); }
+    });
+  }
 })();

@@ -454,3 +454,79 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0.75rem;
 }
 .music-page-picker .music-tab { font-size: 0.9rem; padding: 0.4rem 1rem; }
+
+/* ===== 右上角语言切换器（全站） ===== */
+#lang-switcher {
+  position: fixed; top: 14px; right: 16px; z-index: 1061;
+}
+#lang-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(13, 17, 23, 0.72);
+  backdrop-filter: blur(8px);
+  color: #c9d5e1; cursor: pointer; font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s ease;
+}
+#lang-btn:hover {
+  color: #fff; border-color: rgba(124, 77, 255, 0.6);
+  background: rgba(124, 77, 255, 0.25);
+}
+#lang-menu {
+  position: absolute; top: 44px; right: 0;
+  min-width: 148px; padding: 0.35rem;
+  background: rgba(13, 17, 23, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+  opacity: 0; transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+#lang-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+#lang-menu a {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.45rem 0.7rem; border-radius: 8px;
+  color: #c9d5e1; font-size: 0.88rem; text-decoration: none;
+  transition: background 0.15s;
+}
+#lang-menu a:hover { background: rgba(124, 77, 255, 0.18); color: #fff; }
+#lang-menu a .fa-check { font-size: 0.7rem; opacity: 0; color: #7ee2a8; }
+#lang-menu a.current { color: #fff; font-weight: 600; }
+#lang-menu a.current .fa-check { opacity: 1; }
+@media (max-width: 576px) {
+  #lang-switcher { top: 10px; right: 12px; }
+  #lang-btn { width: 34px; height: 34px; font-size: 0.85rem; }
+}
+:root[data-bs-theme='light'] #lang-btn {
+  background: rgba(255, 255, 255, 0.85); color: #5a6673;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+:root[data-bs-theme='light'] #lang-btn:hover { color: #2a3340; background: rgba(124, 77, 255, 0.12); }
+:root[data-bs-theme='light'] #lang-menu {
+  background: #ffffff; border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.14);
+}
+:root[data-bs-theme='light'] #lang-menu a { color: #3a4350; }
+:root[data-bs-theme='light'] #lang-menu a:hover { background: rgba(124, 77, 255, 0.1); color: #2a3340; }
+
+/* 语言版页面顶部的语言条 */
+.lang-switcher-bar {
+  display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: center;
+  padding: 0.5rem 0.9rem; margin-bottom: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(124, 77, 255, 0.08);
+  font-size: 0.85rem;
+}
+.lang-switcher-bar a { color: #6cb6ff; }
+.lang-switcher-bar a:hover { text-decoration: underline; }
+.lang-switcher-bar .lang-current {
+  color: #e8edf3; font-weight: 600;
+  padding: 0.1rem 0.5rem; border-radius: 6px;
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.35), rgba(68, 138, 255, 0.25));
+}
+:root[data-bs-theme='light'] .lang-switcher-bar {
+  border-color: rgba(0, 0, 0, 0.08); background: rgba(124, 77, 255, 0.06);
+}
+:root[data-bs-theme='light'] .lang-switcher-bar .lang-current { color: #2a3340; }
