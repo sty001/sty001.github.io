@@ -14,22 +14,26 @@
   icon: "fas fa-rss"
   noblank: true
 
-# —— 中文平台矩阵（TODO: 将各 url 换成你的真实主页）——
+# —— 中文平台矩阵 ——
 - type: gitee
   icon: "fab fa-gitee"
-  url: "https://gitee.com/" # 码云 · TODO 换成你的主页
+  url: "https://gitee.com/s2249858789" # 码云
 
 - type: juejin
   icon: "fas fa-gem"
-  url: "https://juejin.cn/" # 掘金 · TODO 换成你的主页
+  url: "https://juejin.cn/user/4125023357905832" # 掘金
 
 - type: segmentfault
   icon: "fas fa-circle-question"
-  url: "https://segmentfault.com/" # 思否 · TODO 换成你的主页
+  url: "https://segmentfault.com/u/lcmg_sty" # 思否
+
+- type: weibo
+  icon: "fab fa-weibo"
+  url: "https://weibo.com/u/6378807392" # 微博
 
 - type: xiaohongshu
   icon: "fas fa-heart"
-  url: "https://www.xiaohongshu.com/" # 小红书 · TODO 换成你的主页
+  url: "https://www.xiaohongshu.com/" # 小红书 · TODO 待提供主页
 # 微信公众号无个人主页链接，在「关于」页以文字/二维码形式展示
 
 # Uncomment and complete the url below to enable more contact options
