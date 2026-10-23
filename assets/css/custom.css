@@ -343,6 +343,8 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 :root[data-bs-theme='light'] .qr-modal-box p { color: #3a4350; }
 
 /* ===== 主页右上角点歌台（网易云音乐外链播放器） ===== */
+/* hidden 属性特异性兜底：ID选择器 display:flex 会压过 UA 的 [hidden]{display:none} */
+#music-entry[hidden] { display: none !important; }
 #music-entry {
   position: fixed; top: 14px; right: 16px; z-index: 1050;
   width: 44px; height: 44px; border-radius: 50%;
