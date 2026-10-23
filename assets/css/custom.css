@@ -258,7 +258,9 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 }
 .share-weibo:hover { background: rgba(230, 22, 45, 0.2); border-color: rgba(230, 22, 45, 0.5); }
 .share-qzone:hover { background: rgba(245, 197, 0, 0.18); border-color: rgba(245, 197, 0, 0.5); }
-.share-wechat:hover { background: rgba(7, 193, 96, 0.18); border-color: rgba(7, 193, 96, 0.5); }
+.share-wechat:hover, .share-moments:hover { background: rgba(7, 193, 96, 0.18); border-color: rgba(7, 193, 96, 0.5); }
+.share-wecom:hover { background: rgba(0, 130, 239, 0.18); border-color: rgba(0, 130, 239, 0.5); }
+.share-feishu:hover { background: rgba(51, 112, 255, 0.18); border-color: rgba(51, 112, 255, 0.5); }
 .share-x:hover { background: rgba(29, 155, 240, 0.18); border-color: rgba(29, 155, 240, 0.5); }
 
 /* 分享提示 toast */

@@ -1,8 +1,9 @@
 /* ==========================================================================
-   文章阅读增强 v1
+   文章阅读增强 v2
    1) 阅读进度条（文章位置追踪）
    2) 中文阅读时长估算（覆盖 Chirpy 默认的英文词数估算）
-   3) 分享栏：微博 / QQ空间 / X / 微信 / 复制链接
+   3) 分享栏：微博 / QQ空间 / 微信朋友圈(二维码) / 企业微信 / 飞书 / X / 复制链接
+   4) 侧栏微信公众号入口（点击弹二维码）
    ========================================================================== */
 (function () {
   "use strict";
@@ -44,30 +45,51 @@
     setTimeout(function () { t.remove(); }, 2600);
   }
 
-  var mins = calcMinutes();
-  var readtime = document.querySelector(".post-meta .readtime");
-  if (readtime && mins) {
-    readtime.innerHTML = "<em>" + mins + "</em> 分钟读完";
-    readtime.setAttribute("title", "正文约 " + mins + " 分钟可读完（按中文 400 字/分钟估算）");
-    readtime.classList.add("readtime-zh");
+  /* ===== 3. 二维码弹窗（朋友圈分享 / 侧栏公众号 共用） ===== */
+  function openQrModal(imgSrc, captionHTML) {
+    var modal = document.createElement("div");
+    modal.className = "qr-modal";
+    modal.setAttribute("role", "dialog");
+    modal.innerHTML =
+      '<div class="qr-modal-box">' +
+      '<button class="qr-close" type="button" aria-label="关闭">&times;</button>' +
+      '<img src="' + imgSrc + '" alt="二维码">' +
+      captionHTML +
+      '</div>';
+    document.body.appendChild(modal);
+    requestAnimationFrame(function () { modal.classList.add("show"); });
+
+    function close() {
+      modal.classList.remove("show");
+      setTimeout(function () { modal.remove(); }, 220);
+      document.removeEventListener("keydown", onKey);
+    }
+    function onKey(ev) { if (ev.key === "Escape") close(); }
+
+    modal.querySelector(".qr-close").addEventListener("click", close);
+    modal.addEventListener("click", function (ev) { if (ev.target === modal) close(); });
+    document.addEventListener("keydown", onKey);
   }
 
-  /* ===== 3. 分享栏 ===== */
+  /* ===== 4. 分享栏 ===== */
   var tail = document.querySelector(".post-tail-wrapper");
   if (tail && document.querySelector(".post-content")) {
     var url = encodeURIComponent(location.href.split("#")[0]);
     var title = encodeURIComponent(document.title);
+    var plainUrl = location.href.split("#")[0];
 
     var shareBar = document.createElement("div");
     shareBar.className = "share-bar";
     shareBar.setAttribute("aria-label", "分享本文");
     shareBar.innerHTML =
       '<span class="share-label"><i class="fa-fw fas fa-share-nodes"></i>分享</span>' +
-      '<a class="share-btn share-weibo" target="_blank" rel="noopener noreferrer" href="https://service.weibo.com/share/share.php?url=' + url + "&title=" + title + '"><i class="fab fa-weibo"></i>微博</a>' +
-      '<a class="share-btn share-qzone" target="_blank" rel="noopener noreferrer" href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + url + "&summary=" + title + '"><i class="fab fa-qq"></i>QQ空间</a>' +
-      '<a class="share-btn share-x" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?url=' + url + "&text=" + title + '"><i class="fab fa-x-twitter"></i>X</a>' +
-      '<button class="share-btn share-wechat" type="button"><i class="fab fa-weixin"></i>微信</button>' +
-      '<button class="share-btn share-copy" type="button"><i class="fas fa-link"></i>复制链接</button>';
+      '<a class="share-btn share-weibo" target="_blank" rel="noopener noreferrer" href="https://service.weibo.com/share/share.php?url=' + url + "&title=" + title + '" title="分享到微博"><i class="fab fa-weibo"></i>微博</a>' +
+      '<a class="share-btn share-qzone" target="_blank" rel="noopener noreferrer" href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + url + "&summary=" + title + '" title="分享到QQ空间"><i class="fab fa-qq"></i>QQ空间</a>' +
+      '<button class="share-btn share-moments" type="button" title="分享到微信朋友圈"><i class="fab fa-weixin"></i>朋友圈</button>' +
+      '<button class="share-btn share-wecom" type="button" title="分享到企业微信"><i class="fas fa-comment-dots"></i>企业微信</button>' +
+      '<button class="share-btn share-feishu" type="button" title="分享到飞书"><i class="fas fa-paper-plane"></i>飞书</button>' +
+      '<a class="share-btn share-x" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?url=' + url + "&text=" + title + '" title="分享到 X"><i class="fab fa-x-twitter"></i>X</a>' +
+      '<button class="share-btn share-copy" type="button" title="复制文章链接"><i class="fas fa-link"></i>复制链接</button>';
 
     tail.parentNode.insertBefore(shareBar, tail);
 
@@ -77,63 +99,71 @@
       setTimeout(function () { btn.innerHTML = old; }, 2000);
     }
 
-    function copyLink(done) {
+    function legacyCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    function copyText(text, done) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(location.href).then(done, done);
+        navigator.clipboard.writeText(text).then(done, function () { legacyCopy(text); done(); });
       } else {
-        var ta = document.createElement("textarea");
-        ta.value = location.href;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand("copy"); } catch (e) {}
-        document.body.removeChild(ta);
+        legacyCopy(text);
         done();
       }
     }
 
+    /* 复制链接 */
     shareBar.querySelector(".share-copy").addEventListener("click", function () {
       var btn = this;
-      copyLink(function () { flash(btn, '<i class="fas fa-check"></i>已复制'); });
+      copyText(plainUrl, function () { flash(btn, '<i class="fas fa-check"></i>已复制'); });
     });
 
-    shareBar.querySelector(".share-wechat").addEventListener("click", function () {
+    /* 微信朋友圈：弹出本文二维码（qrcode-generator 本地生成，零外链） */
+    shareBar.querySelector(".share-moments").addEventListener("click", function () {
+      try {
+        var qr = window.qrcode(0, "M");
+        qr.addData(plainUrl);
+        qr.make();
+        openQrModal(qr.createDataURL(8, 4),
+          '<p><strong>微信扫一扫，打开本文</strong><br>微信内打开后点右上角「···」→ 分享到朋友圈<br>也可保存 / 截图二维码发朋友圈</p>');
+      } catch (e) {
+        copyText(plainUrl, function () { toast("链接已复制，去朋友圈粘贴分享吧"); });
+      }
+    });
+
+    /* 企业微信：复制标题+链接 */
+    shareBar.querySelector(".share-wecom").addEventListener("click", function () {
       var btn = this;
-      copyLink(function () {
-        flash(btn, '<i class="fab fa-weixin"></i>已复制');
-        toast("链接已复制，去微信粘贴给好友或发朋友圈吧");
+      copyText(document.title + "\n" + plainUrl, function () {
+        flash(btn, '<i class="fas fa-check"></i>已复制');
+        toast("标题和链接已复制，打开企业微信粘贴发送即可");
+      });
+    });
+
+    /* 飞书：复制标题+链接 */
+    shareBar.querySelector(".share-feishu").addEventListener("click", function () {
+      var btn = this;
+      copyText(document.title + "\n" + plainUrl, function () {
+        flash(btn, '<i class="fas fa-check"></i>已复制');
+        toast("标题和链接已复制，打开飞书粘贴发送即可");
       });
     });
   }
 
-  /* ===== 4. 侧栏微信公众号入口（点击弹二维码） ===== */
+  /* ===== 5. 侧栏微信公众号入口（点击弹公众号二维码） ===== */
   var wxEntry = document.querySelector('#sidebar a[aria-label="wechat"]');
   if (wxEntry) {
     wxEntry.addEventListener("click", function (e) {
       e.preventDefault();
-      var modal = document.createElement("div");
-      modal.className = "qr-modal";
-      modal.setAttribute("role", "dialog");
-      modal.innerHTML =
-        '<div class="qr-modal-box">' +
-        '<button class="qr-close" type="button" aria-label="关闭">&times;</button>' +
-        '<img src="/assets/img/wechat-qr.png" alt="微信公众号二维码">' +
-        '<p>微信扫一扫，关注公众号<br><strong>陆沉盲瞽</strong></p>' +
-        '</div>';
-      document.body.appendChild(modal);
-      requestAnimationFrame(function () { modal.classList.add("show"); });
-
-      function close() {
-        modal.classList.remove("show");
-        setTimeout(function () { modal.remove(); }, 220);
-        document.removeEventListener("keydown", onKey);
-      }
-      function onKey(ev) { if (ev.key === "Escape") close(); }
-
-      modal.querySelector(".qr-close").addEventListener("click", close);
-      modal.addEventListener("click", function (ev) { if (ev.target === modal) close(); });
-      document.addEventListener("keydown", onKey);
+      openQrModal("/assets/img/wechat-qr.png",
+        '<p>微信扫一扫，关注公众号<br><strong>陆沉盲瞽</strong></p>');
     });
   }
 })();
