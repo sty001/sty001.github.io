@@ -49,3 +49,8 @@
     {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
   </p>
 </footer>
+
+<!-- 仅主页渲染：右上角点歌台（模板层静态注入，确保 HTML 必然输出） -->
+{% if page.layout == 'home' or page.url == '/' %}
+  {% include music-entry.html %}
+{% endif %}

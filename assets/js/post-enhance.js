@@ -168,52 +168,38 @@
     });
   }
 
-  /* ===== 6. 主页右上角点歌台（网易云音乐官方外链播放器） ===== */
-  /* MUSIC_LIST_ID：网易云音乐歌单 ID，当前为官方「云音乐热歌榜」。
-     想换成自己的歌单：网易云网页版打开你的歌单，URL 中 /playlist?id=XXXXX 的数字即 ID */
-  var MUSIC_LIST_ID = "3778678";
-  var onHome = location.pathname.replace(/\/+$/, "") === "" || location.pathname === "/index.html";
-  if (onHome && !document.getElementById("music-entry")) {
-    var musicBtn = document.createElement("button");
-    musicBtn.id = "music-entry";
-    musicBtn.type = "button";
-    musicBtn.title = "点歌台 · 网易云音乐";
-    musicBtn.setAttribute("aria-label", "点歌台");
-    musicBtn.innerHTML = '<i class="fas fa-music"></i>';
-    document.body.appendChild(musicBtn);
-
-    var musicPanel = null;
+  /* ===== 6. 主页右上角点歌台（模板静态注入 _includes/music-entry.html，这里只做交互绑定） ===== */
+  /* MUSIC_LIST_ID 在 include 模板的 iframe data-src 中配置（网易云歌单 ID） */
+  var musicBtn = document.getElementById("music-entry");
+  var musicPanel = document.getElementById("music-panel");
+  if (musicBtn && musicPanel && !musicBtn.dataset.bound) {
+    musicBtn.dataset.bound = "1";
     var musicOnKey = null;
 
     musicBtn.addEventListener("click", function () {
-      if (musicPanel) { closeMusic(); return; }
-      musicPanel = document.createElement("div");
-      musicPanel.id = "music-panel";
-      musicPanel.innerHTML =
-        '<div class="music-head">' +
-        '<span><i class="fas fa-music"></i>点歌台 · 网易云音乐</span>' +
-        '<button class="music-close" type="button" aria-label="关闭">&times;</button>' +
-        '</div>' +
-        '<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" ' +
-        'width="100%" height="430" loading="lazy" title="网易云音乐播放器" ' +
-        'src="https://music.163.com/outchain/player?type=0&id=' + MUSIC_LIST_ID + '&auto=0&height=430&size=small"></iframe>';
-      document.body.appendChild(musicPanel);
-      requestAnimationFrame(function () { musicPanel.classList.add("show"); });
+      if (musicPanel.classList.contains("show")) { closeMusic(); return; }
+
+      /* 懒加载：每次打开都重新加载播放器（从头播放） */
+      var frame = musicPanel.querySelector("iframe");
+      if (frame && frame.dataset.src) {
+        frame.src = frame.dataset.src;
+      }
+      musicPanel.classList.add("show");
       musicBtn.classList.add("active");
 
       musicOnKey = function (ev) { if (ev.key === "Escape") closeMusic(); };
       document.addEventListener("keydown", musicOnKey);
-      musicPanel.querySelector(".music-close").addEventListener("click", closeMusic);
     });
 
+    musicPanel.querySelector(".music-close").addEventListener("click", closeMusic);
+
     function closeMusic() {
-      if (!musicPanel) return;
       musicPanel.classList.remove("show");
       musicBtn.classList.remove("active");
-      var el = musicPanel;
-      setTimeout(function () { el.remove(); }, 220);
-      musicPanel = null;
       if (musicOnKey) { document.removeEventListener("keydown", musicOnKey); musicOnKey = null; }
+      /* 关闭即停止播放 */
+      var frame = musicPanel.querySelector("iframe");
+      if (frame) { frame.src = "about:blank"; }
     }
   }
 })();
