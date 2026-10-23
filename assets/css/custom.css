@@ -1,24 +1,86 @@
-/* ===== 自定义主题色（在 Chirpy 默认样式之后加载，覆盖生效） ===== */
+/* ===== 自定义主题色 + 全站背景 UI（在 Chirpy 默认样式之后加载，覆盖生效） ===== */
 
 :root {
   --link-color: #3457d5;
   --link-hover-color: #23389c;
   --btn-active-bg: #3457d5;
   --btn-active-color: #ffffff;
-  --sidebar-bg: #1f2540;
   --body-bg: #f7f8fc;
   --text-color: #2a2e37;
 }
 
-/* 侧边栏深色背景 */
-.sidebar { background: #1f2540 !important; }
+/* ---------- 全站背景图（超高清） ---------- */
+body {
+  background: url('/assets/img/background.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
 
-/* 顶部栏 / 激活态强调色 */
+/* ---------- 侧边栏：深色毛玻璃，与背景图衔接 ---------- */
+#sidebar {
+  background: rgba(21, 26, 48, 0.88) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.sidebar { background: transparent !important; }
+
+/* ---------- 顶部栏：半透明毛玻璃 ---------- */
+#topbar-wrapper {
+  background: transparent !important;
+}
+#topbar {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 0 0 14px 14px;
+}
+
+/* ---------- 主内容面板：半透明玻璃卡片 ---------- */
+#main-wrapper main {
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(15, 25, 60, 0.14);
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+}
+
+/* 首页文章卡片融入面板 */
+.card {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(52, 87, 213, 0.12) !important;
+}
+
+/* ---------- 深色模式适配（Chirpy 7.6 使用 data-bs-theme 切换） ---------- */
+:root[data-bs-theme='dark'] #main-wrapper main { background: rgba(27, 30, 38, 0.84); }
+:root[data-bs-theme='dark'] #topbar {
+  background: rgba(27, 30, 38, 0.78) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+:root[data-bs-theme='dark'] .card {
+  background: rgba(63, 67, 79, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme]) #main-wrapper main { background: rgba(27, 30, 38, 0.84); }
+  :root:not([data-bs-theme]) #topbar {
+    background: rgba(27, 30, 38, 0.78) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  :root:not([data-bs-theme]) .card {
+    background: rgba(63, 67, 79, 0.55) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+/* ---------- 强调色（沿用） ---------- */
 #sidebar-trigger,
 .topbar a:hover,
 .nav-link.active { color: #3457d5 !important; }
 
-/* 链接与正文强调色 */
 .content a,
 .post-content a,
 .post-meta a,
@@ -26,15 +88,26 @@
 .content a:hover,
 .post-content a:hover { color: #23389c; }
 
-/* 文章标题悬停 */
 .post-preview a:hover .post-title { color: #3457d5; }
 
-/* 引用与强调边框 */
 blockquote { border-left-color: #3457d5 !important; }
 
-/* 分类 / 标签胶囊 */
 .post-tags a,
 .taxonomy .taxonomy-title { border-color: #3457d5; color: #3457d5; }
 
-/* 头像圆角更柔和 */
-#avatar { border-radius: 18% !important; }
+/* ---------- 头像 ---------- */
+#avatar {
+  border-radius: 18% !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- 移动端优化：减弱毛玻璃开销 ---------- */
+@media (max-width: 576px) {
+  #main-wrapper main,
+  #topbar,
+  #sidebar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #main-wrapper main { background: rgba(255, 255, 255, 0.92); }
+}
