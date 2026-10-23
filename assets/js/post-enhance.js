@@ -1,11 +1,10 @@
 /* ==========================================================================
-   博客增强 v6
+   博客增强 v7
    1) 阅读进度条（文章位置追踪）
    2) 中文阅读时长估算（覆盖 Chirpy 默认的英文词数估算）
    3) 分享栏：微博 / QQ空间 / 微信朋友圈(二维码) / 企业微信 / 飞书 / X / 复制链接
    4) 侧栏微信公众号入口（点击弹二维码）
-   5) 全站雪花特效（Canvas，深浅主题自适应）
-   6) 点击特效（涟漪高亮 + 雪花粒子迸发）
+   5) 点击特效（涟漪高亮 + 雪花粒子；雪花飘落为纯 CSS 静态实现）
    ========================================================================== */
 (function () {
   "use strict";
@@ -173,110 +172,40 @@
     });
   }
 
-  /* ===== 5. 全站雪花特效（Canvas；pointer-events:none 不影响交互） ===== */
-  (function initSnow() {
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var canvas = document.createElement("canvas");
-    canvas.id = "snow-canvas";
-    document.body.appendChild(canvas);
-    var ctx = canvas.getContext("2d");
-    var flakes = [];
-    var W = 0, H = 0, raf = null;
+  /* ===== 5. 点击特效（涟漪高亮 + 雪花粒子迸发；整体 try-catch 兜底） ===== */
+  try {
+    (function initClickFx() {
+      var COLORS = ["#7c4dff", "#448aff", "#58a6ff", "#a371f7"];
+      document.addEventListener("click", function (ev) {
+        var x = ev.clientX, y = ev.clientY;
 
-    function isDark() {
-      var root = document.documentElement;
-      var mode = root.getAttribute("data-bs-theme");
-      if (mode) return mode === "dark";
-      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
+        /* 涟漪高亮圈 */
+        var ripple = document.createElement("div");
+        ripple.className = "click-ripple";
+        ripple.style.left = x + "px";
+        ripple.style.top = y + "px";
+        document.body.appendChild(ripple);
+        setTimeout(function () { ripple.remove(); }, 600);
 
-    function resize() {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    }
-
-    function spawn(n) {
-      for (var i = 0; i < n; i++) {
-        flakes.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: 1.2 + Math.random() * 2.8,
-          s: 0.4 + Math.random() * 1.1,        /* 下落速度 */
-          a: Math.random() * Math.PI * 2,      /* 摇摆相位 */
-          w: 0.002 + Math.random() * 0.006,    /* 摇摆角速度 */
-          o: 0.35 + Math.random() * 0.55       /* 透明度 */
-        });
-      }
-    }
-
-    function frame() {
-      ctx.clearRect(0, 0, W, H);
-      var color = isDark() ? "255,255,255" : "110,140,235";
-      for (var i = 0; i < flakes.length; i++) {
-        var f = flakes[i];
-        f.a += f.w;
-        f.y += f.s;
-        f.x += Math.sin(f.a) * 0.6;
-        if (f.y > H + 6) { f.y = -6; f.x = Math.random() * W; }
-        if (f.x > W + 6) f.x = -6; else if (f.x < -6) f.x = W + 6;
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(" + color + "," + f.o + ")";
-        ctx.fill();
-      }
-      raf = requestAnimationFrame(frame);
-    }
-
-    function start() {
-      resize();
-      spawn(Math.round(Math.min(160, Math.max(60, W / 10))));
-      frame();
-    }
-
-    window.addEventListener("resize", function () {
-      resize();
-      flakes.forEach(function (f) { if (f.y > H) f.y = -6; });
-    });
-    /* 页面不可见时暂停，省电省 CPU */
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { cancelAnimationFrame(raf); raf = null; }
-      else if (!raf) { frame(); }
-    });
-    start();
-  })();
-
-  /* ===== 6. 点击特效（涟漪高亮 + 雪花粒子迸发） ===== */
-  (function initClickFx() {
-    var COLORS = ["#7c4dff", "#448aff", "#58a6ff", "#a371f7"];
-    document.addEventListener("click", function (ev) {
-      var x = ev.clientX, y = ev.clientY;
-
-      /* 涟漪高亮圈 */
-      var ripple = document.createElement("div");
-      ripple.className = "click-ripple";
-      ripple.style.left = x + "px";
-      ripple.style.top = y + "px";
-      document.body.appendChild(ripple);
-      setTimeout(function () { ripple.remove(); }, 600);
-
-      /* 雪花粒子迸发 */
-      var n = 6 + Math.floor(Math.random() * 3);
-      for (var i = 0; i < n; i++) {
-        var p = document.createElement("span");
-        p.className = "click-snow";
-        p.textContent = "❄";
-        var ang = (Math.PI * 2 * i) / n + Math.random() * 0.5;
-        var dist = 26 + Math.random() * 30;
-        p.style.left = x + "px";
-        p.style.top = y + "px";
-        p.style.color = COLORS[i % COLORS.length];
-        p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
-        p.style.setProperty("--dy", Math.sin(ang) * dist - 10 + "px");
-        p.style.setProperty("--rot", (Math.random() * 260 - 130) + "deg");
-        p.style.fontSize = 9 + Math.random() * 6 + "px";
-        document.body.appendChild(p);
-        (function (el) { setTimeout(function () { el.remove(); }, 750); })(p);
-      }
-    }, { passive: true });
-  })();
+        /* 雪花粒子迸发 */
+        var n = 6 + Math.floor(Math.random() * 3);
+        for (var i = 0; i < n; i++) {
+          var p = document.createElement("span");
+          p.className = "click-snow";
+          p.textContent = "❄";
+          var ang = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+          var dist = 26 + Math.random() * 30;
+          p.style.left = x + "px";
+          p.style.top = y + "px";
+          p.style.color = COLORS[i % COLORS.length];
+          p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+          p.style.setProperty("--dy", Math.sin(ang) * dist - 10 + "px");
+          p.style.setProperty("--rot", (Math.random() * 260 - 130) + "deg");
+          p.style.fontSize = 9 + Math.random() * 6 + "px";
+          document.body.appendChild(p);
+          (function (el) { setTimeout(function () { el.remove(); }, 750); })(p);
+        }
+      }, { passive: true });
+    })();
+  } catch (e) { /* 特效失败不影响任何功能 */ }
 })();
