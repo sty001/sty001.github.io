@@ -200,3 +200,89 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   #main-wrapper main { background: rgba(13, 17, 23, 0.94); }
   body::before { background: rgba(8, 11, 18, 0.50); }
 }
+
+/* ==========================================================================
+   阅读增强 v1：阅读进度 / 中文阅读时长 / 分享栏
+   ========================================================================== */
+
+/* 阅读进度条（文章位置追踪） */
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, #58a6ff, #a371f7);
+  border-radius: 0 2px 2px 0;
+  z-index: 2000;
+  transition: width 0.08s linear;
+}
+
+/* 中文阅读时长 */
+.readtime-zh { color: #8b98a8; }
+.readtime-zh em { font-style: normal; font-weight: 600; color: var(--link-color); }
+
+/* 分享栏 */
+.share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.6rem 0 0.4rem;
+  padding: 0.9rem 1.1rem;
+  background: rgba(240, 246, 252, 0.04);
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  border-radius: 12px;
+}
+.share-label { color: #9aa7b6; font-size: 0.9rem; margin-right: 0.3rem; }
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #c9d5e1;
+  background: rgba(240, 246, 252, 0.06);
+  border: 1px solid rgba(240, 246, 252, 0.12);
+  border-radius: 20px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.share-btn:hover {
+  color: #fff;
+  background: rgba(88, 166, 255, 0.18);
+  border-color: rgba(88, 166, 255, 0.45);
+  transform: translateY(-1px);
+}
+.share-weibo:hover { background: rgba(230, 22, 45, 0.2); border-color: rgba(230, 22, 45, 0.5); }
+.share-qzone:hover { background: rgba(245, 197, 0, 0.18); border-color: rgba(245, 197, 0, 0.5); }
+.share-wechat:hover { background: rgba(7, 193, 96, 0.18); border-color: rgba(7, 193, 96, 0.5); }
+.share-x:hover { background: rgba(29, 155, 240, 0.18); border-color: rgba(29, 155, 240, 0.5); }
+
+/* 分享提示 toast */
+.share-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 3rem;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(13, 17, 23, 0.95);
+  color: #e6edf3;
+  border: 1px solid rgba(108, 182, 255, 0.4);
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.25s ease;
+  z-index: 3000;
+  pointer-events: none;
+}
+.share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 页脚座右铭 */
+.site-motto {
+  color: #8b98a8;
+  letter-spacing: 0.06em;
+  font-size: 0.92rem;
+}

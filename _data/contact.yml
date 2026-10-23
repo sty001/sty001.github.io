@@ -13,6 +13,25 @@
 - type: rss
   icon: "fas fa-rss"
   noblank: true
+
+# —— 中文平台矩阵（TODO: 将各 url 换成你的真实主页）——
+- type: gitee
+  icon: "fab fa-gitee"
+  url: "https://gitee.com/" # 码云 · TODO 换成你的主页
+
+- type: juejin
+  icon: "fas fa-gem"
+  url: "https://juejin.cn/" # 掘金 · TODO 换成你的主页
+
+- type: segmentfault
+  icon: "fas fa-circle-question"
+  url: "https://segmentfault.com/" # 思否 · TODO 换成你的主页
+
+- type: xiaohongshu
+  icon: "fas fa-heart"
+  url: "https://www.xiaohongshu.com/" # 小红书 · TODO 换成你的主页
+# 微信公众号无个人主页链接，在「关于」页以文字/二维码形式展示
+
 # Uncomment and complete the url below to enable more contact options
 #
 # - type: mastodon
