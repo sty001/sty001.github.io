@@ -1,5 +1,5 @@
 ---
-title: Embedded Development Study Notes: From Bare Metal to RTOS
+title: "Embedded Development Study Notes: From Bare Metal to RTOS"
 date: 2026-10-22 09:00:00 +0800
 permalink: /en/posts/embedded-notes/
 categories: [Blog, Notes]

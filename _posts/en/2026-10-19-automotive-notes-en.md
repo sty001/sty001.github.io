@@ -1,5 +1,5 @@
 ---
-title: Automotive Electronics Study Notes: CAN Bus Fundamentals
+title: "Automotive Electronics Study Notes: CAN Bus Fundamentals"
 date: 2026-10-19 09:00:00 +0800
 permalink: /en/posts/automotive-notes/
 categories: [Blog, Notes]

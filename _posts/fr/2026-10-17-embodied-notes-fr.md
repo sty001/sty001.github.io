@@ -1,5 +1,5 @@
 ---
-title: Robotique incarnée — Notes d'étude : des VLA au Sim2Real
+title: "Robotique incarnée — Notes d'étude : des VLA au Sim2Real"
 date: 2026-10-17 09:00:00 +0800
 permalink: /fr/posts/embodied-notes/
 categories: [Blog, Notes]

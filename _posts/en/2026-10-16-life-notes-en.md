@@ -1,5 +1,5 @@
 ---
-title: Life & Hobbies Study Notes: Workstation Tweaks and Productivity Tools
+title: "Life & Hobbies Study Notes: Workstation Tweaks and Productivity Tools"
 date: 2026-10-16 09:00:00 +0800
 permalink: /en/posts/life-notes/
 categories: [Blog, Notes]

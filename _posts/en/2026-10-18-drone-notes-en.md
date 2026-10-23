@@ -1,5 +1,5 @@
 ---
-title: Drone Study Notes: Flight Controllers and Attitude Estimation
+title: "Drone Study Notes: Flight Controllers and Attitude Estimation"
 date: 2026-10-18 09:00:00 +0800
 permalink: /en/posts/drone-notes/
 categories: [Blog, Notes]

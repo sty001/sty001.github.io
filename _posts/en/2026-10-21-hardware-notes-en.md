@@ -1,5 +1,5 @@
 ---
-title: Hardware Development Study Notes: Schematics and PCB Basics
+title: "Hardware Development Study Notes: Schematics and PCB Basics"
 date: 2026-10-21 09:00:00 +0800
 permalink: /en/posts/hardware-notes/
 categories: [Blog, Notes]

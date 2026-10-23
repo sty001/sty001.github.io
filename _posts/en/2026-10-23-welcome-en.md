@@ -1,5 +1,5 @@
 ---
-title: Welcome to My Blog
+title: "Welcome to My Blog"
 date: 2026-10-23 12:00:00 +0800
 permalink: /en/posts/welcome/
 categories: [Blog, Notes]
@@ -28,7 +28,7 @@ Just create a new file under the `_posts/` directory, named `YYYY-MM-DD-title.md
 
 ```yaml
 ---
-title: Post Title
+title: "Post Title"
 date: 2026-10-23 12:00:00 +0800
 categories: [Category]
 tags: [Tag]

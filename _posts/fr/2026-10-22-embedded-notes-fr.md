@@ -1,5 +1,5 @@
 ---
-title: Développement embarqué — Notes d'étude : du bare metal au RTOS
+title: "Développement embarqué — Notes d'étude : du bare metal au RTOS"
 date: 2026-10-22 09:00:00 +0800
 permalink: /fr/posts/embedded-notes/
 categories: [Blog, Notes]

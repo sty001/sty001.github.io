@@ -1,5 +1,5 @@
 ---
-title: Vie quotidienne — Notes d'étude : Poste de travail et outils de productivité
+title: "Vie quotidienne — Notes d'étude : Poste de travail et outils de productivité"
 date: 2026-10-16 09:00:00 +0800
 permalink: /fr/posts/life-notes/
 categories: [Blog, Notes]

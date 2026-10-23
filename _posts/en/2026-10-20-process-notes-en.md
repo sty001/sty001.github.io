@@ -1,5 +1,5 @@
 ---
-title: Manufacturing Process Study Notes: SMT and Soldering
+title: "Manufacturing Process Study Notes: SMT and Soldering"
 date: 2026-10-20 09:00:00 +0800
 permalink: /en/posts/process-notes/
 categories: [Blog, Notes]

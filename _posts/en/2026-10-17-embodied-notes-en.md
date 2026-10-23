@@ -1,5 +1,5 @@
 ---
-title: Embodied Robotics Study Notes: From VLA to Sim2Real
+title: "Embodied Robotics Study Notes: From VLA to Sim2Real"
 date: 2026-10-17 09:00:00 +0800
 permalink: /en/posts/embodied-notes/
 categories: [Blog, Notes]

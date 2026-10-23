@@ -1,5 +1,5 @@
 ---
-title: Développement matériel — Notes d'étude : schémas et PCB pour débuter
+title: "Développement matériel — Notes d'étude : schémas et PCB pour débuter"
 date: 2026-10-21 09:00:00 +0800
 permalink: /fr/posts/hardware-notes/
 categories: [Blog, Notes]

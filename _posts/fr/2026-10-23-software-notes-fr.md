@@ -1,5 +1,5 @@
 ---
-title: Génie logiciel — Notes d'étude : des exigences à la mise en production
+title: "Génie logiciel — Notes d'étude : des exigences à la mise en production"
 date: 2026-10-23 09:00:00 +0800
 permalink: /fr/posts/software-notes/
 categories: [Blog, Notes]

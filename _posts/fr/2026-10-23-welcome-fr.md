@@ -1,5 +1,5 @@
 ---
-title: Bienvenue sur mon blog
+title: "Bienvenue sur mon blog"
 date: 2026-10-23 12:00:00 +0800
 permalink: /fr/posts/welcome/
 categories: [Blog, Notes]
@@ -28,7 +28,7 @@ Il suffit de créer un fichier dans le répertoire `_posts/`, nommé `YYYY-MM-DD
 
 ```yaml
 ---
-title: Titre de l'article
+title: "Titre de l'article"
 date: 2026-10-23 12:00:00 +0800
 categories: [Catégorie]
 tags: [Tag]

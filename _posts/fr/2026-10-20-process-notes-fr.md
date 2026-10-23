@@ -1,5 +1,5 @@
 ---
-title: Procédés de fabrication — Notes d'étude : SMT et soudure
+title: "Procédés de fabrication — Notes d'étude : SMT et soudure"
 date: 2026-10-20 09:00:00 +0800
 permalink: /fr/posts/process-notes/
 categories: [Blog, Notes]

@@ -1,5 +1,5 @@
 ---
-title: Start Here · Index du blog
+title: "Start Here · Index du blog"
 description: Navigation du site — matrice des rubriques, formats de contenu, démarrage rapide et centre de documentation. L'ensemble du blog est organisé comme un README de projet.
 date: 2026-10-23 12:00:00 +0800
 permalink: /fr/

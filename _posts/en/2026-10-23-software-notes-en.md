@@ -1,5 +1,5 @@
 ---
-title: Software Engineering Study Notes: From Requirements to Release
+title: "Software Engineering Study Notes: From Requirements to Release"
 date: 2026-10-23 09:00:00 +0800
 permalink: /en/posts/software-notes/
 categories: [Blog, Notes]

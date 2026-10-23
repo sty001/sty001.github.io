@@ -1,5 +1,5 @@
 ---
-title: Électronique automobile — Notes d'étude : les bases du bus CAN
+title: "Électronique automobile — Notes d'étude : les bases du bus CAN"
 date: 2026-10-19 09:00:00 +0800
 permalink: /fr/posts/automotive-notes/
 categories: [Blog, Notes]

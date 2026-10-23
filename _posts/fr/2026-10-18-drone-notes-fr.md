@@ -1,5 +1,5 @@
 ---
-title: Drones — Notes d'étude : contrôleur de vol et estimation d'attitude
+title: "Drones — Notes d'étude : contrôleur de vol et estimation d'attitude"
 date: 2026-10-18 09:00:00 +0800
 permalink: /fr/posts/drone-notes/
 categories: [Blog, Notes]

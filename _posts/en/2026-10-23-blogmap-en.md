@@ -1,5 +1,5 @@
 ---
-title: Start Here · Blog Index
+title: "Start Here · Blog Index"
 description: Site-wide navigation — column matrix, content formats, Quick Start and the documentation hub. The whole blog is organized like a project README.
 date: 2026-10-23 12:00:00 +0800
 permalink: /en/
