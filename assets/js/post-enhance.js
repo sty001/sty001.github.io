@@ -168,11 +168,14 @@
     });
   }
 
-  /* ===== 6. 主页右上角点歌台（模板静态注入 _includes/music-entry.html，这里只做交互绑定） ===== */
-  /* MUSIC_LIST_ID 在 include 模板的 iframe data-src 中配置（网易云歌单 ID） */
+  /* ===== 6. 主页右上角点歌台（模板无条件渲染、默认 hidden；JS 按路径仅主页显示） ===== */
   var musicBtn = document.getElementById("music-entry");
   var musicPanel = document.getElementById("music-panel");
-  if (musicBtn && musicPanel && !musicBtn.dataset.bound) {
+  var onHome = location.pathname === "/" || location.pathname === "/index.html";
+  if (musicBtn && musicPanel && onHome) {
+    musicBtn.hidden = false; /* 主页：显示点歌台图标 */
+  }
+  if (musicBtn && musicPanel && onHome && !musicBtn.dataset.bound) {
     musicBtn.dataset.bound = "1";
     var musicOnKey = null;
 

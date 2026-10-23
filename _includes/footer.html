@@ -50,8 +50,6 @@
   </p>
 </footer>
 
-<!-- 仅主页渲染：右上角点歌台（模板层静态注入，确保 HTML 必然输出） -->
-<!-- music-debug: layout=[{{ page.layout }}] url=[{{ page.url }}] -->
-{% if page.layout == 'home' or page.url == '/' %}
-  {% include music-entry.html %}
-{% endif %}
+<!-- 点歌台：无条件渲染（默认 hidden），由 JS 按路径判断仅在主页显示 -->
+<span hidden data-music-debug="layout=[{{ page.layout }}] url=[{{ page.url }}]"></span>
+{% include music-entry.html %}
