@@ -51,6 +51,7 @@
 </footer>
 
 <!-- 仅主页渲染：右上角点歌台（模板层静态注入，确保 HTML 必然输出） -->
+<!-- music-debug: layout=[{{ page.layout }}] url=[{{ page.url }}] -->
 {% if page.layout == 'home' or page.url == '/' %}
   {% include music-entry.html %}
 {% endif %}
