@@ -1,5 +1,5 @@
-<!-- 音乐点歌台：全站悬浮球 + 展开面板（默认 hidden，由 JS 控制） -->
-<button id="music-entry" type="button" title="音乐台 · 网易云音乐" aria-label="音乐台" hidden>
+<!-- 音乐点歌台：全站悬浮球 + 展开面板（模板层直接显示，不依赖 JS） -->
+<button id="music-entry" type="button" title="音乐台 · 网易云音乐" aria-label="音乐台">
   <i class="fas fa-music"></i>
 </button>
 
@@ -8,7 +8,7 @@
     <span><i class="fas fa-music"></i>音乐台 · 网易云</span>
     <span class="music-head-btns">
       <button class="music-ico-btn" type="button" id="music-search" title="去网易云搜歌"><i class="fas fa-magnifying-glass"></i></button>
-      <button class="music-ico-btn" type="button" id="music-standalone" title="独立播放页（浏览博客不打断）"><i class="fas fa-up-right-from-square"></i></button>
+      <button class="music-ico-btn" type="button" id="music-standalone" title="独立播放页（刷新/切页都不中断）"><i class="fas fa-up-right-from-square"></i></button>
       <button class="music-ico-btn" type="button" id="music-min" title="最小化到悬浮球，后台继续播放"><i class="fas fa-minus"></i></button>
       <button class="music-ico-btn music-close" type="button" id="music-stop" title="关闭并停止播放">&times;</button>
     </span>
@@ -21,7 +21,12 @@
     <button class="music-tab" type="button" role="tab" data-list="2884035">原创榜</button>
   </div>
 
-  <!-- 懒加载：JS 按所选歌单赋 src；最小化不断播，关闭才停止 -->
+  <!-- 播放确认条：仅选中榜单，不中断当前播放；点▶才真正切换 -->
+  <div class="music-play-bar" id="music-play-bar" hidden>
+    <button id="music-play-btn" type="button"><i class="fas fa-play"></i><span id="music-play-label">播放</span></button>
+  </div>
+
+  <!-- 播放器：懒加载；最小化不断播，关闭才停止 -->
   <iframe
     id="music-frame"
     frameborder="no"
@@ -36,5 +41,5 @@
     data-src-suffix="&auto=0&height=430&size=small"
   ></iframe>
 
-  <div class="music-tip">♪ 正在播放的歌曲在列表中高亮；播放完自动连播下一首；最小化后后台播放不打扰阅读</div>
+  <div class="music-tip">♪ 榜单可先试听选择，点歌曲才切换；正在播放的歌曲在列表中高亮，播完自动连播；最小化后后台播放不打扰阅读；站内切换页面音乐不断（浏览器刷新除外，可用独立播放页）</div>
 </div>
