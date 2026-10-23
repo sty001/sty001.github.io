@@ -34,6 +34,16 @@
     return Math.max(1, mins);
   }
 
+  /* 全局轻提示（分享 / 微信入口共用） */
+  function toast(msg) {
+    var t = document.createElement("div");
+    t.className = "share-toast";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add("show"); });
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+
   var mins = calcMinutes();
   var readtime = document.querySelector(".post-meta .readtime");
   if (readtime && mins) {
@@ -83,15 +93,6 @@
       }
     }
 
-    function toast(msg) {
-      var t = document.createElement("div");
-      t.className = "share-toast";
-      t.textContent = msg;
-      document.body.appendChild(t);
-      requestAnimationFrame(function () { t.classList.add("show"); });
-      setTimeout(function () { t.remove(); }, 2600);
-    }
-
     shareBar.querySelector(".share-copy").addEventListener("click", function () {
       var btn = this;
       copyLink(function () { flash(btn, '<i class="fas fa-check"></i>已复制'); });
@@ -103,6 +104,15 @@
         flash(btn, '<i class="fab fa-weixin"></i>已复制');
         toast("链接已复制，去微信粘贴给好友或发朋友圈吧");
       });
+    });
+  }
+
+  /* ===== 4. 侧栏微信公众号入口（无外链，点击弹提示） ===== */
+  var wxEntry = document.querySelector('#sidebar a[aria-label="wechat"]');
+  if (wxEntry) {
+    wxEntry.addEventListener("click", function (e) {
+      e.preventDefault();
+      toast("📱 微信公众号：陆沉盲瞽 · 微信搜索关注");
     });
   }
 })();

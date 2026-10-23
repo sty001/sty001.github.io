@@ -35,10 +35,10 @@
   icon: "fab fa-weibo"
   url: "https://weibo.com/u/6378807392" # 微博
 
-- type: xiaohongshu
-  icon: "fas fa-heart"
-  url: "https://www.xiaohongshu.com/" # 小红书 · TODO 待提供主页
-# 微信公众号无个人主页链接，在「关于」页以文字/二维码形式展示
+- type: wechat
+  icon: "fab fa-weixin"
+  url: "javascript:void(0)" # 微信公众号：无个人主页，点击弹出提示（post-enhance.js）
+  noblank: true
 
 # Uncomment and complete the url below to enable more contact options
 #
