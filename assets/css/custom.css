@@ -33,13 +33,13 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(8, 11, 18, 0.72);
+  background: rgba(8, 11, 18, 0.42);
 }
 
 /* ---------- 侧边栏：半透明深色玻璃 ---------- */
 #sidebar,
 .sidebar {
-  background: rgba(10, 14, 21, 0.78) !important;
+  background: rgba(10, 14, 21, 0.60) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-right: 1px solid rgba(240, 246, 252, 0.08);
@@ -48,7 +48,7 @@ body::before {
 /* ---------- 顶部栏 ---------- */
 #topbar-wrapper { background: transparent !important; }
 #topbar {
-  background: rgba(10, 14, 21, 0.82) !important;
+  background: rgba(10, 14, 21, 0.72) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(240, 246, 252, 0.08);
@@ -57,7 +57,7 @@ body::before {
 
 /* ---------- 主内容面板：深色半透明，高对比正文 ---------- */
 #main-wrapper main {
-  background: rgba(13, 17, 23, 0.82);
+  background: rgba(13, 17, 23, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(240, 246, 252, 0.08);
@@ -128,7 +128,7 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 .highlight { border-radius: 10px; }
 
 /* ---------- 亮色模式兜底（用户手动切到浅色时依然可读） ---------- */
-:root[data-bs-theme='light'] body::before { background: rgba(247, 248, 252, 0.6); }
+:root[data-bs-theme='light'] body::before { background: rgba(247, 248, 252, 0.5); }
 :root[data-bs-theme='light'] #sidebar,
 :root[data-bs-theme='light'] .sidebar {
   background: rgba(252, 253, 255, 0.88) !important;
@@ -156,7 +156,7 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 :root[data-bs-theme='light'] .post-content a:hover { color: #175bc7; }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-bs-theme]) body::before { background: rgba(247, 248, 252, 0.6); }
+  :root:not([data-bs-theme]) body::before { background: rgba(247, 248, 252, 0.5); }
   :root:not([data-bs-theme]) #sidebar,
   :root:not([data-bs-theme]) .sidebar {
     background: rgba(252, 253, 255, 0.88) !important;
@@ -198,5 +198,5 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
     -webkit-backdrop-filter: none;
   }
   #main-wrapper main { background: rgba(13, 17, 23, 0.94); }
-  body::before { background: rgba(8, 11, 18, 0.82); }
+  body::before { background: rgba(8, 11, 18, 0.50); }
 }
