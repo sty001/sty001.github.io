@@ -286,3 +286,56 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   letter-spacing: 0.06em;
   font-size: 0.92rem;
 }
+
+/* 微信公众号二维码弹窗 */
+.qr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.qr-modal.show { opacity: 1; }
+.qr-modal-box {
+  position: relative;
+  background: #161b22;
+  border: 1px solid rgba(108, 182, 255, 0.35);
+  border-radius: 16px;
+  padding: 1.5rem 1.5rem 1.2rem;
+  text-align: center;
+  max-width: 320px;
+  transform: scale(0.92);
+  transition: transform 0.2s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.qr-modal.show .qr-modal-box { transform: scale(1); }
+.qr-modal-box img {
+  width: 240px;
+  height: 240px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px;
+  display: block;
+  margin: 0 auto;
+}
+.qr-modal-box p { margin: 0.9rem 0 0; color: #c9d5e1; font-size: 0.95rem; line-height: 1.6; }
+.qr-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  color: #9aa7b6;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.qr-close:hover { color: #fff; }
+:root[data-bs-theme='light'] .qr-modal-box { background: #ffffff; }
+:root[data-bs-theme='light'] .qr-modal-box p { color: #3a4350; }

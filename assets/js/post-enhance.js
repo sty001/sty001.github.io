@@ -107,12 +107,33 @@
     });
   }
 
-  /* ===== 4. 侧栏微信公众号入口（无外链，点击弹提示） ===== */
+  /* ===== 4. 侧栏微信公众号入口（点击弹二维码） ===== */
   var wxEntry = document.querySelector('#sidebar a[aria-label="wechat"]');
   if (wxEntry) {
     wxEntry.addEventListener("click", function (e) {
       e.preventDefault();
-      toast("📱 微信公众号：陆沉盲瞽 · 微信搜索关注");
+      var modal = document.createElement("div");
+      modal.className = "qr-modal";
+      modal.setAttribute("role", "dialog");
+      modal.innerHTML =
+        '<div class="qr-modal-box">' +
+        '<button class="qr-close" type="button" aria-label="关闭">&times;</button>' +
+        '<img src="/assets/img/wechat-qr.png" alt="微信公众号二维码">' +
+        '<p>微信扫一扫，关注公众号<br><strong>陆沉盲瞽</strong></p>' +
+        '</div>';
+      document.body.appendChild(modal);
+      requestAnimationFrame(function () { modal.classList.add("show"); });
+
+      function close() {
+        modal.classList.remove("show");
+        setTimeout(function () { modal.remove(); }, 220);
+        document.removeEventListener("keydown", onKey);
+      }
+      function onKey(ev) { if (ev.key === "Escape") close(); }
+
+      modal.querySelector(".qr-close").addEventListener("click", close);
+      modal.addEventListener("click", function (ev) { if (ev.target === modal) close(); });
+      document.addEventListener("keydown", onKey);
     });
   }
 })();
