@@ -1,9 +1,10 @@
 /* ==========================================================================
-   文章阅读增强 v2
+   文章阅读增强 v3
    1) 阅读进度条（文章位置追踪）
    2) 中文阅读时长估算（覆盖 Chirpy 默认的英文词数估算）
    3) 分享栏：微博 / QQ空间 / 微信朋友圈(二维码) / 企业微信 / 飞书 / X / 复制链接
    4) 侧栏微信公众号入口（点击弹二维码）
+   5) 主页右上角点歌台（网易云音乐外链播放器）
    ========================================================================== */
 (function () {
   "use strict";
@@ -165,5 +166,54 @@
       openQrModal("/assets/img/wechat-qr.png",
         '<p>微信扫一扫，关注公众号<br><strong>陆沉盲瞽</strong></p>');
     });
+  }
+
+  /* ===== 6. 主页右上角点歌台（网易云音乐官方外链播放器） ===== */
+  /* MUSIC_LIST_ID：网易云音乐歌单 ID，当前为官方「云音乐热歌榜」。
+     想换成自己的歌单：网易云网页版打开你的歌单，URL 中 /playlist?id=XXXXX 的数字即 ID */
+  var MUSIC_LIST_ID = "3778678";
+  var onHome = location.pathname.replace(/\/+$/, "") === "" || location.pathname === "/index.html";
+  if (onHome && !document.getElementById("music-entry")) {
+    var musicBtn = document.createElement("button");
+    musicBtn.id = "music-entry";
+    musicBtn.type = "button";
+    musicBtn.title = "点歌台 · 网易云音乐";
+    musicBtn.setAttribute("aria-label", "点歌台");
+    musicBtn.innerHTML = '<i class="fas fa-music"></i>';
+    document.body.appendChild(musicBtn);
+
+    var musicPanel = null;
+    var musicOnKey = null;
+
+    musicBtn.addEventListener("click", function () {
+      if (musicPanel) { closeMusic(); return; }
+      musicPanel = document.createElement("div");
+      musicPanel.id = "music-panel";
+      musicPanel.innerHTML =
+        '<div class="music-head">' +
+        '<span><i class="fas fa-music"></i>点歌台 · 网易云音乐</span>' +
+        '<button class="music-close" type="button" aria-label="关闭">&times;</button>' +
+        '</div>' +
+        '<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" ' +
+        'width="100%" height="430" loading="lazy" title="网易云音乐播放器" ' +
+        'src="https://music.163.com/outchain/player?type=0&id=' + MUSIC_LIST_ID + '&auto=0&height=430&size=small"></iframe>';
+      document.body.appendChild(musicPanel);
+      requestAnimationFrame(function () { musicPanel.classList.add("show"); });
+      musicBtn.classList.add("active");
+
+      musicOnKey = function (ev) { if (ev.key === "Escape") closeMusic(); };
+      document.addEventListener("keydown", musicOnKey);
+      musicPanel.querySelector(".music-close").addEventListener("click", closeMusic);
+    });
+
+    function closeMusic() {
+      if (!musicPanel) return;
+      musicPanel.classList.remove("show");
+      musicBtn.classList.remove("active");
+      var el = musicPanel;
+      setTimeout(function () { el.remove(); }, 220);
+      musicPanel = null;
+      if (musicOnKey) { document.removeEventListener("keydown", musicOnKey); musicOnKey = null; }
+    }
   }
 })();
