@@ -49,9 +49,3 @@
     {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
   </p>
 </footer>
-
-<!-- 点歌台：无条件渲染（默认 hidden），由 JS 按路径判断仅在主页显示 -->
-{% include music-entry.html %}
-
-<!-- 右上角语言切换器（全站） -->
-{% include lang-switcher.html %}
