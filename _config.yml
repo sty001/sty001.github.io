@@ -106,9 +106,9 @@ comments:
   # Giscus options › https://giscus.app
   giscus:
     repo: sty001/sty001.github.io   # 已设为公开仓库，可承载评论
-    repo_id: # TODO: 安装 Giscus GitHub App 后填写（见下方说明）
+    repo_id: R_kgDOVUTbZg           # 已通过 API 获取并填入
     category: Announcements
-    category_id: # TODO: 安装 Giscus GitHub App 后填写
+    category_id: # TODO: 需先在仓库设置中启用 Discussions，再填入 Announcements 分类的 ID（启用后告诉我，我自动获取）
     mapping: pathname
     strict: "0"
     input_position: bottom

@@ -11,6 +11,9 @@ title: 友链
 - [Chirpy 主题](https://github.com/cotes2020/jekyll-theme-chirpy) — 本博客使用的 Jekyll 主题
 - [阮一峰的网络日志](https://www.ruanyifeng.com/blog/) — 中文互联网经典的开发者博客
 - [廖雪峰的官方网站](https://www.liaoxuefeng.com/) — Python / Git / JavaScript 教程
+- [吴川斌的博客](https://www.mr-wu.cn/) — 嵌入式 / 硬件开发干货，讲解细致
+- [书籍栈](https://www.bookstack.cn/) — 优秀的在线文档/电子书阅读平台
+- [TruthHun](https://github.com/truthhun) — 书籍栈（BookStack）作者，开源达人
 
 ## 开源项目
 
