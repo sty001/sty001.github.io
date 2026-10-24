@@ -2,11 +2,12 @@
 title: "day41-LNMP环境搭建作业实操"
 date: 2026-10-24 09:16:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-42"
 ---
 
 {% raw %}
+
 先把课程第 41 天的两道作业摆出来：①利用命令取出状态页面信息中的数值（curl）；②搭建 LNMP 环境（Linux + Nginx + MySQL/MariaDB + PHP）。第一题在本地模拟一份与 nginx 真实输出逐行一致的 `stub_status` 状态页，curl 抓取后分别用 awk 与 grep/awk 提取活跃连接数、总请求数等数值，并给出一次性解析所有字段的 awk 写法；第二题给出 CentOS 7 上 yum 全家桶式部署 LNMP 的完整标准流程，涵盖 nginx 的 PHP 转发配置、php-fpm 用户修正、MariaDB 初始化与 phpinfo 验证页。
 
 ## 实操环境说明
@@ -356,7 +357,7 @@ DB Connect OK, server version: 5.5.68-MariaDB
 | MariaDB | 3306/tcp | /etc/my.cnf | 起不来先看 /var/log/mariadb/mariadb.log；密码找回用 mysqld_safe 跳过授权表 |
 | PHP | 随 php-fpm | /etc/php.ini | `php -v` 看版本；缺扩展查 `php -m` 已加载模块列表 |
 
-### 辨析：502 与 504
+### 辨析：502 与 504 {: .sec-bianxi}
 
 两个都是「nginx 与后端之间出了问题」，但病根不同，分诊方向也不同：
 

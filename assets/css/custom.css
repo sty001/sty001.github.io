@@ -398,3 +398,146 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   .click-ripple, .click-snow { display: none; }
 }
 
+/* ==========================================================================
+   阅读增强 v2：标题层级配色 + 内容区块（辨析/知识卡片/变式追问/原理/坑位/注意）区分
+   目的：一眼看出"这是哪一级标题、这一段属于什么类型的内容"
+   ========================================================================== */
+
+:root {
+  /* 各级标题配色（深色底高对比） */
+  --h2-color: #6cb6ff;
+  --h3-color: #7ee787;
+  --h4-color: #d2a8ff;
+  --h5-color: #e3b341;
+  --h6-color: #9aa7b6;
+
+  /* 内容区块（callout）主题色 */
+  --sec-bianxi-c: #58a6ff;   /* 辨析：蓝 */
+  --sec-card-c:   #3fb950;   /* 知识卡片：绿 */
+  --sec-variant-c:#bc8cff;   /* 变式追问：紫 */
+  --sec-why-c:    #e3a857;   /* 原理/为什么：橙 */
+  --sec-pit-c:    #f85149;   /* 坑位：红 */
+  --sec-note-c:   #d29922;   /* 注意/提示：琥珀 */
+}
+
+/* ---------- 1) 标题层级：颜色 + 左侧色条 + 字重，形成清晰层级 ---------- */
+.post-content h2,
+.content h2 {
+  color: var(--h2-color);
+  font-weight: 700;
+  border-left: 4px solid var(--h2-color);
+  padding-left: 0.7rem;
+  margin-top: 2.2rem;
+  letter-spacing: 0.01em;
+}
+.post-content h3,
+.content h3 {
+  color: var(--h3-color);
+  font-weight: 650;
+  border-left: 3px solid var(--h3-color);
+  padding-left: 0.6rem;
+  margin-top: 1.7rem;
+}
+.post-content h4,
+.content h4 {
+  color: var(--h4-color);
+  font-weight: 650;
+  padding-left: 0.4rem;
+  border-left: 2px solid var(--h4-color);
+  margin-top: 1.4rem;
+}
+.post-content h5,
+.content h5 {
+  color: var(--h5-color);
+  font-weight: 600;
+  margin-top: 1.2rem;
+}
+.post-content h6,
+.content h6 {
+  color: var(--h6-color);
+  font-weight: 600;
+  text-transform: none;
+  margin-top: 1rem;
+}
+
+/* ---------- 2) 内容区块 callout：特殊标题染成"标签条"，明显区别于普通标题 ---------- */
+.post-content .sec-bianxi,
+.post-content .sec-card,
+.post-content .sec-variant,
+.post-content .sec-why,
+.post-content .sec-pit,
+.post-content .sec-note {
+  display: inline-block;
+  padding: 0.18rem 0.7rem;
+  border-radius: 8px;
+  border-left: none !important;       /* 覆盖上面的通用左侧色条 */
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 1.6rem 0 0.9rem;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+}
+/* 给区块标题前加一个符号，强化"这是什么类型"的识别 */
+.post-content .sec-bianxi::before  { content: "🔍 "; }
+.post-content .sec-card::before    { content: "📌 "; }
+.post-content .sec-variant::before { content: "❓ "; }
+.post-content .sec-why::before     { content: "💡 "; }
+.post-content .sec-pit::before     { content: "⚠️ "; }
+.post-content .sec-note::before    { content: "✏️ "; }
+
+.post-content .sec-bianxi  { color: #cfe8ff; background: rgba(88,166,255,0.16);  border:1px solid rgba(88,166,255,0.45); }
+.post-content .sec-card    { color: #c9f2d4; background: rgba(63,185,80,0.16);   border:1px solid rgba(63,185,80,0.45); }
+.post-content .sec-variant { color: #e6d6ff; background: rgba(188,140,255,0.16); border:1px solid rgba(188,140,255,0.45); }
+.post-content .sec-why     { color: #ffe9c7; background: rgba(227,168,87,0.16);  border:1px solid rgba(227,168,87,0.45); }
+.post-content .sec-pit     { color: #ffd7d4; background: rgba(248,81,73,0.16);   border:1px solid rgba(248,81,73,0.5); }
+.post-content .sec-note    { color: #ffeec2; background: rgba(210,153,34,0.16);  border:1px solid rgba(210,153,34,0.45); }
+
+/* ---------- 3) 让代码块 / 表格 / 引用在长文中更"成块"，降低阅读疲劳 ---------- */
+.post-content pre,
+.post-content .highlight {
+  border: 1px solid rgba(240,246,252,0.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.post-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(240,246,252,0.14);
+  border-radius: 10px;
+}
+.post-content table th { color: #e6edf3; font-weight: 700; }
+.post-content blockquote {
+  border-left-width: 4px !important;
+  font-style: normal;
+}
+
+/* ---------- 4) 浅色模式：同步调整配色，保证同样清晰 ---------- */
+:root[data-bs-theme='light'] {
+  --h2-color: #0969da;
+  --h3-color: #1a7f37;
+  --h4-color: #8250df;
+  --h5-color: #9a6700;
+  --sec-bianxi-c:#0969da; --sec-card-c:#1a7f37; --sec-variant-c:#8250df;
+  --sec-why-c:#bc4c00; --sec-pit-c:#cf222e; --sec-note-c:#9a6700;
+}
+:root[data-bs-theme='light'] .post-content .sec-bianxi  { color:#05306b; background:rgba(9,105,218,0.10); }
+:root[data-bs-theme='light'] .post-content .sec-card    { color:#0c3d1e; background:rgba(26,127,55,0.10); }
+:root[data-bs-theme='light'] .post-content .sec-variant { color:#3d1f6b; background:rgba(130,80,223,0.10); }
+:root[data-bs-theme='light'] .post-content .sec-why     { color:#5c2a00; background:rgba(188,76,0,0.10); }
+:root[data-bs-theme='light'] .post-content .sec-pit     { color:#7a0d12; background:rgba(207,34,46,0.10); }
+:root[data-bs-theme='light'] .post-content .sec-note    { color:#5c3d00; background:rgba(154,103,0,0.10); }
+:root[data-bs-theme='light'] .post-content h2 { color: var(--h2-color); }
+:root[data-bs-theme='light'] .post-content h3 { color: var(--h3-color); }
+:root[data-bs-theme='light'] .post-content h4 { color: var(--h4-color); }
+:root[data-bs-theme='light'] .post-content h5 { color: var(--h5-color); }
+
+/* 让总览页(page 布局，容器为 .page-content)也套用一致的标题层级配色 */
+.page-content h2, .page-content h3, .page-content h4, .page-content h5 {
+  border-left: 4px solid currentColor;
+  padding-left: 0.6rem;
+}
+.page-content h2 { color: var(--h2-color); font-weight: 700; }
+.page-content h3 { color: var(--h3-color); font-weight: 650; }
+.page-content h4 { color: var(--h4-color); font-weight: 650; }
+.page-content h5 { color: var(--h5-color); font-weight: 600; }
+
+

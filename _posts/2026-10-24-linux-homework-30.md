@@ -2,11 +2,12 @@
 title: "day30-NFS存储服务作业实操"
 date: 2026-10-24 09:28:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-30"
 ---
 
 {% raw %}
+
 课程第 30 天（NFS 存储服务）的作业三道题：①实现 fstab 文件自动挂载的特殊服务是什么？②研究 user 参数作用；③NFS 服务部署过程。第①题给出答案（CentOS 7 的 `remote-fs.target` / CentOS 6 的 `netfs`）并真跑 fstab 条目校验；第②题把 fstab 第 4 列的 `user` 参数研究透，给出与默认行为的对照；第③题完整复盘 NFS 服务端部署六步与客户端挂载流程，其中输出解析部分真跑、系统服务部分给标准命令与预期输出。
 
 ## 实操环境说明
@@ -365,7 +366,7 @@ squash 系列行为速查：
 > - exports 里 `客户端(参数)` 的括号前后**不能有空格**，写成 `/data 172.16.1.0/24 (rw,sync)` 会被解析成两个客户端条目；
 > - 服务端重启后客户端报 Stale file handle：`umount -lf` 强制卸载后重新挂载即可。
 
-### 辨析：sync 与 async
+### 辨析：sync 与 async {: .sec-bianxi}
 
 exports 里的 `(rw,sync)` 之 `sync` 管的是**服务端什么时候落盘**，与客户端 mount 参数里的同名选项（管客户端缓存行为）不是一回事，别弄混：
 

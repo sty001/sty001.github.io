@@ -2,11 +2,12 @@
 title: "01-用户管理"
 date: 2026-10-24 10:24:00 +0800
 categories: [软件, Linux, 05-用户与权限管理]
-tags: [Linux, 05-用户与权限管理]
+tags: [Linux, 05-用户与权限管理, Linux基础]
 slug: "linux-userperm-01"
 ---
 
 {% raw %}
+
 先补一道高频面试题（CentOS 6 / CentOS 7 系统启动流程），然后按顺序过：用户的分类、rwx 权限在文件与目录上的真实含义、读写数据的 inode / block 原理、权限修改方法（chmod）、默认权限与 umask、用户家目录的"样板房" `/etc/skel`、用户相关文件、`/etc/passwd` 七字段、用户管理命令（useradd / usermod / userdel / passwd / chage）、批量创建用户脚本、登录日志查看与 sudo 授权配置。读完应该能自己建账号、给同事配权限。
 
 ## 一、上节回顾：awk 的统计分析
@@ -683,7 +684,7 @@ for user in $(cat users.txt); do id "$user"; done
 
 账号量更大时（一次几十上百个），可以把 `用户:密码` 清单直接灌给 `newusers`，它按 `/etc/passwd` 格式逐行建号，比循环调用 useradd 快；缺点是密码字段明文过一遍文件，用完即删。再往上一档就是 Ansible 的 `user` 模块：声明式、幂等、可版本化，账号管理常态化的团队值得直接上。
 
-### 辨析：useradd 与 adduser
+### 辨析：useradd 与 adduser {: .sec-bianxi}
 
 两个命令在 RHEL 系上是同一个程序的别名（`adduser` 是指向 `useradd` 的软链接，参数完全一致），但在 Debian / Ubuntu 上是**两个不同的程序**：
 
@@ -748,7 +749,7 @@ OPSGRP      ALL=(ALL) SOFTADM
 | 新用户无法登录 | shell 是 `/sbin/nologin`，或 shadow 密码字段为 `!` | `grep 用户 /etc/passwd`；`grep 用户 /etc/shadow` | `usermod -s /bin/bash 用户`；`passwd 用户` 设密 |
 | 普通用户执行 sudo 提示不在 sudoers | 未授权或授权语法错误 | `visudo -c` 检查语法；确认用户名拼写 | 在 sudoers 中添加规则后用 `sudo -l` 验证 |
 
-## 知识卡片
+## 知识卡片 {: .sec-card}
 
 **用户分类卡**
 

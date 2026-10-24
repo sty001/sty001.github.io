@@ -2,11 +2,12 @@
 title: "day32-secure日志安全分析进阶作业实操"
 date: 2026-10-24 09:25:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-33"
 ---
 
 {% raw %}
+
 整套课程最经典的一道综合实战题就是它：课程第 32 天的作业给了一份约 51MB、近 50 万行的 SSH 认证日志 `secure-20161219`，要求用 grep、awk、sort、uniq 三剑客组合找出 SSH 爆破的来源 IP、被爆破的用户名，核对成功登录的 IP 是否藏在爆破名单里，最后给出防护建议。正则、三剑客、排序统计、日志分析全串在一条「安全分析流水线」上，面试和工作中出场率都极高。
 
 ## 实操环境说明
@@ -330,7 +331,7 @@ awk '/Failed password/ {for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}' /tmp/hw
 
 样本前 10 与全量前 10 主体重合（前几名一致、后几名因截断略有出入），证明命令正确，再换回 `$LOG` 跑全量得出最终结论。注意：**采样只能用来调试命令，最终数字必须以全量统计为准**。
 
-### 辨析：/var/log/secure 与 /var/log/auth.log
+### 辨析：/var/log/secure 与 /var/log/auth.log {: .sec-bianxi}
 
 SSH 认证日志的存放路径按发行版分家：CentOS/RHEL 系是 `/var/log/secure`，Ubuntu/Debian 系是 `/var/log/auth.log`。fail2ban 的 `logpath`、监控脚本的 grep 目标都要跟着发行版走，拿 CentOS 的教程直接套 Ubuntu 会一无所获。拿不准就 `ls /var/log/` 看一眼，有哪个是哪个。
 

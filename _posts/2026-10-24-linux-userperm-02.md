@@ -2,11 +2,12 @@
 title: "02-用户权限与提权"
 date: 2026-10-24 10:23:00 +0800
 categories: [软件, Linux, 05-用户与权限管理]
-tags: [Linux, 05-用户与权限管理]
+tags: [Linux, 05-用户与权限管理, Linux基础]
 slug: "linux-userperm-02"
 ---
 
 {% raw %}
+
 用户相关的四个配置文件（重点是 `/etc/passwd` 七列含义）、用户的增删改查命令（`useradd` / `usermod` / `userdel` / `passwd`）、用户组命令、属主属组修改（`chown`）、用户信息查看（`id` / `w`），以及普通用户获得 root 能力的三种方式。在此基础上深入权限模型的工作原理、特殊权限位（SUID / SGID / Sticky）、umask 细节、`/etc/sudoers` 完整语法、`su` 与 `sudo -i` 的差异、最小权限原则与常见提权风险点。目标：建账号、改属主、给同事配 sudo 权限时，知道每一步的安全边界在哪。
 
 ## 一、上节回顾
@@ -816,7 +817,7 @@ sudo 常用子命令与参数：
 | 文件改不动但权限是 777 | `chattr +i` 加锁或只读挂载 | `lsattr 文件`；`mount | grep ro` | `chattr -i` 解锁；重新挂载为 rw |
 | su 切换后找不到命令 | `su` 未完整切换 PATH | `echo $PATH` | 用 `su -` 完整加载环境变量 |
 
-## 知识卡片
+## 知识卡片 {: .sec-card}
 
 **特殊权限位卡**
 

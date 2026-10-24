@@ -2,11 +2,12 @@
 title: "02-基础知识回顾-下"
 date: 2026-10-24 10:32:00 +0800
 categories: [软件, Linux, 03-文件属性与正则表达式]
-tags: [Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式, Linux基础]
 slug: "linux-fileattr-02"
 ---
 
 {% raw %}
+
 这一篇继续查漏补缺：CentOS 7 网卡命名的修改方式、Vim 编辑原理与非正常退出的排错、查看文件属性与内容的各种命令（`ls` / `cat` / `less` / `more` / `head` / `tail`）、不打开编辑器直接写入文件的两种方法（`echo`、`cat` 配合 here document），以及 grep / sed / awk 三剑客入门和 `sed`、`tr` 的内容替换。重点补齐文件查找体系：`locate` / `whereis` / `which` / `type` 四种快速定位手段的对比，`find` 的参数大全与排错经验，`find` 与 `xargs` 的配合。文件操作这一块，看完这篇就齐了。
 
 ## 文件定位命令对比：locate / whereis / which / type
@@ -71,7 +72,7 @@ find /etc -type f -name "if*h0"
 find /test -type f -iname "文件名*"
 ```
 
-### 辨析：-name 与 -iname
+### 辨析：-name 与 -iname {: .sec-bianxi}
 
 `-name` 区分大小写，`-iname` 不区分。Linux 习惯小写命名，日常用 `-name` 就够了，但两类场景必须想到 `-iname`：一是处理 Windows 来源的文件（大小写混杂），二是排查时不确定对方怎么命名的，比如 `find / -iname "readme*"` 能同时命中 README、readme、ReadMe。容易忽略的一点：`-name` 匹配的只是文件名本身，不含路径，按路径过滤得换 `-path`。
 
@@ -249,7 +250,7 @@ find /test -name "*.txt" | xargs -t rm -f                      # 先打印将执
 
 `-I{}` 用起来方便，但这里有个坑：指定 `-I` 后 xargs 隐含每次只处理一行输入（等价于 `-L 1`），批量效率下降；参数需要插在命令中间时，`sh -c` 的写法有时更灵活。
 
-### 原理解析：find 与 xargs 的数据流
+### 原理解析：find 与 xargs 的数据流 {: .sec-why}
 
 1. `find` 实时遍历目录树，把符合条件的结果逐行写入标准输出；
 2. 管道把 find 的输出接到 `xargs` 的标准输入；

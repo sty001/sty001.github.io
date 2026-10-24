@@ -2,11 +2,12 @@
 title: "day35-Ansible扩展与roles作业实操"
 date: 2026-10-24 09:22:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-36"
 ---
 
 {% raw %}
+
 本篇对应课程第 35 天的课后作业，共三题：① 对 ansible 剧本扩展功能进行总结；②（选做）总结 ansible 剧本 roles；③ 预习 Web 服务——HTTP 协议原理与 Nginx 的安装、配置。作业原文偏「总结 + 预习」，本篇把扩展功能（loop / when / tags / register / ignore_errors / block）写成一个可校验的综合示例剧本并真跑语法校验；roles 在沙箱里实际建出标准目录骨架并逐个填充角色文件；HTTP 部分用 `curl -v` 真跑一次完整请求，对照报文结构逐段讲解。环境里没有 ansible，扩展示例与角色文件用 Python 的 pyyaml 做语法真跑校验（A 级），`ansible-playbook` 执行与 Nginx 安装给出标准命令与预期输出（B 级）。
 
 ## 实操环境说明

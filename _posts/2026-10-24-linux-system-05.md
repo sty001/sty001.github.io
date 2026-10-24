@@ -2,11 +2,12 @@
 title: "05-软件安装与硬件信息查看"
 date: 2026-10-24 10:37:00 +0800
 categories: [软件, Linux, 02-系统操作]
-tags: [Linux, 02-系统操作]
+tags: [Linux, 02-系统操作, Linux基础]
 slug: "linux-system-05"
 ---
 
 {% raw %}
+
 系统基础的收尾篇：别名永久生效、内置命令与外置命令的区别、登录前后提示文件、`/usr/local` 目录与 yum / rpm / 编译三种安装方式、yum 排错、系统日志，最后是 CPU、内存、磁盘、负载的查看方法。学完这篇，一台新服务器的基础配置就能独立拿下了。
 
 ## 别名如何永久设置
@@ -169,7 +170,7 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 | 02 | 买半成品（速冻饺子，加工一下） | **rpm 安装软件** | 需要有软件安装包 |
 | 03 | 自己做饭（买食材，自己做） | **编译安装软件** | 可以灵活调整编译参数 |
 
-## 原理解析：rpm 与 yum 的关系
+## 原理解析：rpm 与 yum 的关系 {: .sec-why}
 
 - **rpm（RedHat Package Manager）**：直接操作 `.rpm` 包的工具。它只关心**单个包**——包里有什么文件、依赖谁，它自己不知道，也不负责帮你找。所以 `rpm -ivh` 装一个复杂软件时，经常因为缺依赖连环报错；
 - **yum（Yellowdog Updater Modified）**：rpm 之上的**仓库管理层**。它从 yum 源（仓库）里读取所有软件包的元数据（含依赖关系表），你装 A 它自动算出还要装 B 和 C，一并下载安装，并校验 GPG 签名；
@@ -233,7 +234,7 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 
 yum 还带"后悔药"：`yum history` 列出每次安装/升级事务，`yum history undo 编号` 能整体回滚一次操作——升级出问题时的第一救援手段。查"最近装了什么把系统搞坏"用 `rpm -qa --last`，按安装时间倒序一击即中。
 
-### 辨析：yum install 与 yum update
+### 辨析：yum install 与 yum update {: .sec-bianxi}
 
 `yum install 软件名` 只动指定的软件及其依赖；`yum update`（不带包名）会把全系统所有可升级的包一口气升到最新——内核、glibc 全在里面。生产服务器跑 `yum update` 前必须想清楚：升完内核要重启，老依赖可能失效，回滚很麻烦。惯例是平时只 `yum update 指定包`（打安全补丁），系统级升级安排在维护窗口统一做。
 
@@ -540,7 +541,7 @@ Swap:          1.0G        0B(*)       1.0G
 
 内存真耗尽时内核会启动 OOM Killer：按评分挑一个占用最大的进程直接杀掉，`dmesg | grep -i "out of memory"` 能找到"被害人"记录。swap 只能延缓不能避免这一刻——这也是数据库服务器宁可加内存也不依赖 swap 的原因。
 
-### 辨析：Buffers 与 Cached
+### 辨析：Buffers 与 Cached {: .sec-bianxi}
 
 两者都是拿内存当缓存，方向不同：`Buffers` 对应写——块设备的元数据、还没落盘的数据块先放这里攒一批再写，减少碎片化的小写入；`Cached` 对应读——读过的文件内容留在内存，下次命中就不用碰磁盘。`free -h` 把它们合并显示成 `buff/cache`，日常不用分太细，记住"都可在内存紧张时回收"就行。
 

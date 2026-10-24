@@ -2,11 +2,12 @@
 title: "day22-定时任务作业实操"
 date: 2026-10-24 09:36:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-22"
 ---
 
 {% raw %}
+
 本篇对应课程第 22 天（定时任务）的课后作业，共四题：①默写 crontab 五段时间语法规则并给出 8 个经典示例；②写一个每天凌晨 1 点打包备份 `/data/linux` 的定时任务（备份脚本 tar + date 命名真跑，crontab 行给标准写法）；③定时任务排错三板斧（日志排查、环境变量问题、重定向输出）；④说清 `crontab -e/-l/-r` 与 `/etc/crontab`、`/etc/cron.d` 的区别。备份脚本的核心动作（tar 打包、date 命名、解压验证）为 A 级真跑，crond 服务与 crontab 命令为 B 级标准写法 + 预期输出。
 
 ## 实操环境说明

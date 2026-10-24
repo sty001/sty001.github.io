@@ -2,11 +2,12 @@
 title: "day11-网络端口与Vim作业实操"
 date: 2026-10-24 09:47:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-11"
 ---
 
 {% raw %}
+
 课程第 11 天（基础知识回顾）的作业是三道总结题：网络中的服务端口号、vi/vim 使用方法、vi/vim 使用的异常错误。端口部分给速查表，并用系统服务登记文件真跑验证；vi/vim 部分给模式与命令两张速查表；排错部分整理 6 类高频报错的恢复手法。
 
 ## 实操环境说明
@@ -230,7 +231,7 @@ vim -R test.txt                             # 以只读方式打开
 vim + test.txt                              # 打开后跳到文件末尾
 ```
 
-### 辨析：vi 与 vim
+### 辨析：vi 与 vim {: .sec-bianxi}
 
 `vi` 是 1976 年的原版，几乎每台 Unix/Linux 都自带，功能够用但扩展能力有限；`vim`（Vi IMproved）是增强版，加了语法高亮、多级撤销、插件体系、分屏等。CentOS 7 最小化安装可能只有 `vi`，`yum install -y vim-enhanced` 装全 vim。判断当前用的是哪个：`vi --version` 能输出长篇版本信息的一般是 vim 的链接（多数发行版把 vi 做成 vim 的精简链接）。运维层面两者命令九成五通用，本文速查表两边都适用。
 

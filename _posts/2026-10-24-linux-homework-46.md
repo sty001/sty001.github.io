@@ -2,11 +2,12 @@
 title: "day43-nginx-keepalived联动监控作业实操"
 date: 2026-10-24 09:12:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-46"
 ---
 
 {% raw %}
+
 day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「nginx 一停，keepalived 跟着停；nginx 一起，keepalived 跟着恢复」这条联动链路真正写成脚本并跑通。核心有两块——①`check_nginx.sh` 健康检查脚本如何探测 nginx 存活（重点讲清 `kill -0` 与 pid 文件检测原理）；②`monitor_nginx_keepalived.sh` 用 while 循环做实时监控，配合 keepalived 的 `weight` 实现「主挂→VIP 漂移→主恢复→VIP 抢回」的闭环。本篇所有脚本与日志均为真实产物或真实运行结果，标注 `已实操`。
 
 ## 实操环境说明
@@ -246,7 +247,7 @@ bash /tmp/hw/day43/sim_monitor.sh
 > - 仿真版里 `kill -9` 是硬杀，真机里 `systemctl stop nginx` 是优雅停，但监控脚本只关心「进程在不在」，两种停法都能被 `kill -0` 捕获；
 > - 绝不能在监控脚本里对 keepalived 做「无条件每秒 restart」，否则 nginx 真挂时 keepalived 反复重启、VIP 反复抢回释放，造成抖动。
 
-### 辨析：vrrp_script 内置联动与外部监控脚本联动
+### 辨析：vrrp_script 内置联动与外部监控脚本联动 {: .sec-bianxi}
 
 两条路都能做到「nginx 挂、VIP 漂」，机制和适用面不同：
 

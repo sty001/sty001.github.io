@@ -2,11 +2,12 @@
 title: "07-系统优化实践-下"
 date: 2026-10-24 10:35:00 +0800
 categories: [软件, Linux, 02-系统操作]
-tags: [Linux, 02-系统操作]
+tags: [Linux, 02-系统操作, Linux基础]
 slug: "linux-system-07"
 ---
 
 {% raw %}
+
 优化的下半场：用 `rpm` 检查软件安装情况、处理防火墙与 SELinux 两个安全服务、搞定字符集（LANG）、把 SSH 连接速度提上来，最后带一份服务器硬件与 Linux 发展史的回顾。前置的 yum 源优化完成后再来。
 
 ## 课前回顾与 rpm 软件包检查
@@ -212,7 +213,7 @@ LANG="zh_CN.UTF-8"
 > localectl set-locale LANG=zh_CN.GBK
 > ```
 
-### 原理解析：locale 变量体系
+### 原理解析：locale 变量体系 {: .sec-why}
 
 Linux 的字符集不是由一个变量决定的，而是一整套 `LC_*` 变量：
 
@@ -279,7 +280,7 @@ rtcsync                                 # 同步系统时间到硬件时钟
 
 > **注意：** 旧的 `ntpdate`（一次性对时工具）与 `ntpd` 服务在 CentOS 7 中已分别被废弃和替换——`ntpdate` 会被 chronyd 取代，一次性对时可用 `chronyd -q`。生产服务器必须开启 NTP 同步，容器与虚拟机从宿主机继承时间，不需要各自同步。时间偏差超过 5 分钟，Kerberos 认证、HTTPS 证书会直接失效。
 
-### 辨析：chronyd 与 ntpd
+### 辨析：chronyd 与 ntpd {: .sec-bianxi}
 
 ntpd 是老将，逐步调整时钟、追求长期精度，但对"时间严重跑偏"的机器收敛很慢；chronyd 是新一代，偏差大时能快速跳变纠正（`makestep` 控制），间歇性断网（笔记本、虚机迁移）场景下也同步得更稳。CentOS 7 起官方默认就是 chronyd，新部署没有理由再装 ntpd。
 

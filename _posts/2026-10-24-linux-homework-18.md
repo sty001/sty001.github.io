@@ -2,11 +2,12 @@
 title: "day18-正则与sed总结作业实操"
 date: 2026-10-24 09:40:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-18"
 ---
 
 {% raw %}
+
 课程第 18 天的作业三道题全是「总结型」：①总结正则符号；②总结 sed 命令；③总结 find / tar / date。总结型题目按规范转化为「知识讲解 + 速查表 + 可直接运行的示例及真实输出 + 自测」。三题全部为 A 级：所有正则示例、sed 示例、find/tar/date 示例均在 Git Bash 实际执行，输出为真实结果。
 
 ## 实操环境说明
@@ -778,7 +779,7 @@ app_test/scripts/backup.sh
 
 还有一条生产习惯：`find /` 这种全盘扫描会实打实拖 IO，先加 `-maxdepth` 缩小范围，跨文件系统加 `-xdev`，别让一次查找把线上盘打到满负荷。
 
-### 辨析：find 的 -exec 与 xargs
+### 辨析：find 的 -exec 与 xargs {: .sec-bianxi}
 
 两件事都能「拿着 find 的结果去执行」，但路数不同：
 

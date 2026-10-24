@@ -2,11 +2,12 @@
 title: "day36-Ansible一键部署作业实操"
 date: 2026-10-24 09:21:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-37"
 ---
 
 {% raw %}
+
 本篇对应课程第 36 天的课后作业，共三题：① 一键化部署全网备份项目；② 一键化部署 NFS 服务；③ 一键化部署实时同步服务。作业原文只给了三个方向，本篇把 day29（全网备份）、day30（NFS 存储）、day31（实时同步 sersync/inotify）三套服务整合进一个 `import_playbook` 入口剧本，做到「一条命令拉起整套架构」。环境里没有 ansible，用 Python 的 pyyaml 对入口与全部子剧本做语法真跑校验（A 级），并用 Python 模拟 Jinja2 渲染展示备份脚本的最终形态；`ansible-playbook` 执行与验证给出标准命令与 CentOS 7 预期输出（B 级）。
 
 ## 实操环境说明

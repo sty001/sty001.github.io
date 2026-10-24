@@ -2,11 +2,12 @@
 title: "day13-文件属性与find作业实操"
 date: 2026-10-24 09:45:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-13"
 ---
 
 {% raw %}
+
 课程第 13 天（文件属性知识）的作业分三段：作业题目（tail 参数 `-f`/`-F`）、基础作业（总结 find 命令、总结文件属性信息）、扩展作业（随机字符信息、批量创建运维账号并设随机密码）。全部做完：tail 给结论，完整真跑演示指向 day12；find 给速查表并按名/类型/时间/大小/`-exec` 真跑；文件属性拆 `ls -l` 十段用 `stat` 验证；扩展部分真跑 3 种随机字符生成方法，配批量建账号脚本。
 
 ## 实操环境说明
@@ -366,7 +367,7 @@ atime:2026-10-24 03:37:33.254945200 +0800 mtime:2026-10-24 03:36:49.818403700 +0
 | mtime | modify time | 文件内容被修改时 | `ls -l` 默认显示的时间，`find -mtime` 的依据 |
 | ctime | change time | inode 信息变化时（改名、改权限、改属主） | 追踪权限篡改，普通用户无法伪造 |
 
-### 辨析：mtime 与 ctime
+### 辨析：mtime 与 ctime {: .sec-bianxi}
 
 `mtime` 是内容变了才动，`ctime` 是 inode 任何变动都动——改内容必然顺带改 inode 里的 size，所以改 mtime 的同时 ctime 一定跟着变，反过来不成立。`touch -d` 能把 atime/mtime 改到任意过去的时间点，但 ctime 永远是当前时刻，普通手段改不了（内核维护的）。排查入侵痕迹看 ctime 的原因就在这：攻击者能伪造 `ls` 看到的时间，伪造不了 ctime。
 

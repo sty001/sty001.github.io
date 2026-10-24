@@ -2,11 +2,12 @@
 title: "day43-keepalived实时监控与上游切换进阶作业实操"
 date: 2026-10-24 09:14:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-44"
 ---
 
 {% raw %}
+
 课程第 43 天的进阶作业围绕两件事展开：基于 keepalived 的高可用负载均衡架构，①如何对主节点做「实时监控」，在 nginx 异常时通过 `vrrp_script` + `weight` 把 VIP 自动漂移到备机；②如何仿真理解 nginx `upstream` 模块的调度与上游节点故障剔除。本篇所有脚本与配置均已在本环境真实运行 / 整理，文中标注 `已实操`；切换前后的 `ip a` 真实输出直接取自仿真产物，并做成对比表。`/server/scripts/` 下被 `vrrp_script` 调用的 `check_nginx.sh` 健康检查脚本，其完整源码与联动原理留到 day43 一并展开。
 
 ## 实操环境说明
@@ -323,7 +324,7 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
 > - `weight` 在 upstream 里是「加分/加权」语义，与 keepalived 的 `weight` 完全不是一回事，不要混淆；
 > - `max_fails` 与 `fail_timeout` 是「在 fail_timeout 时间窗口内失败 max_fails 次才剔除」，不是「累计失败永远计数的」——超时后计数器会清零，这正是 t=12 恢复的依据。
 
-### 辨析：keepalived 的 weight 与 upstream 的 weight
+### 辨析：keepalived 的 weight 与 upstream 的 weight {: .sec-bianxi}
 
 两个 `weight` 字面一样，干的完全是两码事，读配置时别串台：
 

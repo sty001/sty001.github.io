@@ -2,11 +2,12 @@
 title: "day25-网络基础作业实操"
 date: 2026-10-24 09:33:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-25"
 ---
 
 {% raw %}
+
 课程第 25 天（网络基础）留的作业共四题：①手工给 Linux 配静态 IP；②`ip` / `ping` / `traceroute` / `ss` 这几个排查命令的用法；③子网划分计算（192.168.1.0/26 等）；④OSI 七层与 TCP/IP 四层模型对照。第 1 题要动真实网卡配置文件还要重启网络，定为 B 级（标准命令 + CentOS 7 预期输出）；第 2、3 题的 `ping`、端口查看、`ipaddress` 计算本机就能真跑，定为 A 级；第 4 题是原理整理（对照表）。
 
 ## 实操环境说明
@@ -137,7 +138,7 @@ PING www.example.com (93.184.216.34) 56(84) bytes of data.
 
 **验证方法**：`ip addr` 显示新 IP；`ping -c 3 网关` 0% 丢包；`ping -c 3 www.example.com` 能解析出 IP 且通；重启系统后以上仍然成立（验证 ONBOOT）。
 
-### 辨析：hosts 与 resolv.conf 的分工
+### 辨析：hosts 与 resolv.conf 的分工 {: .sec-bianxi}
 
 这两个文件经常被混为一谈，其实分工很清楚：
 

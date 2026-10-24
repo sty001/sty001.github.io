@@ -2,11 +2,12 @@
 title: "day32-SSH秘钥连接作业实操"
 date: 2026-10-24 09:26:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-32"
 ---
 
 {% raw %}
+
 课程第 32 天留了两道作业：①用脚本实现实时同步（while 循环）；②让 Xshell 这类终端工具也走密钥连接，另外要提前装好 ansible。第一题的关键是想清楚「while 轮询式同步」和 day31「inotify 事件驱动」差在哪，然后用 while 循环脚本真跑周期同步（rsync 本环境不可用，用 cp 模拟）；第二题整篇围绕密钥认证——A 级真跑 `ssh-keygen` 生成密钥对、给出 `ssh-copy-id` 部署公钥的标准命令与预期，再补 Xshell 导入私钥的步骤和 `sshd_config` 两个关键配置（`StrictModes` / `PubkeyAuthentication`）。
 
 ## 实操环境说明
@@ -369,7 +370,7 @@ Match all
 | 私钥被本地拒绝使用 | 客户端私钥权限过宽（如 644） | `chmod 600 私钥` |
 | 首次连接卡在确认 | 未加 `StrictHostKeyChecking=no` | 交互输 yes，或分发时加该参数 |
 
-### 辨析：known_hosts 与 authorized_keys
+### 辨析：known_hosts 与 authorized_keys {: .sec-bianxi}
 
 两个文件都住在 `~/.ssh/` 下，新手极易搞混，其实方向完全相反：
 

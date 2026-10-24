@@ -2,11 +2,12 @@
 title: "day34-Ansible剧本部署rsync-nfs作业实操"
 date: 2026-10-24 09:23:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-35"
 ---
 
 {% raw %}
+
 课程第 34 天的作业就两道题：用剧本部署 rsync 服务，再用剧本部署 nfs 服务。原题只给方向，思路得自己补全——下面给出完整可跑的剧本（含变量、模板、handler）：rsync 做成「服务端 + 客户端」一体化剧本，nfs 做成「全体装软件 → 服务端配置 → 客户端挂载」三段式。环境里没有 ansible，A 级用 Python 的 pyyaml 对剧本做 YAML 语法真跑校验，`ansible-playbook` 的执行给标准命令与 CentOS 7 预期输出（B 级）。
 
 ## 实操环境说明
@@ -278,7 +279,7 @@ total 4
 > - rsync 要求密码文件权限不超过 600，`mode: "0600"` 不能省；
 > - `user` 任务里 `create_home: no` 忘写会多建一个家目录，虽不报错但不规范。
 
-### 辨析：copy 与 template
+### 辨析：copy 与 template {: .sec-bianxi}
 
 都是「把管理端文件推到被管端」，分界线在内容里有没有变量：
 

@@ -2,11 +2,12 @@
 title: "day40-网站访问统计与压力测试作业实操"
 date: 2026-10-24 09:17:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-41"
 ---
 
 {% raw %}
+
 课程第 40 天的作业落在两件事上：①熟悉排序和去重命令，对文件里的数值信息做统计分析——找出用户访问最多的前 10 个页面；②对网站做压力测试。第一题先拿 sort/uniq 热身，再构造一份 274 行、nginx combined 格式的 access.log 样例，用 `awk + sort + uniq -c + sort -rn + head` 组合拳真跑出访问量前 10 的 URL，顺手扩展出 IP Top5、状态码分布、响应总流量、404 明细四组统计；第二题给出 ab（ApacheBench）与 webbench 两款压测工具的标准命令、完整预期输出与关键指标解读。
 
 ## 实操环境说明
@@ -343,7 +344,7 @@ Percentage of the requests served within a certain time (ms)
 
 生产上还有一条：压测报告只对「当时的页面、当时的参数」负责，上线前压的数字会随数据量增长慢慢失真，容量评估要定期重压。
 
-### 辨析：并发数、QPS 与 RT
+### 辨析：并发数、QPS 与 RT {: .sec-bianxi}
 
 三者有一条恒等式：**QPS = 并发数 ÷ 平均 RT**（RT 用秒）。用上面的报告验证：100 ÷ 0.1234 ≈ 810，正好等于报告里的 810.37。这条式子反过来用更有价值——
 

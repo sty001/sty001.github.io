@@ -2,11 +2,12 @@
 title: "04-重要系统文件与运行级别"
 date: 2026-10-24 10:38:00 +0800
 categories: [软件, Linux, 02-系统操作]
-tags: [Linux, 02-系统操作]
+tags: [Linux, 02-系统操作, Linux基础]
 slug: "linux-system-04"
 ---
 
 {% raw %}
+
 `/etc` 下有几个文件值得单独拎出来讲：主机名配置文件、`/etc/hosts` 本地解析、`/etc/fstab` 开机挂载、`/etc/rc.local` 开机自执行；再往后是运行级别（CentOS 6 与 7 的对应关系，面试常考）和变量、别名的配置。
 
 ## 一、主机名称配置文件
@@ -245,7 +246,7 @@ rescue.target
 
 `/etc/inittab` 当年管的事不少：默认级别、ctrlaltdel 按键行为、电源状态响应；systemd 把这些职责全部拆散到各 target 与独立配置里，才有了"inittab 废弃"的说法。
 
-### 辨析：runlevel、init 与 systemctl get-default
+### 辨析：runlevel、init 与 systemctl get-default {: .sec-bianxi}
 
 三个命令看的是同一个体系，但不是一回事：`runlevel` 报告"上一级别 当前级别"，`N` 表示开机后没切过；`init N` 是 SysV 时代的切换命令，CentOS 7 里被 systemd 转译成 `systemctl isolate`；`systemctl get-default` 看的是开机默认进入的 target，跟当前状态是两个概念。面试时能说清"当前状态"与"默认目标"的区别，就赢过一多半人。
 
@@ -374,7 +375,7 @@ source /etc/profile
 - **普通变量**：需要人为设置；
 - **环境变量**：系统默认就有的变量。
 
-### 原理解析：环境变量的加载顺序
+### 原理解析：环境变量的加载顺序 {: .sec-why}
 
 不同的 shell 场景加载的配置文件完全不同，这是"改了 profile 不生效"的根源所在。
 
@@ -566,7 +567,7 @@ rm command is weixian,not use -rf /data/
 1. 永久设置变量信息；
 2. 设置别名信息。
 
-### 辨析：临时别名与永久别名
+### 辨析：临时别名与永久别名 {: .sec-bianxi}
 
 命令行里敲 `alias catnet='...'` 只在当前会话有效，关掉终端就没了——适合临时验证。想永久生效必须写进配置文件：用户级写 `~/.bashrc`，全局写 `/etc/bashrc`（别名按惯例放 bashrc，不放 profile）。写完 `source` 一下立即生效，不用重新登录。还有一点容易忽略：脚本里别名默认全部失效，因为脚本是"非交互 shell"，根本不加载这些文件——脚本里要写完整命令。
 

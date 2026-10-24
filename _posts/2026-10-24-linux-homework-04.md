@@ -2,11 +2,12 @@
 title: "day04-远程连接与命令作业实操"
 date: 2026-10-24 09:54:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-04"
 ---
 
 {% raw %}
+
 课程第 4 天讲远程连接与系统管理，作业两道：虚拟机克隆、已学命令总结。下面是在实操环境里的完整过程，每道题都留了可复现的步骤和真实结果。
 
 ## 实操环境说明
@@ -264,7 +265,7 @@ $ ls ./not-exist
 ls: cannot access './not-exist': No such file or directory
 ```
 
-### 辨析：reboot 与 shutdown -r now
+### 辨析：reboot 与 shutdown -r now {: .sec-bianxi}
 
 两者都能重启，行为不一样。`reboot` 立刻动手，不通知、不等待，其他登录用户的会话说断就断；`shutdown -r now` 会先广播消息给所有在线用户，正常关闭服务、同步文件系统后再重启，生产环境更稳妥。`shutdown -r +5 "系统 5 分钟后重启"` 还能预约时间并说明原因——这也是它比 reboot 值钱的地方：重启变成一个可取消（`shutdown -c`）、可预告的计划，而不是突发事件。
 

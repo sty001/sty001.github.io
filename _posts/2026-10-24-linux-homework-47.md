@@ -2,11 +2,12 @@
 title: "day44-监控服务Zabbix部署作业实操"
 date: 2026-10-24 09:11:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-47"
 ---
 
 {% raw %}
+
 课程第 44 天（监控服务 Zabbix 上）的作业共四题：①监控体系与 Zabbix 组件概念辨析；②Zabbix Server 服务端完整部署；③Zabbix Agent 客户端部署；④部署自测（配置文件参数校验、中文乱码处理、服务端 zabbix_get 自测 agent 存活）。部署类动作为 B 级标准命令加预期输出，配置校验类在 Git Bash 真跑，输出为真实结果。
 
 ## 实操环境说明
@@ -50,7 +51,7 @@ slug: "linux-homework-47"
 
 > **易错点**：10051 与 10050 极易记混。记忆方法：被动模式是「server 来拉」，目标端口是 agent 的 10050；主动模式是「agent 去推」，目标端口是 server 的 10051。被动是默认模式，所以 agent 端口 10050 见得最多。
 
-### 辨析：主动模式与被动模式
+### 辨析：主动模式与被动模式 {: .sec-bianxi}
 
 这里的「主/被」站在 **agent** 视角：被动是 agent 等着 server 来拉（默认），主动是 agent 自己定时往 server 推（需配 `ServerActive` 与 `Hostname`）。差别落在三件事上——
 

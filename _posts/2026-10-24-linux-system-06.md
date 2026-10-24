@@ -2,11 +2,12 @@
 title: "06-系统优化实践-上"
 date: 2026-10-24 10:36:00 +0800
 categories: [软件, Linux, 02-系统操作]
-tags: [Linux, 02-系统操作]
+tags: [Linux, 02-系统操作, Linux基础]
 slug: "linux-system-06"
 ---
 
 {% raw %}
+
 刚装完 CentOS 7 要做的第一批优化：Vim 三种模式与常用快捷操作、查看系统版本与内核、创建与切换普通用户、定制命令提示符（PS1）的内容与颜色、把 yum 基础源与扩展源换成国内镜像，外加 SELinux、防火墙、SSH 加固、资源限制这些安全项。一台新机器照着过一遍就能交付。
 
 ## 课前回顾：挂载与目录结构
@@ -24,7 +25,7 @@ slug: "linux-system-06"
 >
 > **注意：** `/proc` 目录中的数据文件不能随意修改，它反映的是内核运行时的实时状态。
 
-## 原理解析：系统优化的整体思路
+## 原理解析：系统优化的整体思路 {: .sec-why}
 
 拿到一台刚装好的系统，该按什么顺序优化？业界公认的三个目标：**安全、性能、规范**，按这个顺序推进：
 
@@ -389,7 +390,7 @@ service iptables save                      # 等价的保存命令
 
 > **注意：** `disable` 只是取消开机自启，服务还能手动启动；`mask` 是把 unit 文件软链接到 `/dev/null`，任何方式都启动不了——用于防止服务被其他单元依赖意外拉起（如 mask 掉 `avahi-daemon`）。装了新的 unit 文件（如自己写的 `/etc/systemd/system/myapp.service`）后，必须先 `systemctl daemon-reload` 再 `enable --now`，否则 systemd 不认新文件。
 
-### 辨析：service 与 systemctl
+### 辨析：service 与 systemctl {: .sec-bianxi}
 
 `service xxx start` 在 CentOS 7 里还能用，但它只是个兼容壳——内部转手就调 `systemctl`。真正的差别在能力面：systemctl 能看状态详情（`status` 带最近日志）、管理开机自启（enable / disable）、屏蔽服务（mask），service 都做不到。新写的文档、脚本一律用 systemctl，service 只在维护 CentOS 6 老脚本时才会出现。
 

@@ -2,11 +2,12 @@
 title: "day31-实时同步服务作业实操"
 date: 2026-10-24 09:27:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-31"
 ---
 
 {% raw %}
+
 课程第 31 天的作业原题只有一句话：「扩展实时同步软件：数据库需要实时同步、Windows 到 Windows 的实时同步」。完整作业还包含「用脚本实现实时同步」。这里把四块内容补全：①用脚本实现 inotify + rsync 的实时同步（A 级用本地模拟脚本真跑事件驱动逻辑，用 echo 模拟文件变更触发；B 级给出 inotifywait + rsync 真实命令与 CentOS 7 预期输出）；②sersync / lsyncd 两种成熟扩展方案的部署；③数据库数据为什么不能直接文件级同步、正确做法是什么；④Windows 到 Windows 实时同步的思路与工具选型。
 
 ## 实操环境说明
@@ -240,7 +241,7 @@ inotifywait -mrq --timefmt '%F %T' --format '%T %w%f 事件:%e' \
 
 rsync 传输有两条通道：一种是直接 `rsync 源 目标`（走 SSH，需密钥免密，适合跨机）；另一种是 `rsync 源 模块名`（走 rsync daemon，需服务端配 `rsyncd.conf` 与认证）。本篇示例用前者（更直观），生产大文件多时 daemon 模式性能更好，且可配 `rsync --bwlimit` 限速，避免同步流量挤占业务带宽。另外监控几十万文件的大目录树时，递归监控会为每个子目录建一个 watch，容易耗尽 `fs.inotify.max_user_watches`，表现为「后建文件不再触发」，需 `sysctl` 调大该值或缩小监控范围。
 
-### 辨析：inotify 事件风暴与去抖
+### 辨析：inotify 事件风暴与去抖 {: .sec-bianxi}
 
 「每个事件跑一次 rsync」的写法在低频目录没问题，遇到高频写入就会出事。典型场景：程序批量写日志、编译产物持续生成、解压一个上万文件的包——inotify 短时间内吐出成千上万条事件，脚本逐条消费，rsync 进程还没跑完上一轮，下一批事件又排上队，CPU 与 IO 被打满，同步反而迟迟收敛不了。这就是所谓的事件风暴。
 

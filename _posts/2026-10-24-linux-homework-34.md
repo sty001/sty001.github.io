@@ -2,11 +2,12 @@
 title: "day33-Ansible模块与剧本预习作业实操"
 date: 2026-10-24 09:24:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-34"
 ---
 
 {% raw %}
+
 这份预习作业对应课程第 33 天：①把八个新模块——`yum`、`service`、`cron`、`mount`、`user`、`group`、`unarchive`、`archive`——逐个过一遍；②摸清剧本（playbook）的编写格式。八模块整理成对比表，逐个配 ad-hoc 标准命令与 CentOS 7 预期输出；剧本则手写一份最小化 playbook（`hosts` / `remote_user` / `tasks`，任务用到 `yum` / `copy` / `service`）。本环境没装 ansible，语法校验的 A 级用 Python 的 yaml 模块真跑，B 级给 `ansible-playbook --syntax-check` 的标准命令与预期输出。
 
 ## 实操环境说明
@@ -205,7 +206,7 @@ linux-node02 | CHANGED => {
 > - `mount` 的 `mounted` 与 `present` 区别：`present` 只写 fstab 不立即挂载，`mounted` 一步到位。
 > - `unarchive` 的 `src` 默认在管理端，与 `copy` 的 `remote_src` 语义一致。
 
-### 辨析：command 与 shell 模块
+### 辨析：command 与 shell 模块 {: .sec-bianxi}
 
 两个模块都在远端执行命令，长得很像，差别就一条：`command` 不经过 bash 解析，管道、重定向、`&&` 全是字面量，直接报错；`shell` 走完整 bash 解析，这些都认。口诀：命令里出现 `|`、`>`、`&&` 就用 `shell`，否则优先 `command`（不额外起 shell 进程，更快也更可控）。但生产剧本里更要紧的原则是——能用专用模块（yum / copy / service / user）就别绕到 shell 或 command，专用模块天然幂等，还支持 `--check` 模拟。
 

@@ -2,11 +2,12 @@
 title: "day43-keepalived高可用作业实操"
 date: 2026-10-24 09:13:00 +0800
 categories: [软件, Linux, 10-作业实操]
-tags: [Linux, 10-作业实操]
+tags: [Linux, 10-作业实操, 作业实操]
 slug: "linux-homework-45"
 ---
 
 {% raw %}
+
 keepalived 这块，课程第 43 天留了两个方向性题目：①如何实现 keepalived 服务的实时监控（用 while 循环）；②让 nginx 服务停止时 keepalived 也自动停止、nginx 恢复时 keepalived 自动恢复（提示：用 weight）。作业原文只有方向，本篇把「while 循环监控」与「业务联动（vrrp_script + weight）」两条主线补全，并用 Git Bash 真实跑通检测脚本与 while 监控循环（A 级）；keepalived.conf 的完整配置与预期 VIP 漂移结果给标准命令与预期输出（B 级，CentOS 7）。
 
 ## 实操环境说明
@@ -223,7 +224,7 @@ chmod +x /server/scripts/check_web.sh
 
 linux-node02 配置基本相同，仅 `router_id` 改为 `linux-node02`、`state` 改为 `BACKUP`、`priority` 改为 `100`（且 node02 上 check_web 的 `weight -250` 会让其失败时优先级变为 -150，同样让出）。
 
-### 辨析：抢占（preempt）与非抢占（nopreempt）
+### 辨析：抢占（preempt）与非抢占（nopreempt） {: .sec-bianxi}
 
 默认抢占模式下，谁优先级高谁当 MASTER，主恢复就把 VIP 抢回来。好处是流量始终跑在「指定主力」上，配置语义清晰；代价是每次回切都是一次短暂闪断（ARP 更新窗口），会话型连接可能被掐。
 
