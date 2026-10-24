@@ -1,6 +1,6 @@
 ---
 title: "day34 作业实操：用剧本部署 rsync 服务与 NFS 服务"
-date: 2026-10-24 09:35:00 +0800
+date: 2026-10-24 09:23:00 +0800
 categories: [软件, Linux, 作业实操]
 tags: [Linux, 作业实操]
 ---

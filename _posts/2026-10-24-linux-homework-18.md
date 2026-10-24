@@ -1,6 +1,6 @@
 ---
 title: "day18 作业实操：正则符号总结、sed 命令总结与 find/tar/date 三件套"
-date: 2026-10-24 09:18:00 +0800
+date: 2026-10-24 09:40:00 +0800
 categories: [软件, Linux, 作业实操]
 tags: [Linux, 作业实操]
 ---

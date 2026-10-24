@@ -1,6 +1,6 @@
 ---
 title: "Linux 用户权限与提权：su / sudo 深入与安全实践"
-date: 2026-10-24 09:02:00 +0800
+date: 2026-10-24 10:23:00 +0800
 categories: [软件, Linux, 用户与权限]
 tags: [Linux, 用户与权限]
 ---

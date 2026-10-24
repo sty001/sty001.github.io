@@ -1,6 +1,6 @@
 ---
 title: "Linux 系统概念"
-date: 2026-10-24 09:02:00 +0800
+date: 2026-10-24 10:43:00 +0800
 categories: [软件, Linux, 基础入门]
 tags: [Linux, 基础入门]
 ---

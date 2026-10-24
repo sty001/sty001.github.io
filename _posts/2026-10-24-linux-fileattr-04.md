@@ -1,6 +1,6 @@
 ---
 title: "文件属性进阶：find、tar、权限、用户与 inode"
-date: 2026-10-24 09:04:00 +0800
+date: 2026-10-24 10:30:00 +0800
 categories: [软件, Linux, 文件属性与正则]
 tags: [Linux, 文件属性与正则]
 ---

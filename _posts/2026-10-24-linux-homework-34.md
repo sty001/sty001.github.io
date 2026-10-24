@@ -1,6 +1,6 @@
 ---
 title: "day33 作业实操：Ansible 模块预习与剧本编写格式"
-date: 2026-10-24 09:34:00 +0800
+date: 2026-10-24 09:24:00 +0800
 categories: [软件, Linux, 作业实操]
 tags: [Linux, 作业实操]
 ---

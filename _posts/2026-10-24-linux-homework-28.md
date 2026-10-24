@@ -1,6 +1,6 @@
 ---
 title: "day28 作业实操：rsync 备份服务部署"
-date: 2026-10-24 09:28:00 +0800
+date: 2026-10-24 09:30:00 +0800
 categories: [软件, Linux, 作业实操]
 tags: [Linux, 作业实操]
 ---

@@ -1,6 +1,6 @@
 ---
 title: "day43 进阶作业实操：keepalived 实时监控与上游(upstream)切换"
-date: 2026-10-24 09:44:00 +0800
+date: 2026-10-24 09:14:00 +0800
 categories: [软件, Linux, 作业实操]
 tags: [Linux, 作业实操]
 ---
