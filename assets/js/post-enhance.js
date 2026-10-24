@@ -179,13 +179,21 @@
       document.addEventListener("click", function (ev) {
         var x = ev.clientX, y = ev.clientY;
 
-        /* 涟漪高亮圈 */
+        /* 涟漪高亮圈（实心光晕） */
         var ripple = document.createElement("div");
         ripple.className = "click-ripple";
         ripple.style.left = x + "px";
         ripple.style.top = y + "px";
         document.body.appendChild(ripple);
-        setTimeout(function () { ripple.remove(); }, 600);
+        setTimeout(function () { ripple.remove(); }, 680);
+
+        /* 外圈水波纹（扩散更慢更大，与内圈形成双层涟漪） */
+        var wave = document.createElement("div");
+        wave.className = "click-wave";
+        wave.style.left = x + "px";
+        wave.style.top = y + "px";
+        document.body.appendChild(wave);
+        setTimeout(function () { wave.remove(); }, 900);
 
         /* 雪花粒子迸发 */
         var n = 6 + Math.floor(Math.random() * 3);
@@ -208,4 +216,81 @@
       }, { passive: true });
     })();
   } catch (e) { /* 特效失败不影响任何功能 */ }
+
+  /* ===== 6. 全站氛围特效：飘雪 + 鼠标跟随光晕 ===== */
+  try {
+    (function initAmbientFx() {
+      var mqReduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+      var mqFine = window.matchMedia ? window.matchMedia("(hover: hover) and (pointer: fine)") : null;
+      var reduce = !!(mqReduce && mqReduce.matches);
+      var fine = !!(mqFine && mqFine.matches);
+
+      /* --- 6.1 飘雪：JS 生成少量雪花 + CSS 动画；靠两侧飘，避免压住正文栏 --- */
+      if (!reduce) {
+        var layer = document.createElement("div");
+        layer.id = "snow-fx";
+        layer.setAttribute("aria-hidden", "true");
+        var COUNT = 22;
+        for (var i = 0; i < COUNT; i++) {
+          var flake = document.createElement("span");
+          flake.className = "snowflake";
+          flake.textContent = "❄";
+          var r = Math.random();
+          var vw = r < 0.34 ? Math.random() * 22
+                 : r < 0.68 ? 78 + Math.random() * 22
+                 : Math.random() * 100;
+          flake.style.left = vw.toFixed(2) + "vw";
+          flake.style.top = (-10 - Math.random() * 20).toFixed(1) + "vh";
+          flake.style.fontSize = (9 + Math.random() * 7).toFixed(1) + "px";
+          flake.style.opacity = (0.3 + Math.random() * 0.4).toFixed(2);
+          flake.style.animationDuration = (11 + Math.random() * 12).toFixed(1) + "s";
+          flake.style.animationDelay = (-Math.random() * 22).toFixed(1) + "s";
+          flake.style.setProperty("--sway", (14 + Math.random() * 26).toFixed(0) + "px");
+          layer.appendChild(flake);
+        }
+        document.body.appendChild(layer);
+      }
+
+      /* --- 6.2 鼠标跟随光晕：给指针"着色"；仅精确指针设备启用 --- */
+      if (fine && !reduce) {
+        var glow = document.createElement("div");
+        glow.id = "cursor-glow";
+        glow.setAttribute("aria-hidden", "true");
+        var ring = document.createElement("div");
+        ring.id = "cursor-ring";
+        ring.setAttribute("aria-hidden", "true");
+        document.body.appendChild(glow);
+        document.body.appendChild(ring);
+
+        var tx = 0, ty = 0, gx = 0, gy = 0, rx = 0, ry = 0, raf = 0;
+
+        function paint() {
+          gx += (tx - gx) * 0.12;
+          gy += (ty - gy) * 0.12;
+          rx += (tx - rx) * 0.28;
+          ry += (ty - ry) * 0.28;
+          glow.style.transform = "translate3d(" + (gx - 110).toFixed(1) + "px," + (gy - 110).toFixed(1) + "px,0)";
+          ring.style.transform = "translate3d(" + (rx - 13).toFixed(1) + "px," + (ry - 13).toFixed(1) + "px,0)";
+          if (Math.abs(tx - gx) > 0.1 || Math.abs(ty - gy) > 0.1) {
+            raf = requestAnimationFrame(paint);
+          } else {
+            raf = 0;
+          }
+        }
+
+        document.addEventListener("mousemove", function (ev) {
+          tx = ev.clientX;
+          ty = ev.clientY;
+          glow.style.opacity = "1";
+          ring.style.opacity = "1";
+          if (!raf) raf = requestAnimationFrame(paint);
+        }, { passive: true });
+
+        document.addEventListener("mouseleave", function () {
+          glow.style.opacity = "0";
+          ring.style.opacity = "0";
+        });
+      }
+    })();
+  } catch (e) { /* 氛围特效失败不影响任何功能 */ }
 })();
