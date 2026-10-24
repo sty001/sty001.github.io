@@ -74,7 +74,8 @@ slug: "linux-appendix-01"
 | `sort -n` | 按照数值进行排序 |
 | `sort -k1` | 按照指定列进行排序 |
 
-## 四、文件与目录操作 {: .sec-prac}
+## 四、文件与目录操作
+{: .sec-prac}
 
 | 命令 / 参数 | 说明 |
 | --- | --- |
@@ -233,7 +234,8 @@ slug: "linux-appendix-01"
 | `chown` | 修改用户属主和属组的信息 |
 | `chown -R` | 递归修改用户属主和属组信息 |
 
-### useradd / usermod 常用参数 {: .sec-expl}
+### useradd / usermod 常用参数
+{: .sec-expl}
 
 | 参数 | 说明 |
 | --- | --- |
@@ -284,7 +286,8 @@ dd if=/dev/zero of=/tmp/test.txt bs=10M count=100
 #  if 从哪取出数据   of 放到哪   bs 占用1个block多少空间   count 总共使用多少个block
 ```
 
-## 十二、环境变量、别名与字符集 {: .sec-expl}
+## 十二、环境变量、别名与字符集
+{: .sec-expl}
 
 | 命令 / 参数 | 说明 |
 | --- | --- |
@@ -339,7 +342,8 @@ dd if=/dev/zero of=/tmp/test.txt bs=10M count=100
 > **注意：** `sed` 与 `awk` 属于文本处理的核心命令，内容较多，在课程正文中单独展开讲解。
 {: .sec-pit}
 
-## 十四、系统中的常见环境变量 {: .sec-expl}
+## 十四、系统中的常见环境变量
+{: .sec-expl}
 
 | 变量 | 说明 |
 | --- | --- |

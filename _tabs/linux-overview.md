@@ -2,7 +2,7 @@
 layout: page
 icon: fas fa-book
 order: 6
-title: Linux 学习笔记总览
+title: Linux 运维学习笔记总览
 ---
 
 > 本博客的 Linux 运维笔记共 **109 篇**，按**电脑端原始文件夹**划分为 12 个分区（含 `00-`~`10-` 前缀与 `附录`）。每篇归档在「软件 › Linux › 对应文件夹」分类下，并打上阶段标签。

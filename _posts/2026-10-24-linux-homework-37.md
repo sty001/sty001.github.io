@@ -12,7 +12,8 @@ slug: "linux-homework-37"
 
 本篇对应课程第 36 天的课后作业，共三题：① 一键化部署全网备份项目；② 一键化部署 NFS 服务；③ 一键化部署实时同步服务。作业原文只给了三个方向，本篇把 day29（全网备份）、day30（NFS 存储）、day31（实时同步 sersync/inotify）三套服务整合进一个 `import_playbook` 入口剧本，做到「一条命令拉起整套架构」。环境里没有 ansible，用 Python 的 pyyaml 对入口与全部子剧本做语法真跑校验（A 级），并用 Python 模拟 Jinja2 渲染展示备份脚本的最终形态；`ansible-playbook` 执行与验证给出标准命令与 CentOS 7 预期输出（B 级）。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），且未安装 ansible / ansible-playbook，因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-37"
 
 环境实测：`python`（3.13，含 pyyaml 6.0.3）可用，`command -v ansible-playbook` 返回 NOT FOUND。主机角色：`172.16.1.41` 为备份 / 同步服务端（清单组 `rsync_server`），`172.16.1.7`、`172.16.1.31` 为客户端（清单组 `rsync_clients`、`sync_clients`、`nfs_client`），NFS 服务端 `172.16.1.31`。口令一律用 `<your-password>` 占位，输出中的本地用户名已按脱敏要求替换为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -31,7 +33,8 @@ slug: "linux-homework-37"
 
 ## 一键化总体设计
 
-### 部署流程总览 {: .sec-expl}
+### 部署流程总览
+{: .sec-expl}
 
 一键入口 `site.yml` 用 `import_playbook` 按依赖顺序串起四个子剧本，每个子剧本对应一个服务组件：
 
@@ -52,7 +55,8 @@ site.yml
 | backup.yml | rsync_server / rsync_clients | 服务端六步部署、客户端发脚本配定时任务 | `user`、`template`、`cron` |
 | sersync.yml | sync_clients | 装 inotify、下发 sersync 并常驻监听 | `get_url`、`unarchive`、`cron` |
 
-### 一键入口 site.yml（已实操） {: .sec-prac}
+### 一键入口 site.yml（已实操）
+{: .sec-prac}
 
 ```yaml
 - import_playbook: base.yml
@@ -114,7 +118,8 @@ YAML OK: sersync.yml
 | 服务端（rsync_server） | 01 装 rsync → 02 建虚拟用户 rsync → 03 建 /backup 目录 → 04 推 rsyncd.conf → 05 建服务端密码文件 → 06 启动 rsyncd（handler 兜底重启） |
 | 客户端（rsync_clients） | 01 装 rsync → 02 建客户端密码文件 → 03 建测试数据目录 → 04 造测试数据文件 → 05 渲染下发备份脚本 → 06 配每日 01:30 定时任务 → 07 手动试跑一次验证 |
 
-### 步骤 1：备份脚本模板 {: .sec-prac}
+### 步骤 1：备份脚本模板
+{: .sec-prac}
 
 脚本里会出现服务器 IP 与数据目录，这类「可能按环境变化」的值全部写成 Jinja2 变量，由剧本 `vars` 渲染。`files/backup.sh.j2`：
 
@@ -133,7 +138,8 @@ rsync -az --password-file=${Password_file} ${Local_dir}/ rsync_backup@${Backup_s
 
 三个细节：源目录 `${Local_dir}/` 带尾部斜杠表示同步目录内容本身；`Remote_path=/${Date}` 按日期在远端分目录，历史备份互不覆盖；`-az` 足够日常备份用，`-v` 留给人工排错时加。
 
-### 步骤 2：部署剧本 backup.yml（已实操） {: .sec-prac}
+### 步骤 2：部署剧本 backup.yml（已实操）
+{: .sec-prac}
 
 ```yaml
 - hosts: rsync_server
@@ -271,7 +277,8 @@ rsync -az --password-file=${Password_file} ${Local_dir}/ rsync_backup@${Backup_s
 
 与手写脚本逐行一致，变量替换符合预期。
 
-### 步骤 3：变量表 {: .sec-prac}
+### 步骤 3：变量表
+{: .sec-prac}
 
 | 变量 | 作用域 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -280,7 +287,8 @@ rsync -az --password-file=${Password_file} ${Local_dir}/ rsync_backup@${Backup_s
 | `data_dir` | 客户端 play | /var/www/html | 待备份的本地数据目录 |
 | `backup_script_dir` | 客户端 play | /server/scripts | 备份脚本落盘目录 |
 
-### 步骤 4：执行与验证（B 级） {: .sec-ver}
+### 步骤 4：执行与验证（B 级）
+{: .sec-ver}
 
 ```bash
 ansible-playbook --syntax-check backup.yml
@@ -398,7 +406,8 @@ $ ansible nfs_client -m shell -a "df -h | grep nfs"
 | sersync 程序 | 官方二进制包下载、解压 | `get_url` + `unarchive` |
 | 配置与常驻 | confxml.xml（模板渲染）+ 后台启动 + 开机自启 | `template` + `shell` + `cron` |
 
-### 步骤 1：confxml 模板 {: .sec-prac}
+### 步骤 1：confxml 模板
+{: .sec-prac}
 
 sersync 的行为全部由 `confxml.xml` 控制，把监听目录与推送目标提成变量。`files/confxml.xml.j2` 的核心片段：
 
@@ -414,7 +423,8 @@ sersync 的行为全部由 `confxml.xml` 控制，把监听目录与推送目标
 
 `watch` 指定监听目录，`remoteip` 指定推送目标与模块名，rsync 参数里挂上密码文件实现免交互。
 
-### 步骤 2：部署剧本 sersync.yml（已实操） {: .sec-prac}
+### 步骤 2：部署剧本 sersync.yml（已实操）
+{: .sec-prac}
 
 ```yaml
 - hosts: sync_clients
@@ -478,7 +488,8 @@ sersync 的行为全部由 `confxml.xml` 控制，把监听目录与推送目标
 
 要点说明：`unarchive` 的 `remote_src: yes` 表示压缩包已在远程主机上（03 步下载的），`creates` 参数让目录已存在时跳过解压、保证幂等；sersync 是二进制常驻进程，用 `nohup ... &` 后台拉起，并用 `special_time: reboot` 的 cron 保证开机自启；配置更新走 `notify` 触发 handler，先 pkill 再拉起完成「重启」。
 
-### 步骤 3：变量表 {: .sec-prac}
+### 步骤 3：变量表
+{: .sec-prac}
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
@@ -487,7 +498,8 @@ sersync 的行为全部由 `confxml.xml` 控制，把监听目录与推送目标
 | `sersync_pkg` / `sersync_url` | 二进制包名与下载地址 | 换版本只改这两个变量 |
 | `tools_dir` / `install_dir` | /server/tools、/usr/local | 包暂存与安装目录 |
 
-### 步骤 4：执行与验证（B 级） {: .sec-ver}
+### 步骤 4：执行与验证（B 级）
+{: .sec-ver}
 
 ```bash
 ansible-playbook sersync.yml
@@ -519,7 +531,8 @@ $ ansible rsync_server -m shell -a "ls -l /backup/realtime_test.txt"
 > - 常驻进程启动任务每次执行都 changed：后台启动类 shell 天然不幂等，必要时配 `changed_when: false` 或先用 `ps` 判断进程存在再启动；
 > - 监听目录权限不足：sersync 以 root 运行没问题，但 rsync 推送时受服务端目录属主约束，`/backup` 属主必须是 rsync。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 一键化的组织方式是「site.yml 只写 import_playbook，任务细节全部下沉到子剧本」：入口即文档，按依赖顺序排列组件，单个组件可单独执行，整场也可一条命令拉起。
 2. 公共底座（装工具、设时区）单独抽成 base.yml 放在最前，避免每个子剧本重复写「装 rsync」这类动作。

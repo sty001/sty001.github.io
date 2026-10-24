@@ -12,7 +12,8 @@ slug: "linux-userperm-01"
 
 先补一道高频面试题（CentOS 6 / CentOS 7 系统启动流程），然后按顺序过：用户的分类、rwx 权限在文件与目录上的真实含义、读写数据的 inode / block 原理、权限修改方法（chmod）、默认权限与 umask、用户家目录的"样板房" `/etc/skel`、用户相关文件、`/etc/passwd` 七字段、用户管理命令（useradd / usermod / userdel / passwd / chage）、批量创建用户脚本、登录日志查看与 sudo 授权配置。读完应该能自己建账号、给同事配权限。
 
-## 一、上节回顾：awk 的统计分析 {: .sec-sum}
+## 一、上节回顾：awk 的统计分析
+{: .sec-sum}
 
 ```bash
 awk -F ":" 'BEGIN{print "第一次总额","第三次总额"};/.*/{print $2,$4}'  awk_test.txt
@@ -24,9 +25,11 @@ awk -F ":" 'BEGIN{print "第一次总额","第三次总额"};/.*/{print $2,$4}' 
 2130        1661
 ```
 
-## 二、常见面试题：系统启动流程 {: .sec-iv}
+## 二、常见面试题：系统启动流程
+{: .sec-iv}
 
-### 2.1 CentOS 6 启动流程 {: .sec-expl}
+### 2.1 CentOS 6 启动流程
+{: .sec-expl}
 
 | 步骤 | 说明 |
 | --- | --- |
@@ -40,7 +43,8 @@ awk -F ":" 'BEGIN{print "第一次总额","第三次总额"};/.*/{print $2,$4}' 
 | 08. 运行系统特殊的脚本 | 服务运行的脚本 |
 | 09. 运行 mingetty 进程 | 显示开机登录信息界面 |
 
-### 2.2 CentOS 7 启动流程 {: .sec-expl}
+### 2.2 CentOS 7 启动流程
+{: .sec-expl}
 
 | 步骤 | 说明 |
 | --- | --- |
@@ -99,7 +103,8 @@ uid=1000(ops) gid=1000(ops) groups=1000(ops),10(wheel)
 # uid：用户 id；gid：主要组；groups：所属全部组（主要组 + 附属组）
 ```
 
-### 3.3 原理解析：用户登录时系统做了什么 {: .sec-know}
+### 3.3 原理解析：用户登录时系统做了什么
+{: .sec-know}
 
 一次登录在内核与用户态之间大致经历以下步骤：
 
@@ -216,13 +221,15 @@ test.txt    inode 目录中的文件 inode 信息无法获取，会显示文件�
 | `r-x` | 可以 | 可以 | 可以 |
 | `-wx` | 不可以 | 不可以 | 可以（可增删文件项，适合投递目录） |
 
-### 4.3 两个权限思考题 {: .sec-iv}
+### 4.3 两个权限思考题
+{: .sec-iv}
 
 以 `/ops/test.txt` 为例：文件权限为 `rwx--xr--` 时，属主如何操作这个文件？其他用户可以如何操作这个文件？
 
 （属主有读、写、执行权限，可以随意查看与修改；其他用户只有读权限，只能查看文件内容。）
 
-### 4.4 原理解析：读取文件时的 inode / block 查找过程 {: .sec-know}
+### 4.4 原理解析：读取文件时的 inode / block 查找过程
+{: .sec-know}
 
 读取 `/home/ops/test.txt` 的内容，内核按以下顺序层层解析：
 
@@ -296,7 +303,8 @@ umask 数值是奇数：777 - 033 = 744
 > **注意：** 文件默认从 666 开始减，目录默认从 777 开始减；当 umask 的某一位是奇数时，文件对应位需要再 +1（这就是"奇数 +1"规则的由来）。
 {: .sec-pit}
 
-### 6.1 umask 深入 {: .sec-ext}
+### 6.1 umask 深入
+{: .sec-ext}
 
 umask 是 shell 内置命令（`type umask` 可以看到），对当前 shell 及其创建的子进程生效。常用取值与效果：
 
@@ -354,7 +362,8 @@ drwxr-xr-x. 81 root root 8192 Apr 23 12:11 ..
 useradd dev  -->  /home/dev/  -->  目录中的数据内容会参考 /etc/skel 目录中的信息
 ```
 
-### 7.1 /etc/skel 的工作机制 {: .sec-know}
+### 7.1 /etc/skel 的工作机制
+{: .sec-know}
 
 useradd 创建用户并建家目录时，会按以下顺序动作：
 
@@ -388,7 +397,8 @@ Last login: Tue Apr 23 12:23:36 CST 2019 on pts/2
 
 把 `/etc/skel/.b*` 拷回用户家目录后重新登录，提示符即可恢复正常。
 
-## 八、用户相关文件清单 {: .sec-chk}
+## 八、用户相关文件清单
+{: .sec-chk}
 
 | 文件 | 作用 |
 | --- | --- |
@@ -403,7 +413,8 @@ Last login: Tue Apr 23 12:23:36 CST 2019 on pts/2
 > **注意：** `/etc/passwd` 与 `/etc/group` 对所有用户可读（任何进程都要靠它把 uid 翻译成用户名），所以密码绝不能放里面，统一放仅 root 可读的 `/etc/shadow` 与 `/etc/gshadow`，passwd 第二列只留占位符 `x`。
 {: .sec-pit}
 
-## 九、/etc/passwd 七字段详解 {: .sec-expl}
+## 九、/etc/passwd 七字段详解
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 test]# head /etc/passwd
@@ -467,7 +478,8 @@ wheel:x:10:ops,dev
 
 配套的校验命令也要认识：`pwck` 检查 `/etc/passwd` 与 `/etc/shadow` 的一致性（字段数不对、uid 重复、家目录不存在都会报出来），`grpck` 检查组文件，两者报 `duplicate` 之类的告警都要人工确认。原则上不要直接 vim 改这些文件，要改也用 `vipw` / `vigr`（编辑期间自动加锁防并发写坏），改完跑一遍校验是收尾的好习惯。
 
-## 十、用户管理命令详解 {: .sec-expl}
+## 十、用户管理命令详解
+{: .sec-expl}
 
 ### 10.1 创建用户：useradd
 
@@ -720,7 +732,8 @@ for user in $(cat users.txt); do id "$user"; done
 > **注意：** `/var/log/wtmp` 与 `/var/log/btmp` 是二进制文件，不能用 `cat` 查看，必须用 `last` / `lastb`；`lastb` 需要 root 权限。`last` 默认只显示"月 日"，查跨年记录时加 `-F` 输出完整年月日时分秒，避免歧义。发现 `lastb` 中有大量同一 IP 的失败记录时，应结合防火墙与 `fail2ban` 类工具封禁来源 IP。
 {: .sec-pit}
 
-## 十二、sudo 授权配置基础 {: .sec-expl}
+## 十二、sudo 授权配置基础
+{: .sec-expl}
 
 普通用户获得 root 能力最规范的方式是 sudo：不交出 root 密码，按命令粒度授权，全程有日志。上手只要四步：
 
@@ -751,7 +764,8 @@ OPSGRP      ALL=(ALL) SOFTADM
 > **注意：** sudo 只授权明确列出的命令，用 `sudo -l` 可以查看当前用户被授予了哪些命令。**永远不要授权 shell 类命令**（如 `/bin/bash`、`/bin/su`、`vi`、`find`），否则等于送了完整 root。sudo 的完整语法、工作原理与安全细则见《用户权限与提权》。
 {: .sec-pit}
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -763,7 +777,8 @@ OPSGRP      ALL=(ALL) SOFTADM
 | 新用户无法登录 | shell 是 `/sbin/nologin`，或 shadow 密码字段为 `!` | `grep 用户 /etc/passwd`；`grep 用户 /etc/shadow` | `usermod -s /bin/bash 用户`；`passwd 用户` 设密 |
 | 普通用户执行 sudo 提示不在 sudoers | 未授权或授权语法错误 | `visudo -c` 检查语法；确认用户名拼写 | 在 sudoers 中添加规则后用 `sudo -l` 验证 |
 
-## 知识卡片 {: .sec-know}
+## 知识卡片
+{: .sec-know}
 
 **用户分类卡**
 
@@ -798,7 +813,8 @@ OPSGRP      ALL=(ALL) SOFTADM
 | `/etc/login.defs` | uid 区间、密码策略、umask |
 | `/etc/skel` | 家目录模板 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 CentOS 7 已于 2024 年 6 月 EOL，新系统请使用 Rocky Linux / AlmaLinux / CentOS Stream。用户管理领域的新旧对照：
 
@@ -811,7 +827,8 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统请使用 Rocky Linux / AlmaLinux 
 | Debian / Ubuntu 直接 `useradd` | 交互式 `adduser` | Debian 家族 `useradd` 默认不建家目录，`adduser` 更友好 |
 | 只认 `/dev/sdX` | NVMe 固态硬盘为 `/dev/nvme0n1`，分区为 `nvme0n1p1` | 查看用 `lsblk` 最直观 |
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. `/etc/passwd` 每行第三、第四字段分别是什么？真实密码保存在哪个文件？
 
@@ -841,7 +858,8 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统请使用 Rocky Linux / AlmaLinux 
 - 定时任务与 crond
 - 附录-命令速查表
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 用户分三类：管理员 root（UID 0）、虚拟用户（1-999，不能登录）、普通用户（1000+）。
 2. 文件权限更关注 **r**：w 与 x 都需要 r 配合；目录权限更关注 **x**：r 与 w 都需要 x 配合。

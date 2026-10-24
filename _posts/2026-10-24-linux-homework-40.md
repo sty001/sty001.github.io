@@ -12,7 +12,8 @@ slug: "linux-homework-40"
 
 本篇对应课程第 39 天的课后作业，围绕 LNMP 网站上线后的两个真实痛点展开：①上传主题/图片时浏览器报 `413 Request Entity Too Large`，Nginx 需要加什么指令来放行大文件；②图片默认保存在 Web 服务器本地，一旦网站迁移到多台 Web 集群，图片应该集中存放到存储服务器（NFS）上。作业原文只有两句话的疑问，本篇把排查链路补全，并用一个最小 HTTP 服务在 Git Bash 真实复现 413、对比「限制太小」与「限制放大」两种响应；图片存储部分给出可直接落地的 NFS 架构与配置（B 级，CentOS 7 标准命令 + 预期输出）。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Nginx（安全策略禁用），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-40"
 
 实操目录统一用 `/tmp/hw/day39`。环境实测：GNU bash 5.3.15、curl 8.x、Python 3.13。本环境的 `nginx` 命令不可用（已用 `command -v` 验证），故 Nginx 配置校验 `nginx -t` 只能给 B 级命令。文中命令输出里的文件属主已按脱敏要求统一显示为 `user`，演示域名统一使用 `example.com`，存储/数据库服务器地址使用内网网段 `172.16.1.0/24` 作为示例。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -39,7 +41,8 @@ slug: "linux-homework-40"
 
 `client_max_body_size` 可以写在 `http`、`server`、`location` 三个作用域：写在 `http` 全局生效，写在某个 `server` 只对该虚拟主机生效，写在 `location /upload` 只对该上传路径生效——精细化控制时写在 `location` 最合适。
 
-### 步骤 1：复现 413（已实操） {: .sec-prac}
+### 步骤 1：复现 413（已实操）
+{: .sec-prac}
 
 为了在没有真实 Nginx 的环境里也能真实看到 413，我写了一个最小 HTTP 服务 `srv_413.py`，它读取请求的 `Content-Length`，超过给定上限就返回 413，完全模拟 Nginx `client_max_body_size` 的行为。先造一个小文件和一个大文件：
 
@@ -82,7 +85,8 @@ HTTP 状态码: 413
 
 小文件（9 字节，加上 multipart 边界也远小于 2000）正常返回 200；大文件（约 3MB）被服务端以 413 拒绝——和浏览器上传大主题时看到的 `413 Request Entity Too Large` 完全一致。
 
-### 步骤 2：放大限制后对比（已实操） {: .sec-prac}
+### 步骤 2：放大限制后对比（已实操）
+{: .sec-prac}
 
 同一个大文件，把服务端上限调到 20MB（相当于 Nginx 里 `client_max_body_size 20m`），再上传一次：
 
@@ -105,7 +109,8 @@ HTTP 状态码: 200
 
 放大限制后，原本被拒的 3MB 文件顺利上传成功（received 3145925 字节，多出来的几十字节是 multipart 表单的边界开销）。这就直观证明了：413 只差「一行 `client_max_body_size`」的事。
 
-### 步骤 3：Nginx 侧的正确配置（B 级） {: .sec-prac}
+### 步骤 3：Nginx 侧的正确配置（B 级）
+{: .sec-prac}
 
 回到真实 Nginx，针对上传场景在 `location /upload` 或对应 `server` 块里加上指令：
 
@@ -139,7 +144,8 @@ $ systemctl reload nginx
 
 `nginx -t` 通过说明语法没问题，`reload` 平滑重载不中断现有连接。
 
-### 步骤 4：别忘了同步改 PHP（B 级，关键易错点） {: .sec-prac}
+### 步骤 4：别忘了同步改 PHP（B 级，关键易错点）
+{: .sec-prac}
 
 只改 Nginx 还不够。LNMP 里请求到 PHP 后，PHP 自身还有两道限制，不放大一样会在上传大文件时报错（PHP 层通常表现为上传失败、文件大小为 0 或 `post_max_size` 超限）：
 
@@ -176,7 +182,8 @@ $ systemctl reload php-fpm
 
 **实现思路**：图片默认就在 Web 站点的上传目录下（如 WordPress 的 `/wp-content/uploads/`）。当网站从单台 Web 扩展到多台 Web 集群后，用户上传的图片只落在一台机器上，其他机器访问不到，就会出现「图片时有时无」。解决办法是把图片目录挂载到一台统一的 NFS 存储服务器，所有 Web 节点读写同一份数据。流程分四步：找到本地上传目录 → 把已有数据迁到存储服务器 → Web 节点挂载 NFS → 解决 NFS 权限映射（root_squash / all_squash）导致写不进去的问题。
 
-### 步骤 1：定位图片存储目录（B 级） {: .sec-prac}
+### 步骤 1：定位图片存储目录（B 级）
+{: .sec-prac}
 
 方法一，从图片访问链接反推 URI：
 
@@ -198,7 +205,8 @@ find /html/blog -type f -mmin -5
 /html/blog/wp-content/uploads/2019/05/example-1024x1024.jpg
 ```
 
-### 步骤 2：在存储服务器上建目录并暴露 NFS 共享（B 级） {: .sec-prac}
+### 步骤 2：在存储服务器上建目录并暴露 NFS 共享（B 级）
+{: .sec-prac}
 
 存储服务器（内网 `172.16.1.31`）上创建共享目录并写好 `/etc/exports`：
 
@@ -226,7 +234,8 @@ Export list for 172.16.1.31:
 /data/blog 172.16.1.0/24
 ```
 
-### 步骤 3：Web 节点挂载 NFS 并迁移旧数据（B 级） {: .sec-prac}
+### 步骤 3：Web 节点挂载 NFS 并迁移旧数据（B 级）
+{: .sec-prac}
 
 在每台 Web 节点上把存储目录挂到本地上传路径：
 
@@ -254,7 +263,8 @@ $ mount | grep uploads
 172.16.1.31:/data/blog on /html/blog/wp-content/uploads type nfs4 (rw,relatime,vers=4.1)
 ```
 
-### 步骤 4：解决「默认无法写入」的权限问题（B 级，核心坑） {: .sec-ts}
+### 步骤 4：解决「默认无法写入」的权限问题（B 级，核心坑）
+{: .sec-ts}
 
 这是 NFS 存储图片最常见的坑。NFS 默认 `root_squash` 会把客户端的 root 映射成服务端的 `nfsnobody`，导致用 root 身份上传写不进去；若配置成 `all_squash`，所有用户也都会被映射成 `nfsnobody`。解决办法是显式指定匿名映射用户为 Web 的运行用户 `www`（uid/gid 1002），让服务端用同一个身份读写：
 
@@ -281,7 +291,8 @@ exporting 172.16.1.0/24:/data/blog
 > - NFS 权限问题九成出在 squash 映射：记住 `root_squash` → root 变 nobody、`all_squash` → 所有人变 nobody；用 `anonuid/anongid` 把身份锁成 Web 运行用户才能正常写。
 > - 生产建议 NFS 之上有备份与高可用（如 DRBD 或对象存储），单台存储服务器本身也可能成为单点。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 413 `Request Entity Too Large` 是请求体超过服务端上限所致；本文用最小 HTTP 服务真实复现了它，并证明「放大限制（client_max_body_size）后同一文件即可上传成功」。
 2. 解决 413 要改两处：Nginx 的 `client_max_body_size` 与 PHP 的 `upload_max_filesize`、`post_max_size`，只改一处必然仍报错；`post_max_size` 须大于等于 `upload_max_filesize`。

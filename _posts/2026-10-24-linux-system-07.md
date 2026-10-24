@@ -12,7 +12,8 @@ slug: "linux-system-07"
 
 优化的下半场：用 `rpm` 检查软件安装情况、处理防火墙与 SELinux 两个安全服务、搞定字符集（LANG）、把 SSH 连接速度提上来，最后带一份服务器硬件与 Linux 发展史的回顾。前置的 yum 源优化完成后再来。
 
-## 课前回顾与 rpm 软件包检查 {: .sec-ver}
+## 课前回顾与 rpm 软件包检查
+{: .sec-ver}
 
 上一节完成了 Vim 编辑、系统信息查看、用户管理、命令提示符优化（含彩色提示符）与 yum 源优化：
 
@@ -21,7 +22,8 @@ slug: "linux-system-07"
 export PS1='[\[\e[32;1m\]\u@\[\e[33;1m\]\h\[\e[34;1m\] \W\[\e[0m\]]\$ '
 ```
 
-### 如何确认软件是否已经安装 {: .sec-ver}
+### 如何确认软件是否已经安装
+{: .sec-ver}
 
 **方法一：重新 yum 安装一遍**，已安装时会提示 `Nothing to do`。
 
@@ -157,7 +159,8 @@ SELINUX=disabled
 
 ## 字符编码优化
 
-### 什么是字符编码 {: .sec-know}
+### 什么是字符编码
+{: .sec-know}
 
 字符编码用于实现对非英文字符的支持。计算机操作系统由美国人发明，天然支持英语，要显示中文就需要字符集的支持。
 
@@ -219,7 +222,8 @@ LANG="zh_CN.UTF-8"
 > localectl set-locale LANG=zh_CN.GBK
 > ```
 
-### 原理解析：locale 变量体系 {: .sec-know}
+### 原理解析：locale 变量体系
+{: .sec-know}
 
 Linux 的字符集不是由一个变量决定的，而是一整套 `LC_*` 变量：
 
@@ -292,7 +296,8 @@ rtcsync                                 # 同步系统时间到硬件时钟
 
 ntpd 是老将，逐步调整时钟、追求长期精度，但对"时间严重跑偏"的机器收敛很慢；chronyd 是新一代，偏差大时能快速跳变纠正（`makestep` 控制），间歇性断网（笔记本、虚机迁移）场景下也同步得更稳。CentOS 7 起官方默认就是 chronyd，新部署没有理由再装 ntpd。
 
-## DNS 配置与 `/etc/resolv.conf` {: .sec-expl}
+## DNS 配置与 `/etc/resolv.conf`
+{: .sec-expl}
 
 DNS 负责把域名解析成 IP。客户端的解析配置在 `/etc/resolv.conf`：
 
@@ -321,7 +326,8 @@ options timeout:2 attempts:3
 
 ## 日志系统与 logrotate
 
-### 系统日志概览 {: .sec-sum}
+### 系统日志概览
+{: .sec-sum}
 
 | 日志文件 | 内容 |
 | --- | --- |
@@ -395,7 +401,8 @@ logrotate -f /etc/logrotate.conf    # 强制执行一轮（测试配置是否生
 > **注意：** 轮转后必须让服务重新打开日志文件（`postrotate` 里的 `kill -USR1` 或 `systemctl reload 服务`），否则服务还往旧文件写，表现为"日志轮转了但新文件一直是空的"。磁盘空间莫名被日志吃掉时，先 `du -sh /var/log/*` 定位，再检查对应服务的 logrotate 配置是否缺失。
 {: .sec-pit}
 
-## `/etc/fstab` 挂载优化参数 {: .sec-expl}
+## `/etc/fstab` 挂载优化参数
+{: .sec-expl}
 
 `/etc/fstab` 的第四列（挂载参数）不止 `defaults` 一个选择，数据盘常用 `noatime` / `nodiratime` 做性能优化：
 
@@ -495,7 +502,8 @@ webuser         soft    nofile          100000
 
 还有一处容易漏：系统给了额度，应用还要"领"——nginx.conf 里的 `worker_rlimit_nofile` 也要对齐 nofile 的值，两边一致才真正生效。
 
-## sysctl 内核参数优化 {: .sec-expl}
+## sysctl 内核参数优化
+{: .sec-expl}
 
 内核参数在系统运行时可以动态调整，用于优化文件描述符、网络协议栈、内存行为。查看与临时修改：
 
@@ -572,7 +580,8 @@ systemctl restart sshd
 
 服务端优化完还慢，就查客户端一侧：远程工具版本过老导致算法协商耗时、本地 DNS 解析慢、代理软件劫持 22 端口。用 `ssh -v IP` 看卡在哪一步——输出停在哪一行，问题就在哪个环节，这是 SSH 排错最有效的手段。多网卡机器还能进一步收口：sshd_config 里 `ListenAddress 10.0.0.200` 只在内网网卡监听，公网网卡直接扫不到。
 
-## 系统基础优化总结 {: .sec-sum}
+## 系统基础优化总结
+{: .sec-sum}
 
 | 优化项 | 内容 |
 | --- | --- |
@@ -594,7 +603,8 @@ systemctl restart sshd
 | 资源限制 | `/etc/security/limits.d/` drop-in 文件 |
 | 内核参数 | `/etc/sysctl.d/99-custom.conf` 按需调整 |
 
-## 阶段回顾：服务器硬件与系统发展 {: .sec-sum}
+## 阶段回顾：服务器硬件与系统发展
+{: .sec-sum}
 
 ### 如何才算把知识掌握了
 
@@ -602,7 +612,8 @@ systemctl restart sshd
 2. 判断掌握的标准：作用清楚、操作熟练、知识原理可以绘图；
 3. 检验的终极标准：能给不清楚的人讲明白。
 
-### 服务器硬件组成 {: .sec-expl}
+### 服务器硬件组成
+{: .sec-expl}
 
 电源、CPU、内存、磁盘、风扇。
 
@@ -627,7 +638,8 @@ systemctl restart sshd
 
 RAID 级别补一张速记：raid0 两块盘合一块，快但坏一块全丢；raid1 两块盘互为镜像，坏一块照常跑，容量减半。生产常用的是 raid10（先镜像再条带，数据库首选）和 raid5（三块起步，校验占一块的容量，允许坏一块）。
 
-### 操作系统组成与发展过程 {: .sec-prac}
+### 操作系统组成与发展过程
+{: .sec-prac}
 
 操作系统由**内核、解释器、应用程序**三部分组成。以聊天软件为例：人操作软件（输入"你好"）→ 解释器 → 内核 → 计算机硬件（二进制，最终由网卡发出）。
 
@@ -652,7 +664,8 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 > **现代环境补充：** CentOS 已于 2024 年 6 月对 7.x 停止维护，CentOS Linux 项目转型为 CentOS Stream。当前企业级替代方案：Rocky Linux（CentOS 创始人新立，二进制兼容 RHEL）、AlmaLinux（CloudLinux 支持，二进制兼容 RHEL）、Oracle Linux。选型上，追求长期稳定的生产环境用 Rocky / AlmaLinux 的 LTS 版本。
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -669,7 +682,8 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 改完 swappiness 验证一下：`cat /proc/sys/vm/swappiness` 直接读内核当前值，与 `sysctl vm.swappiness` 等价——数值没变说明加载没成功，回头查配置文件路径。数据库导出文件乱码同理要先查源头：导出时客户端的字符集错了，导入端怎么改都没用。
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -685,7 +699,8 @@ GNU 项目 + Linux 内核雏形 == Linux
 > **注意：** Rocky Linux、AlmaLinux 上本篇所有命令（`timedatectl`、`chronyc`、`journalctl`、`sysctl`、`logrotate`）行为完全一致；firewalld 仍是默认防火墙。区别主要在内核版本（新内核 sysctl 参数名可能有增减）与默认服务集。
 {: .sec-pit}
 
-## 课后练习 {: .sec-prac}
+## 课后练习
+{: .sec-prac}
 
 **基础练习**
 
@@ -697,7 +712,8 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 1. 如何批量创建多个用户（例如一次创建 50 个用户）。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. `rpm -qa` 查是否安装、`rpm -ql` 查包内文件、`rpm -qf` 查文件属于哪个包，配合反引号可以一步定位。
 2. CentOS 7 用 `systemctl stop/disable` 关闭防火墙，`is-active` / `is-enabled` 可以快速确认服务状态；生产环境应精确放行而不是一关了之。
@@ -707,7 +723,8 @@ GNU 项目 + Linux 内核雏形 == Linux
 6. 系统基础优化五件事：命令提示符、yum 源、安全服务（防火墙 + SELinux）、字符集、SSH 远程连接；再往上一层还要做时区与 chrony 同步、DNS 优化、日志轮转、fstab 挂载参数、swap 策略、limits.d 资源限制、sysctl 内核参数。
 7. 时间不同步会引发证书与认证故障；日志不轮转会写满磁盘；文件描述符不调高并发服务就起不来——这三项是生产事故的高发区。
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. `LC_ALL` 和 `LANG` 同时设置时，哪个优先生效？临时把某条命令的输出切成英文界面，用什么写法？
 2. CentOS 7 中用什么命令设置时区？用什么命令查看 chrony 的同步源？

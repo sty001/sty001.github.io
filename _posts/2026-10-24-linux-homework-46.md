@@ -12,7 +12,8 @@ slug: "linux-homework-46"
 
 day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「nginx 一停，keepalived 跟着停；nginx 一起，keepalived 跟着恢复」这条联动链路真正写成脚本并跑通。核心有两块——①`check_nginx.sh` 健康检查脚本如何探测 nginx 存活（重点讲清 `kill -0` 与 pid 文件检测原理）；②`monitor_nginx_keepalived.sh` 用 while 循环做实时监控，配合 keepalived 的 `weight` 实现「主挂→VIP 漂移→主恢复→VIP 抢回」的闭环。本篇所有脚本与日志均为真实产物或真实运行结果，标注 `已实操`。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境为 Git Bash（无法运行真实 keepalived / nginx 守护进程），因此采用分级实操：
 
@@ -21,7 +22,8 @@ day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「n
 
 实操目录统一用 `/tmp/hw/day43`（放全部脚本与 `nginx.pid`、`monitor.log`）。脱敏约定：负载均衡节点主机名 → `linux-node01`（MASTER，优先级 100）、`linux-node02`（BACKUP，优先级 90）；VIP 用内网示意地址 `10.0.0.3/24`；对外域名统一写 `example.com`；命令输出属主统一显示为 `user`。注意 `weight -20`（day43 已配置）在本篇联动中承担「nginx 挂→主降优先级→VIP 漂走」的关键角色。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -30,13 +32,15 @@ day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「n
 | 题 3 | `weight` 正负对抢占的影响推演（`sim_weight.sh`） | A 级（脚本真跑） |
 | 题 4 | 联动监控真实日志 `monitor.log` 与最终联动流程图 | A 级（真实日志 + 流程图） |
 
-## 题 1：check_nginx.sh 健康检查脚本（pid 文件 + kill -0） {: .sec-ver}
+## 题 1：check_nginx.sh 健康检查脚本（pid 文件 + kill -0）
+{: .sec-ver}
 
 **考察点**：keepalived 的 `vrrp_script` 靠「脚本退出码」判断健康（0 健康、非 0 异常）。本脚本要回答一个问题——怎么可靠地知道 nginx 还在不在。`kill -0` 与 pid 文件组合是最稳的做法，必须讲清原理。
 
 **实现思路**：先给出 `check_nginx.sh` 源码（读 `/var/run/nginx.pid` → `kill -0` 探测进程），再解释 `kill -0` 为什么不会真的杀进程、为什么 pid 文件比 `ps | grep` 更可靠，最后给出真机验证命令。
 
-### 步骤 1：check_nginx.sh 真实源码（已实操） {: .sec-prac}
+### 步骤 1：check_nginx.sh 真实源码（已实操）
+{: .sec-prac}
 
 这份脚本被 day43 配置里的 `vrrp_script chk_nginx { script "/server/scripts/check_nginx.sh" }` 调用，退出码 0 表示 nginx 健康，非 0 表示该降优先级：
 
@@ -68,7 +72,8 @@ fi
 exit 1
 ```
 
-### 步骤 2：kill -0 与 pid 文件检测原理（已实操） {: .sec-know}
+### 步骤 2：kill -0 与 pid 文件检测原理（已实操）
+{: .sec-know}
 
 - **`kill -0 <PID>` 是什么**：`-0` 信号编号表示「不发送任何信号」，只做一件事——检查「当前进程是否有权向 PID 发信号」。如果 PID 存在且有权限，`kill -0` 返回 0（成功）；PID 不存在或无权，返回 1（失败）。所以它**绝不会杀死进程**，却完美回答「这个 PID 还活着吗」。
 - **为什么先看 pid 文件**：`/var/run/nginx.pid` 是 nginx 启动时自己写下的主进程号。先 `-f` 确认文件存在，再 `cat` 取出 PID，再用 `kill -0` 验证——三步确认，比单纯 `ps | grep nginx` 更精确（避免 grep 误匹配、避免匹配到已僵尸的进程）。
@@ -91,7 +96,8 @@ exit 1
 
 **实现思路**：先给真机版 `monitor_nginx_keepalived.sh`（用 while + `kill -0` 判定 + `LAST_STATE` 幂等），再给可在 Git Bash 真跑的 `sim_monitor.sh` + `mock_nginx.sh` 仿真版，跑出真实日志证明联动成立。
 
-### 步骤 1：真机版 monitor_nginx_keepalived.sh 源码（已实操） {: .sec-prac}
+### 步骤 1：真机版 monitor_nginx_keepalived.sh 源码（已实操）
+{: .sec-prac}
 
 ```bash
 #!/bin/bash
@@ -142,11 +148,13 @@ while true; do
 done
 ```
 
-### 步骤 2：幂等控制是关键（已实操） {: .sec-prac}
+### 步骤 2：幂等控制是关键（已实操）
+{: .sec-prac}
 
 脚本里的 `LAST_STATE` 变量是精华：只有当 `NGINX_UP` 与 `LAST_STATE` 不一致时才执行 `systemctl`。否则 nginx 一直健康，每 2 秒都会调一次 `systemctl start keepalived`——虽然 systemd 对「已启动再 start」是幂等的，但日志会被刷爆，且抢占模式下反复 start 有极小概率引发通告抖动。状态翻转才动作，是监控脚本的通用写法。真机部署时这条监控脚本本身也要进监控——进程死了等于全套联动失效，最简单的办法是另配一条 `nodata` 或进程存在性告警盯着它。
 
-### 步骤 3：可在 Git Bash 真跑的仿真版（已实操） {: .sec-prac}
+### 步骤 3：可在 Git Bash 真跑的仿真版（已实操）
+{: .sec-prac}
 
 `sim_monitor.sh` 用 `mock_nginx.sh`（一个只 `sleep` 的伪 nginx 主进程）代替真实 nginx，用 `kill -0` 判定存活，用打印「等价动作」代替 `systemctl`，最终产出 `monitor.log`：
 
@@ -217,7 +225,8 @@ trap 'exit 0' TERM INT
 sleep 300
 ```
 
-### 步骤 4：sim_monitor.sh 真实运行输出（已实操） {: .sec-prac}
+### 步骤 4：sim_monitor.sh 真实运行输出（已实操）
+{: .sec-prac}
 
 在 `/tmp/hw/day43` 下真实运行，脚本自动生成 `monitor.log`：
 
@@ -264,7 +273,8 @@ bash /tmp/hw/day43/sim_monitor.sh
 
 **实现思路**：脚本实现一个 `eff()` 函数，按 `weight` 正负套用不同规则，分别打印 linux-node01（基础 100）与 linux-node02（基础 90）的有效优先级，谁大谁当 MASTER。
 
-### 步骤 1：sim_weight.sh 关键源码（已实操） {: .sec-prac}
+### 步骤 1：sim_weight.sh 关键源码（已实操）
+{: .sec-prac}
 
 ```bash
 #!/usr/bin/env bash
@@ -286,7 +296,8 @@ eff() { # 参数: 基础优先级 weight 脚本结果(0成功/1失败)
 }
 ```
 
-### 步骤 2：sim_weight.sh 真实运行输出（已实操） {: .sec-prac}
+### 步骤 2：sim_weight.sh 真实运行输出（已实操）
+{: .sec-prac}
 
 ```bash
 bash /tmp/hw/day43/sim_weight.sh
@@ -326,7 +337,8 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 注意：weight=0 时 fall 次数达到即触发，与 priority 高低无关
 ```
 
-### 步骤 3：输出解读与联动闭环（已实操） {: .sec-prac}
+### 步骤 3：输出解读与联动闭环（已实操）
+{: .sec-prac}
 
 把题 2 的监控脚本和题 3 的权重推演拼起来，就是完整闭环：
 
@@ -343,11 +355,13 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 > - 正负权重都能切换，但只有负值在「主恢复后自动抢回」这件事上语义最干净；
 > - `preempt`（抢占）默认开启，所以场景 C 主恢复后 VIP 自动回来；若配了 `nopreempt`，主恢复后 VIP 会留在备机，需手动干预。
 
-## 题 4：联动监控真实日志与最终流程图 {: .sec-expl}
+## 题 4：联动监控真实日志与最终流程图
+{: .sec-expl}
 
 **考察点**：用真实 `monitor.log` 把整条联动链路的时间线坐实，并画出「事件 → 探测 → 动作 → VIP 归属」的总流程图，作为本篇的总收口。
 
-### 步骤 1：monitor.log 真实日志（已实操，原始产物） {: .sec-prac}
+### 步骤 1：monitor.log 真实日志（已实操，原始产物）
+{: .sec-prac}
 
 这份日志是仿真环境的真实产物（时间轴与题 2 复现版一致，仅起始时刻不同），完整记录了一次「nginx 故障→漂移→恢复→抢回」：
 
@@ -364,7 +378,8 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 
 日志里 `nginx.pid` 示例内容为 `1871`（即恢复后新主进程号），与上面第 6 行 `PID=1871` 对应，证明 pid 文件 + `kill -0` 探测链路真实可用。
 
-### 步骤 2：最终联动流程图（文字 + 表格） {: .sec-prac}
+### 步骤 2：最终联动流程图（文字 + 表格）
+{: .sec-prac}
 
 整条链路可拆成「探测层（check_nginx.sh）→ 权重层（weight）→ 选举层（VRRP）→ 漂移层（VIP）→ 恢复层（preempt）」五段，事件序列如下：
 
@@ -410,7 +425,8 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 > - 日志里 `keepalived 保持停止` 的重复行，正是 `LAST_STATE` 幂等控制生效的证据（只在翻转瞬间写一次动作，其余轮次只记录状态）；
 > - 真机排障先看 `monitor.log` 时间线，再看 `ip a` 的 VIP 实际落点，最后看 keepalived 的 `journalctl -u keepalived`，三层交叉定位最快。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. `check_nginx.sh` 用「pid 文件存在 + `kill -0` 探测」双保险判断 nginx 存活，`kill -0` 只探测不杀进程，退出码 0/非 0 直接决定 keepalived 的健康判定；pid 文件可能残留，所以必须二次 `kill -0` 确认。想测得更真，把端口探测追加成第二道条件。
 2. `monitor_nginx_keepalived.sh` 用 while 死循环 + `LAST_STATE` 幂等变量，做到「状态翻转才调一次 systemctl」，避免每秒重复启停；真机需 `nohup ... &` 后台常驻、开机自启，且监控脚本自身也要进告警。

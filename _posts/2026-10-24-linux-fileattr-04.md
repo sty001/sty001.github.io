@@ -12,7 +12,8 @@ slug: "linux-fileattr-04"
 
 这一篇收尾文件属性章节：find 的进阶查找（按大小、层级、权限）、目录结构查看命令 `tree`、tar 的压缩解压与排除、文件权限的数值换算与 `chmod` / `umask` / `chown` 完整用法、SUID/SGID/Sticky 三种特殊权限、`chattr` 属性锁与 ACL 访问控制，以及系统用户的分类与 uid 规则、inode / block 概念和三种时间。把这一篇啃完，文件属性的知识就成体系了。
 
-## 课前回顾 {: .sec-sum}
+## 课前回顾
+{: .sec-sum}
 
 | 主题 | 要点 |
 | --- | --- |
@@ -22,7 +23,8 @@ slug: "linux-fileattr-04"
 | 其他属性 | 硬链接数、属主、属组、大小信息、修改时间 |
 | 相关命令 | `locate` + `updatedb`、`which`、`whereis`、`find 路径 -type 类型 -name "文件名*"` |
 
-## find 命令查找信息补充 {: .sec-ext}
+## find 命令查找信息补充
+{: .sec-ext}
 
 ```bash
 # 精确查找
@@ -136,7 +138,8 @@ tar: Removing leading `/' from member names
 /test/services
 ```
 
-### 解压与检查 {: .sec-ver}
+### 解压与检查
+{: .sec-ver}
 
 ```bash
 tar xvf /test/test.tar.gz          # 解压数据包
@@ -150,7 +153,8 @@ tar tf  /test/test.tar.gz          # 不解压的情况下查看压缩包里面�
 
 更严格的做法是校验 md5：打包前 `find . -type f -exec md5sum {} \; > /tmp/md5.before`，解压后同样算一遍，再 diff 两份清单。
 
-### 压缩过程信息说明 {: .sec-expl}
+### 压缩过程信息说明
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 test]# tar zcvf test.tar.gz /test/services
@@ -513,7 +517,8 @@ uid=0(root) gid=0(root) groups=0(root)
 uid=1000(test) gid=1000(test) groups=1000(test)
 ```
 
-### 用户组的概念 {: .sec-know}
+### 用户组的概念
+{: .sec-know}
 
 ```text
 运维组 sa（system admin）：user01 user02 user03     /sa   --rwx
@@ -587,7 +592,8 @@ uid=0(root) gid=0(root) groups=0(root)
 
 口诀之外补一句：`cp` 默认会把 mtime 更新为当前时间（复制即新建），想连时间一起搬用 `cp -p` 或 `rsync -a`——比对文件新旧时这个细节经常坑人。
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -599,14 +605,16 @@ uid=0(root) gid=0(root) groups=0(root)
 | ACL 授权了却访问不了 | mask 限制了有效权限 | `getfacl 文件` 看 effective | `setfacl -m m::rwx 文件` 调整 mask |
 | `chown` 报 `invalid user` | 用户不存在 | `id 用户名` | 先建用户再改属主 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 - Rocky Linux / AlmaLinux 9 上安装 tree：`dnf install -y tree`；root 默认 umask 仍为 `022`，普通用户 `002`。
 - tar 的 `--zstd` 需要 GNU tar 1.31+，Rocky/Alma 9 满足；CentOS 7 自带 tar 1.26 不支持，可用 `-I zstd` 指定压缩器。
 - SELinux 在 Rocky/Alma 9 上默认 enforcing，权限正确仍被拒绝时优先怀疑 SELinux（`ls -Z`、`ausearch -m avc`），不要习惯性 `setenforce 0`。
 - 传统 `chattr` 在 xfs 文件系统上同样支持 `+i` / `+a`，行为与 ext4 一致。
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. umask 为 `022` 时，新建文件和新建目录的权限分别是多少？请写出推导过程。
 2. 为什么 `666 - 027` 不等于文件的实际权限？`umask 027` 时文件的正确权限是多少？
@@ -617,7 +625,8 @@ uid=0(root) gid=0(root) groups=0(root)
 
 > **答案：** 1. 文件 `666 & ~022 = 644`，目录 `777 & ~022 = 755`。2. umask 是"按位屏蔽"不是十进制减法：027 的二进制各位分别屏蔽属组的 `w` 与其他用户的全部权限，正确结果是 `666 & ~027 = 640`；而 `666-027=639` 中的 `9` 根本不是合法权限段。3. `find /data -type d -exec chmod 755 {} +` 再 `find /data -type f -exec chmod 644 {} +`，属主用 `chown -R www:www /data`。4. SUID 让可执行文件在执行期间以文件属主身份运行（如 `passwd` 以 root 写 `/etc/shadow`）；审计用 `find / -type f -perm -4000`。5. 先 `chattr -i 文件` 去掉不可变属性，确认无其他保护（如 Sticky 目录）后再正常删除。6. SGID 目录里新建文件的属组自动继承目录的属组——这正是 2775 共享目录的设计意图；Sticky 目录里普通用户只能删除属主是自己的文件，root 例外。
 
-## 课后练习 {: .sec-prac}
+## 课后练习
+{: .sec-prac}
 
 1. 如何将一个目录中以 `.txt` 结尾的文件统一进行压缩处理？
    - 思路：① 把以 `.txt` 结尾的文件找出来；② 再利用 `tar` 命令打包。
@@ -626,7 +635,8 @@ uid=0(root) gid=0(root) groups=0(root)
 4. CentOS 6 里面如何用 uid 区分不同的用户类型？
 5. 总结 Linux 系统中常用的压缩和解压命令：`tar`、`zip`、`rar`。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. `find` 可以按名称（`-name` / `-iname`）、大小（`-size`，注意 `c` `k` `M` `G` 单位）、层级（`-maxdepth`）查找，且 `-maxdepth` 必须写在其他参数之前。
 2. `find -perm 644` 是恰好等于，`-perm -644` 是包含全部位，`-perm /644` 是包含任意一位；审计 SUID 用 `find / -type f -perm -4000`。

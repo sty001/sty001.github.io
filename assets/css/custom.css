@@ -342,35 +342,6 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 :root[data-bs-theme='light'] .qr-modal-box { background: #ffffff; }
 :root[data-bs-theme='light'] .qr-modal-box p { color: #3a4350; }
 
-/* ===== 全站雪花特效（纯 CSS，静态 DOM，不依赖 JS） ===== */
-#snow-fx {
-  position: fixed; inset: 0; pointer-events: none; z-index: 1040;
-  overflow: hidden;
-}
-#snow-fx .snowflake {
-  position: absolute; top: -6vh;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 0 4px rgba(160, 200, 255, 0.4);
-  animation-name: snowFall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  user-select: none;
-  will-change: transform;
-}
-:root[data-bs-theme='light'] #snow-fx .snowflake {
-  color: rgba(96, 130, 230, 0.55);
-  text-shadow: none;
-}
-@keyframes snowFall {
-  0%   { transform: translate3d(0, -4vh, 0) rotate(0deg); opacity: 0; }
-  8%   { opacity: 0.9; }
-  50%  { transform: translate3d(var(--sway, 4vw), 52vh, 0) rotate(160deg); }
-  100% { transform: translate3d(calc(var(--sway, 4vw) * -0.6), 106vh, 0) rotate(340deg); opacity: 0.15; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #snow-fx { display: none; }
-}
-
 /* ===== 点击特效：涟漪高亮 + 雪花粒子 ===== */
 .click-ripple {
   position: fixed; width: 8px; height: 8px; margin: -4px 0 0 -4px;

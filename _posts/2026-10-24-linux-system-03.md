@@ -42,7 +42,8 @@ slug: "linux-system-03"
 
 为什么 Linux 只有一棵目录树、Windows 却按盘符切？因为 Linux 把"存储"和"路径"解耦了：路径永远从 `/` 出发，磁盘随时挂到任何目录下插拔，上层应用不用改一个字；Windows 把路径绑死在盘符上，加一块盘就要纠结它叫 E 还是 F。这个设计让 Linux 的扩容、迁移、网络存储（NFS）都天然平滑。
 
-## 原理解析：一切皆文件与挂载的本质 {: .sec-know}
+## 原理解析：一切皆文件与挂载的本质
+{: .sec-know}
 
 Linux 的设计哲学是"**一切皆文件**"：普通文件是文件，目录是文件，硬盘、键盘、进程信息也都是文件。这一切靠内核的 **VFS（Virtual File System，虚拟文件系统）** 层实现。
 
@@ -55,7 +56,8 @@ Linux 的设计哲学是"**一切皆文件**"：普通文件是文件，目录�
 > **注意：** 因为挂载点只是目录树上的一个"接入点"，所以**挂载点目录里原有的数据会被暂时遮住**——挂载后只能看到新设备的内容，卸载后才能重新看到原数据。因此生产环境严禁把 `/etc`、`/home` 这类有数据的目录当挂载点。另外，设备文件名（如 `/dev/sdb1`）不是固定的，重启或调整硬件顺序后可能变化，所以 `/etc/fstab` 里推荐用 UUID 标识设备。
 {: .sec-pit}
 
-## 实操演示：挂载光驱 {: .sec-ex}
+## 实操演示：挂载光驱
+{: .sec-ex}
 
 **第一个步骤：拥有一个存储设备（光驱）**，使光驱加载光盘。
 
@@ -104,7 +106,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 挂载之后，挂载点目录自身的权限设置就不再起作用了——读写控制权交给文件系统内的目录和挂载选项，想收紧权限从这两处下手。
 
-### `mount` 常用参数详解 {: .sec-expl}
+### `mount` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -136,7 +139,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 同一设备重复挂到不同目录不会报错，但会挂出多份视图，卸载要逐个 umount——动手前先 `mount` 不带参数看一眼挂了什么。
 
-### `umount` 常用参数详解 {: .sec-expl}
+### `umount` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -146,7 +150,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 `umount -l` 是懒卸载，目录树里先摘掉、占用清完才真正释放——应急可用，别当常规操作。另外，盘要先用 fdisk/parted 分区、mkfs 格式化出文件系统才能挂载，没格式化直接 mount 会报"you must specify the filesystem type"。
 
-## FHS 目录标准逐个详解 {: .sec-best}
+## FHS 目录标准逐个详解
+{: .sec-best}
 
 FHS（Filesystem Hierarchy Standard，文件系统层次结构标准）规定了每个目录该放什么。运维判断"什么文件该放哪、什么目录能清"，都以此为依据。
 
@@ -176,7 +181,8 @@ FHS（Filesystem Hierarchy Standard，文件系统层次结构标准）规定了
 
 > **补充：** `/proc` 下的文件有个怪现象：`ls -l` 显示大小全是 0，`cat` 出来却全是内容——这些文件不在磁盘上，是内核在读取瞬间实时生成的。`/proc/meminfo`、`/proc/cpuinfo` 都是这么来的，往里写值内存里也留不住，没有意义。
 
-## 根目录下的基础目录结构 {: .sec-expl}
+## 根目录下的基础目录结构
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 /]# ls -l /
@@ -270,7 +276,8 @@ mount -t ntfs-3g /dev/sdb1 /mnt/ntfs
 
 ## 开机自动挂载：`/etc/fstab`
 
-### 文件作用与原始示例 {: .sec-ex}
+### 文件作用与原始示例
+{: .sec-ex}
 
 `/etc/fstab` 用于实现存储设备**开机自动挂载**：
 
@@ -285,7 +292,8 @@ UUID=62100743-6f8a-4f83-a37d-e2088c4830e2 swap    swap    defaults        0 0
 
 列的含义依次是：设备（或 UUID）、挂载点、文件系统类型、挂载参数、dump 备份标志、fsck 检查顺序。
 
-### 六字段逐列详解 {: .sec-expl}
+### 六字段逐列详解
+{: .sec-expl}
 
 | 字段 | 含义 | 取值说明 |
 | --- | --- | --- |
@@ -303,7 +311,8 @@ UUID=62100743-6f8a-4f83-a37d-e2088c4830e2 swap    swap    defaults        0 0
 
 挂载光驱最典型的用途是做本地 yum 源：光盘里的 `Packages` 目录就是仓库本体，`baseurl=file:///mnt` 指过去即可（完整配置见《软件安装与硬件信息查看》）。机房里不能上外网的机器全靠这招。
 
-### 配置开机自动挂载的完整步骤 {: .sec-prac}
+### 配置开机自动挂载的完整步骤
+{: .sec-prac}
 
 ```bash
 blkid /dev/sdb1                          # 第一步：查出设备的 UUID 与文件系统类型
@@ -323,7 +332,8 @@ df -h                                    # 第五步：确认 /data 已挂载且
 > **注意：** `mount -a` 是配置 fstab 后的标准验证动作——如果 fstab 写错，这里立刻报错，还能进系统修复；如果不经验证直接重启，fstab 错误可能导致系统无法启动（尤其在根分区配置出错时）。修改 fstab 前先 `cp /etc/fstab /etc/fstab.bak`，这里偷懒的后果是开不了机。
 {: .sec-pit}
 
-## 重要文件一：网卡配置文件 {: .sec-expl}
+## 重要文件一：网卡配置文件
+{: .sec-expl}
 
 ### 文件内容信息
 
@@ -367,7 +377,8 @@ ifcfg 文件不是每个字段都要写全：TYPE、NAME 等多数有默认值�
 
 生产服务器一律 `static`（或 `none`）手动配 IP，不用 DHCP——租约到期一换 IP，依赖这个 IP 的 DNS、监控、防火墙策略全部失效。DHCP 只留给个人练机环境。多网卡机器每块网卡一个 `ifcfg-xxx` 文件，文件名与 `DEVICE` 对应；复制旧配置改新网卡时，`UUID` 和 `DEVICE` 两项必须改，UUID 重复会让网络服务启动异常。
 
-### 配置文件修改后重启网络服务 {: .sec-expl}
+### 配置文件修改后重启网络服务
+{: .sec-expl}
 
 **方法一：针对所有网卡进行重启**
 
@@ -392,7 +403,8 @@ systemctl stop NetworkManager
 > **注意：** NetworkManager 与传统的 `network` 服务会互相覆盖配置，这是"配置改了不生效"的经典原因。两选一：要么停用 NetworkManager 用 `network` 服务（传统运维习惯），要么停用 `network` 服务、改用 NetworkManager 的命令行工具 `nmcli` 管理（现代发行版的默认做法）。远程操作时停网络服务有断开连接的风险，优先用 `ifdown eth0 && ifup eth0` 精准重启单块网卡。
 {: .sec-pit}
 
-## 重要文件二：DNS 解析配置文件（了解） {: .sec-expl}
+## 重要文件二：DNS 解析配置文件（了解）
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# vi /etc/resolv.conf
@@ -422,7 +434,8 @@ nameserver 10.10.10.10
 
 两者都和域名有关，分工完全不同：`/etc/hosts` 是本地写死的"通讯录"，查询优先级高、改完立即生效，适合内网机器互访和临时测试；`/etc/resolv.conf` 决定"去问哪个 DNS 服务器"，管的是本地查不到的所有域名。排错口诀：解析不对，先看 hosts 是不是有旧记录把域名劫持了，再去查 DNS。
 
-## 知识卡片：目录与挂载速查 {: .sec-know}
+## 知识卡片：目录与挂载速查
+{: .sec-know}
 
 | 知识点 | 一句话结论 |
 | --- | --- |
@@ -437,7 +450,8 @@ nameserver 10.10.10.10
 | 根分区 fsck | 根写 `1`，其他写 `2`，swap 写 `0` |
 | 能清的目录 | `/tmp`、`/var/log`（轮转）、`/run` |
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -450,7 +464,8 @@ nameserver 10.10.10.10
 | 改了网卡配置不生效 | NetworkManager 覆盖了配置 | `systemctl status NetworkManager` | 停用其一，二选一管理网络 |
 | DNS 时好时坏 | resolv.conf 被自动覆盖 | `cat /etc/resolv.conf` 看生成注释 | 改 `DNS1` 或 `chattr +i` 锁定文件 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -464,7 +479,8 @@ nameserver 10.10.10.10
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 等系统上本篇的目录标准、挂载机制、fstab 格式完全一致；差异主要在网卡命名（如 `ens160`）与网络管理工具（NetworkManager 为默认）。查询设备用 `lsblk -f` 可以一次性看到分区、UUID、文件系统类型与挂载点，是替代 `blkid` + `fdisk -l` 组合的最佳实践。
 {: .sec-pit}
 
-## 课后练习 {: .sec-prac}
+## 课后练习
+{: .sec-prac}
 
 1. 总结命令快捷方式。
 2. 总结存储设备挂载步骤。
@@ -475,7 +491,8 @@ nameserver 10.10.10.10
 1. 预习系统的启动级别。
 2. 预习系统的启动顺序。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 熟练使用 `Ctrl + a/e/u/k/w/y` 等快捷键可以大幅提升命令行效率；`Ctrl + s` 会锁定终端，`Ctrl + q` 解锁。
 2. 挂载的本质是把一个目录作为存储设备的挂载点，进入该目录即可看到设备中的数据；挂载点目录必须事先存在，且不要用有数据的目录。
@@ -486,7 +503,8 @@ nameserver 10.10.10.10
 7. 网卡配置文件 `/etc/sysconfig/network-scripts/ifcfg-eth0` 是重点，`ONBOOT`、`IPADDR`、`PREFIX`、`GATEWAY`、`DNS1` 是最常改的几项。
 8. 改完网卡配置后重启服务：`systemctl restart network` 或 `ifdown eth0 && ifup eth0`；重启失败先关掉 NetworkManager 再试。
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. 挂载点目录里原有数据在挂载后会怎样？卸载后呢？
 2. `mount -o loop /data/xx.iso /mnt` 中的 `loop` 参数起什么作用？

@@ -12,7 +12,8 @@ slug: "linux-homework-36"
 
 本篇对应课程第 35 天的课后作业，共三题：① 对 ansible 剧本扩展功能进行总结；②（选做）总结 ansible 剧本 roles；③ 预习 Web 服务——HTTP 协议原理与 Nginx 的安装、配置。作业原文偏「总结 + 预习」，本篇把扩展功能（loop / when / tags / register / ignore_errors / block）写成一个可校验的综合示例剧本并真跑语法校验；roles 在沙箱里实际建出标准目录骨架并逐个填充角色文件；HTTP 部分用 `curl -v` 真跑一次完整请求，对照报文结构逐段讲解。环境里没有 ansible，扩展示例与角色文件用 Python 的 pyyaml 做语法真跑校验（A 级），`ansible-playbook` 执行与 Nginx 安装给出标准命令与预期输出（B 级）。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），且未安装 ansible / ansible-playbook，因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-36"
 
 环境实测：`python`（3.13，含 pyyaml 6.0.3）可用，`command -v ansible-playbook` 返回 NOT FOUND，`nginx` 未安装，`curl` 8.21.0 可用且外网可达。示例主机名统一用 `linux-node01`、`linux-node02`，域名统一用 `example.com`，口令占位、输出中的本地用户名按脱敏要求处理为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -29,7 +31,8 @@ slug: "linux-homework-36"
 | 题 2（选做） | 总结 Ansible 剧本 roles 的目录结构与调用方式 | A 级（目录骨架真建 + 角色文件校验）+ B 级（调用方式） |
 | 题 3 | 预习 Web 服务：HTTP 协议原理 + Nginx 安装配置 | A 级（curl -v 真跑）+ B 级（Nginx 安装） |
 
-## 题 1：Ansible 剧本扩展功能总结 {: .sec-ext}
+## 题 1：Ansible 剧本扩展功能总结
+{: .sec-ext}
 
 **考察点**：把课堂讲的扩展功能从「概念」变成「可运行示例」——变量集中管理、`loop` 批量执行、`when` 按 facts 条件执行、`register` 接住任务结果、`ignore_errors` 容错、`block/rescue/always` 错误处理、`tags` 按需挑选任务。每种扩展功能的一句话总结见下表：
 
@@ -48,7 +51,8 @@ slug: "linux-homework-36"
 
 **实现思路**：写一个综合示例剧本 `ext_demo.yml`，把上面除 handlers 之外的核心功能各安排一个任务：`loop` 批量装包、`when` 按 facts 建文件、`register` 回显端口检查、`ignore_errors` 容错、`block/rescue/always` 演示回滚，每个任务打上 `tags`。
 
-### 步骤 1：编写扩展示例剧本（已实操） {: .sec-ext}
+### 步骤 1：编写扩展示例剧本（已实操）
+{: .sec-ext}
 
 ```yaml
 - hosts: all
@@ -109,7 +113,8 @@ slug: "linux-homework-36"
 
 每个任务对应的知识点：任务 01 用 `loop` 遍历 `vars` 里的 `pkg_list`，装包清单改成纯数据；任务 02 的 `when` 依赖 facts 的 `ansible_hostname`，只在 `linux-node01` 上生效，`linux-node02` 会显示 skipped；任务 03 把 shell 结果注册成 `port_info` 并回显，`changed_when: false` 声明这是检查类任务；任务 04 故意失败但被 `ignore_errors` 放行；任务 05 的 block 内装一个不存在的包必然失败，于是进入 rescue 打印回滚信息，always 里的清理无论如何都执行。
 
-### 步骤 2：YAML 语法校验（已实操） {: .sec-prac}
+### 步骤 2：YAML 语法校验（已实操）
+{: .sec-prac}
 
 ```bash
 cd /tmp/hw/day35
@@ -122,7 +127,8 @@ python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1],encoding='utf-8')); 
 YAML OK: ext_demo.yml
 ```
 
-### 步骤 3：执行与标签挑选（B 级） {: .sec-prac}
+### 步骤 3：执行与标签挑选（B 级）
+{: .sec-prac}
 
 ```bash
 ansible-playbook --syntax-check ext_demo.yml
@@ -163,7 +169,8 @@ skipping: [172.16.1.8]
 changed: [172.16.1.7]
 ```
 
-### 常用 when 表达式速查 {: .sec-chk}
+### 常用 when 表达式速查
+{: .sec-chk}
 
 | 写法 | 示例 | 说明 |
 | --- | --- | --- |
@@ -181,13 +188,15 @@ changed: [172.16.1.7]
 > - block / rescue / always 必须同级缩进，层级写错 rescue 不会生效；
 > - `register` 的变量名不能带空格，取输出用 `变量.stdout_lines`，判断返回码用 `变量.rc == 0`。
 
-## 题 2（选做）：总结 Ansible 剧本 roles {: .sec-sum}
+## 题 2（选做）：总结 Ansible 剧本 roles
+{: .sec-sum}
 
 **考察点**：roles 的标准化目录结构、各子目录职责、角色内文件的自动查找规则、主剧本 site.yml 与角色的配合方式。
 
 **实现思路**：roles 解决单文件剧本的五个痛点——目录结构不规范、任务无法复用、配置改动后关联参数不联动、汇总剧本看不出主机角色、单个剧本过长难读。roles 的本质是一个「按约定命名的文件夹」：playbook 用 `roles:` 引用角色名后，ansible 自动加载角色内固定位置的文件，`copy` 的 src 只写文件名也能在角色 `files/` 里找到。
 
-### 步骤 1：真实创建角色目录骨架（已实操） {: .sec-prac}
+### 步骤 1：真实创建角色目录骨架（已实操）
+{: .sec-prac}
 
 在沙箱里为 nginx 建一个标准角色目录，子目录一次建齐：
 
@@ -225,7 +234,8 @@ roles/nginx/vars
 
 `vars/` 与 `defaults/` 都放变量，区别在优先级：defaults 是「可以被使用者覆盖的默认值」，vars 是「角色内部固定的值」。用 `ansible-galaxy init nginx` 也能一键生成同样的骨架（B 级，本环境无 ansible 未执行）。
 
-### 步骤 2：填充角色文件（已实操） {: .sec-prac}
+### 步骤 2：填充角色文件（已实操）
+{: .sec-prac}
 
 角色变量放 `defaults/main.yml`（允许调用方按主机覆盖端口等参数）：
 
@@ -308,7 +318,8 @@ server {
 
 主剧本只描述「哪些主机扮演什么角色」，一行任务都不写；调用时通过 `vars` 把端口覆盖为 8080，`defaults` 里的 80 被覆盖——这就是 defaults 低优先级设计的用途。
 
-### 步骤 3：角色文件语法校验（已实操） {: .sec-prac}
+### 步骤 3：角色文件语法校验（已实操）
+{: .sec-prac}
 
 ```bash
 cd /tmp/hw/day35
@@ -328,7 +339,8 @@ YAML OK: roles/nginx/handlers/main.yml
 YAML OK: roles/nginx/defaults/main.yml
 ```
 
-### 步骤 4：角色的四种调用方式（B 级） {: .sec-prac}
+### 步骤 4：角色的四种调用方式（B 级）
+{: .sec-prac}
 
 | 方式 | 写法 | 适用场景 |
 | --- | --- | --- |
@@ -360,13 +372,15 @@ $ ansible web -m shell -a "curl -s http://127.0.0.1:8080/"
 > - 角色内 handler 不触发：handler 必须写在角色自己的 `handlers/main.yml` 里，名称与 notify 一致；
 > - 变量改了不生效：检查是不是放在了优先级更高的 `vars/main.yml` 里把 defaults 盖住了。
 
-## 题 3：预习 Web 服务——HTTP 协议原理与 Nginx {: .sec-know}
+## 题 3：预习 Web 服务——HTTP 协议原理与 Nginx
+{: .sec-know}
 
 **考察点**：一次完整 HTTP 请求的全流程；请求 / 响应报文的四段结构；用 `curl -v` 观察真实报文；Nginx 的安装与最小配置。
 
 **实现思路**：HTTP 是协议（报文格式与方法的规范），Nginx 是协议的具体实现（监听端口、解析报文、返回数据的软件）。预习抓两条线：一是访问流程——DNS 解析 → TCP 三次握手 → 发送请求 → 返回响应 → 浏览器渲染 → 四次挥手；二是报文结构——请求由「请求行、请求头、空行、（POST 才有的）请求主体」四部分组成，响应由「起始行、响应头、空行、响应主体」四部分组成。空行是头部结束的标志，必须存在。
 
-### 步骤 1：curl -v 真跑一次完整请求（已实操） {: .sec-prac}
+### 步骤 1：curl -v 真跑一次完整请求（已实操）
+{: .sec-prac}
 
 `curl -v` 会把请求报文（`>` 开头）与响应报文（`<` 开头）原样打印，是预习 HTTP 结构最直观的工具：
 
@@ -415,7 +429,8 @@ curl -sv -o /dev/null https://example.com/
 
 两点观察值得记录：一是本机纯 HTTP（非 TLS）请求被本地代理直接以 `403 Forbidden` 拦下、根本没到目标站——同一个 URL 换个协议结果完全不同，说明代理可以代替服务器「伪造」响应，排查时要先确认响应到底是谁发的；二是响应尾部的 `alt-svc: h3=":443"` 是服务器在广告自己支持 HTTP/3，与笔记中「HTTP/3 基于 QUIC」的演进对应。
 
-### 步骤 2：常见状态码速记（预习清单） {: .sec-chk}
+### 步骤 2：常见状态码速记（预习清单）
+{: .sec-chk}
 
 | 状态码 | 含义 | 运维排查切入点 |
 | --- | --- | --- |
@@ -427,7 +442,8 @@ curl -sv -o /dev/null https://example.com/
 | 502 | 错误网关 | 后端服务（如 PHP-FPM）挂了 |
 | 504 | 网关超时 | 后端处理太慢，查慢查询 |
 
-### 步骤 3：Nginx 安装与最小配置（B 级） {: .sec-prac}
+### 步骤 3：Nginx 安装与最小配置（B 级）
+{: .sec-prac}
 
 ```bash
 # 安装（CentOS 7 需先配 epel 源，或使用 nginx 官方源）
@@ -460,7 +476,8 @@ $ curl -s http://127.0.0.1/ | head -3
 > - 403 与 404 都「打不开页面」，但 403 查权限与 SELinux，404 查路径与文件，排查方向完全不同；
 > - Nginx 配置里每条指令以分号结尾，漏分号是新手报错第一名，改完必须 `nginx -t`。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 扩展功能是剧本从「能跑」到「好用」的分水岭：`loop` 消灭重复任务、`when` 让剧本按主机差异分支、`tags` 支持按需执行、`register` 让后续任务能读到前面的结果、`block/rescue/always` 提供回滚与清理。
 2. `when` 中的变量不加花括号；列表型 facts 用 `in` 判断；检查类任务配 `changed_when: false`，避免剧本重复执行时显示假变更。

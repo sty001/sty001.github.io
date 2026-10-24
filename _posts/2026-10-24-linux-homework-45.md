@@ -12,7 +12,8 @@ slug: "linux-homework-45"
 
 keepalived 这块，课程第 43 天留了两个方向性题目：①如何实现 keepalived 服务的实时监控（用 while 循环）；②让 nginx 服务停止时 keepalived 也自动停止、nginx 恢复时 keepalived 自动恢复（提示：用 weight）。作业原文只有方向，本篇把「while 循环监控」与「业务联动（vrrp_script + weight）」两条主线补全，并用 Git Bash 真实跑通检测脚本与 while 监控循环（A 级）；keepalived.conf 的完整配置与预期 VIP 漂移结果给标准命令与预期输出（B 级，CentOS 7）。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Nginx 与 keepalived（安全策略禁用），因此采用分级实操：
 
@@ -21,7 +22,8 @@ keepalived 这块，课程第 43 天留了两个方向性题目：①如何实�
 
 实操目录统一用 `/tmp/hw/day43`。环境实测：GNU bash 5.3.15。本环境 `nginx` 与 `keepalived` 命令均不可用（已用 `command -v` 验证），`pgrep` 与 `killall` 也不可用，故检测脚本改用 `ps -ef | grep -c` 计数（与课程笔记一致且在本环境可真跑）。文中演示域名统一使用 `example.com`，两台节点主机名记为 `linux-node01`（MASTER）与 `linux-node02`（BACKUP），VIP 使用 `10.0.0.3/24` 作为示例。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -34,7 +36,8 @@ keepalived 这块，课程第 43 天留了两个方向性题目：①如何实�
 
 **实现思路**：keepalived 只保证「LB 节点之间」的高可用，它并不知道 nginx 是不是真的能提供服务。所以需要一层业务监控：用 while 循环每隔几秒检查一次 nginx 进程（或 VIP 是否在本地网卡），一旦发现异常就发告警（或触发让出 VIP）。本文给出两种监控视角：监控「业务进程 nginx 是否存活」与监控「VIP 是否在本机」（用于发现脑裂）。
 
-### 思路一：while 循环巡检 nginx 进程（A 级，已实操） {: .sec-prac}
+### 思路一：while 循环巡检 nginx 进程（A 级，已实操）
+{: .sec-prac}
 
 先写出检测脚本 `check_web.sh`，用 `ps -ef | grep -c [n]ginx` 计数（中括号写法可避免 grep 匹配到自身）。存活返回 0，异常返回 1：
 
@@ -168,7 +171,8 @@ chmod +x /server/scripts/check_web.sh
 
 注意这里用 `-lt 2`：正常 nginx 至少 1 个 master + 若干 worker，计数小于 2 即视为异常。脚本逻辑已在题 1 用等价写法真跑验证（返回 1 即异常分支）。
 
-### 方案 B：vrrp_script + weight 平滑联动（B 级，推荐，自动恢复） {: .sec-best}
+### 方案 B：vrrp_script + weight 平滑联动（B 级，推荐，自动恢复）
+{: .sec-best}
 
 这是作业提示 `weight` 的标准解法。配置里先定义脚本，再在实例中引用，并给一个**负数** weight：脚本失败时优先级被扣减（低于对端），VIP 漂移；脚本成功时优先级回升，自动抢回 VIP。
 
@@ -297,7 +301,8 @@ $ ip a s eth0 | grep 10.0.0.3
 
 > **参见**：高可用服务 keepalived、反向代理与负载均衡作业实操
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. keepalived 只管「节点间」的 VRRP 心跳，不感知业务进程 nginx 是否真能服务，因此需要额外一层 while 循环监控来巡检 nginx 进程或 VIP 状态。
 2. while 循环监控的核心是「周期性探测 + sleep 防空转」，检测进程可用 `ps -ef | grep -c [n]ginx`（中括号防自匹配）、`pgrep -x nginx` 或 `killall -0 nginx`；巡检 VIP 的脚本只告警不决策，脑裂止损按「arping 确认冲突 → 手动停一台 → 查防火墙与配置根因」走。

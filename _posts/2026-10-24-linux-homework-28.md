@@ -12,7 +12,8 @@ slug: "linux-homework-28"
 
 课程第 28 天（备份服务 rsync）的作业：完成 rsync 守护进程服务端的完整部署，掌握七大常用参数的差异，并分别用「密码文件」和「环境变量」两种方式实现客户端免密推送。参数对比部分结合本地同步实测展开，服务端部署与 systemctl 管理属系统级操作，给出标准命令与 CentOS 7 预期输出。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-28"
 
 特别说明：经 `command -v rsync` 实测，本 Git Bash 环境**没有 rsync 命令**，因此「同步行为对比」这一部分用 `cp -a` + `diff` 做等价演示并明确标注，rsync 特有行为（增量块传输、`--delete`、`--bwlimit`）以参数表与预期输出形式呈现。主机名约定：备份服务器为 linux-node01，客户端为 linux-node02。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -30,7 +32,8 @@ slug: "linux-homework-28"
 | 题 3 | 客户端免密推送的两种方式（--password-file 与 RSYNC_PASSWORD） | B 级 |
 | 题 4 | systemctl 启动、停止 rsyncd 并设置开机自启 | B 级 |
 
-## 题 1：rsync 七大常用参数对比 {: .sec-expl}
+## 题 1：rsync 七大常用参数对比
+{: .sec-expl}
 
 **考察点**：区分「归档、显示、压缩、删除、排除、限速、进度」七类参数各自的职责，理解 `-a` 的展开含义与 `--delete` 的风险边界。
 
@@ -60,7 +63,8 @@ slug: "linux-homework-28"
 
 > **易错点**：想让 `-o` / `-g` 真正生效，需要服务端 `rsyncd.conf` 里 `uid` / `gid` 改为 root 并注释 `fake super`；否则守护进程以普通虚拟用户身份落盘，属主会被替换成该虚拟用户。
 
-### 本地同步行为实测（A 级，已实操） {: .sec-prac}
+### 本地同步行为实测（A 级，已实操）
+{: .sec-prac}
 
 在沙箱里用 `cp -a` 与 `diff` 等价模拟「全量 → 增量 → 删除缺口 → 排除」四个环节，直观看到 rsync 各参数对应解决的问题。
 
@@ -192,7 +196,8 @@ diff 退出码=1
 
 logs 目录被排除未同步，其余内容完整复制——语义与 `rsync -av --exclude=logs/ src/ dest/` 一致。排除路径是相对于**传输源目录**的，写 `logs/` 而不是绝对路径。
 
-### 题 1 验证方法 {: .sec-ver}
+### 题 1 验证方法
+{: .sec-ver}
 
 1. 参数表中每个参数能在 `man rsync` 中找到对应原文；
 2. 步骤 3 的输出证明「未变化的文件被跳过」——verbose 清单里没有 keep.txt 与 conf/；
@@ -204,7 +209,8 @@ logs 目录被排除未同步，其余内容完整复制——语义与 `rsync -
 
 **实现思路**：服务端在 linux-node01（172.16.1.41）上部署。配置文件分两部分：`[backup]` 模块之前是全局参数，模块内是模块级参数；守护进程以专用虚拟用户 rsync 身份写盘，因此备份目录属主必须是 rsync。
 
-### 步骤 1：安装软件（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 1：安装软件（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 rpm -qa | grep rsync
@@ -218,7 +224,8 @@ rsync-3.1.2-12.el7_9.x86_64
 Complete!
 ```
 
-### 步骤 2：编写配置文件 /etc/rsyncd.conf（预期输出） {: .sec-prac}
+### 步骤 2：编写配置文件 /etc/rsyncd.conf（预期输出）
+{: .sec-prac}
 
 ```bash
 vim /etc/rsyncd.conf
@@ -260,7 +267,8 @@ path = /backup
 | auth users | 认证用户名 | 不配则匿名可访问，不推荐 |
 | path | 模块对应的真实目录 | 客户端上传的文件落在这里 |
 
-### 步骤 3：创建虚拟用户（预期输出） {: .sec-prac}
+### 步骤 3：创建虚拟用户（预期输出）
+{: .sec-prac}
 
 ```bash
 useradd rsync -M -s /sbin/nologin
@@ -275,7 +283,8 @@ uid=1001(rsync) gid=1001(rsync) 组=1001(rsync)
 
 `-M` 不建家目录、`-s /sbin/nologin` 禁止登录——虚拟用户只跑服务，不能交互登录，这是最小权限原则。
 
-### 步骤 4：创建密码文件（预期输出） {: .sec-prac}
+### 步骤 4：创建密码文件（预期输出）
+{: .sec-prac}
 
 ```bash
 echo "rsync_backup:<your-password>" >/etc/rsync.password
@@ -291,7 +300,8 @@ ls -l /etc/rsync.password
 
 > **易错点（600 权限坑）**：服务端密码文件是 `用户名:密码` 格式，**权限必须是 600**。如果误设为 644，rsyncd 会拒绝工作，日志报 `password file must not be other-accessible`。另一个对称的坑：客户端密码文件**只放密码**，不要把用户名也写进去，否则认证必然失败。
 
-### 步骤 5：创建备份目录并改属主（预期输出） {: .sec-prac}
+### 步骤 5：创建备份目录并改属主（预期输出）
+{: .sec-prac}
 
 ```bash
 mkdir /backup
@@ -307,7 +317,8 @@ drwxr-xr-x 2 rsync rsync 6 Oct 24 10:01 /backup
 
 守护进程以 rsync 身份写盘，root 建的目录默认 755，rsync 用户照样写不进去——漏掉 chown 是「客户端推送报 permission denied」的最常见原因。还有一层别漏：`hosts allow = 172.16.1.0/24` 写的是内网网段，客户端走内网地址 172.16.1.41 推送没问题；哪天有人改走公网地址 10.0.0.41 推，就会被白名单拦下报 `connection refused` 或 `unauthorized`，先核对连的是哪个地址再怀疑密码。
 
-### 题 2 验证方法 {: .sec-ver}
+### 题 2 验证方法
+{: .sec-ver}
 
 1. `rsync --version` 确认版本；`cat /etc/rsyncd.conf` 核对模块名与 path；
 2. `ls -l /etc/rsync.password` 权限为 600 且格式为 `用户名:密码`；
@@ -345,7 +356,8 @@ sent 226 bytes  received 43 bytes  538.00 bytes/sec
 total size is 371  speedup is 1.38
 ```
 
-### 方式二：环境变量 RSYNC_PASSWORD（预期输出） {: .sec-expl}
+### 方式二：环境变量 RSYNC_PASSWORD（预期输出）
+{: .sec-expl}
 
 ```bash
 export RSYNC_PASSWORD='<your-password>'
@@ -370,7 +382,8 @@ total size is 371  speedup is 1.38
 
 > **易错点**：客户端密码文件内容是纯密码，多一个用户名前缀、多一个空格都会导致 `auth failed`；环境变量方式在 crontab 里不可靠，因为定时任务不会继承交互会话的环境变量。
 
-### 题 3 验证方法 {: .sec-ver}
+### 题 3 验证方法
+{: .sec-ver}
 
 1. 两种方式各推送一次，服务端 `/backup/` 下都能看到 hosts 文件；
 2. 故意改错密码重试，确认报 `@ERROR: auth failed on module backup`，验证认证链路真的在工作；
@@ -404,13 +417,15 @@ LISTEN  0  5  0.0.0.0:873  0.0.0.0:*  users:(("rsyncd",pid=2311,fd=4))
 
 状态行里两个关键词：`enabled` 表示开机自启已配置，`active (running)` 表示服务正在运行；`ss` 看到只写 873 端口即可对外提供服务。启动失败时第一现场看 `systemctl status rsyncd` 与 `tail /var/log/rsyncd.log`（配置里 log file 指定的路径）。远程机器连不上 873 时别急着怀疑 rsync 本身——先在服务端本地 `rsync rsync_backup@127.0.0.1::backup` 试一发，本地通远程不通，基本就是防火墙或安全组没放行 873。
 
-### 题 4 验证方法 {: .sec-ver}
+### 题 4 验证方法
+{: .sec-ver}
 
 1. `systemctl is-enabled rsyncd` 返回 `enabled`；
 2. `systemctl is-active rsyncd` 返回 `active`；stop 后再查询返回 `inactive`，start 后恢复；
 3. `ss -lntp | grep 873` 能看到 rsyncd 进程监听。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 按以下四条自查，全部满足即证明部署闭环：
 
@@ -419,7 +434,8 @@ LISTEN  0  5  0.0.0.0:873  0.0.0.0:*  users:(("rsyncd",pid=2311,fd=4))
 3. 客户端两种免密方式都能推送成功，服务端 `/backup/` 出现文件；
 4. 故意把密码文件权限改成 644 或在客户端密码里多写用户名，均能复现对应的报错——排错能力来自「故意弄坏再修好」。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 七大参数按「传什么（--exclude/--delete）、怎么传（-z/--bwlimit）、怎么显示（-v/-P）、归档总开关（-a）」分组记忆；`-a` 展开为 `rtopgDl`，属主属组的保留依赖服务端 `fake super` 配置。
 2. `cp -u` 与 rsync 的「快速检查」思想一致（比对 mtime 跳过未变文件），但 cp 只能整文件重传、不能删除目标端多余文件，这就是 rsync 增量算法与 `--delete` 的价值所在——本篇已用 diff 真实复现两端的差异。给 `--delete` 配上 `--backup-dir` 与 dry-run 清单，才算把风险关进笼子。

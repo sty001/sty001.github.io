@@ -12,7 +12,8 @@ slug: "linux-system-06"
 
 刚装完 CentOS 7 要做的第一批优化：Vim 三种模式与常用快捷操作、查看系统版本与内核、创建与切换普通用户、定制命令提示符（PS1）的内容与颜色、把 yum 基础源与扩展源换成国内镜像，外加 SELinux、防火墙、SSH 加固、资源限制这些安全项。一台新机器照着过一遍就能交付。
 
-## 课前回顾：挂载与目录结构 {: .sec-sum}
+## 课前回顾：挂载与目录结构
+{: .sec-sum}
 
 | 知识点 | 说明 |
 | --- | --- |
@@ -28,7 +29,8 @@ slug: "linux-system-06"
 > **注意：** `/proc` 目录中的数据文件不能随意修改，它反映的是内核运行时的实时状态。
 {: .sec-pit}
 
-## 原理解析：系统优化的整体思路 {: .sec-know}
+## 原理解析：系统优化的整体思路
+{: .sec-know}
 
 拿到一台刚装好的系统，该按什么顺序优化？业界公认的三个目标：**安全、性能、规范**，按这个顺序推进：
 
@@ -41,7 +43,8 @@ slug: "linux-system-06"
 
 ## Vim 编辑器的基本用法
 
-### 打开与保存的最小流程 {: .sec-expl}
+### 打开与保存的最小流程
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# vi test.txt   # 利用 vi 命令打开一个文件
@@ -119,7 +122,8 @@ Vim 有三种模式：**命令模式**、**插入模式（编辑模式）**、**
 
 > **补充：** 几个高频补充操作：`x` 删除光标处单个字符，`dw` 删除一个单词，`v` 进入可视选择模式（移动光标圈选范围后配合 `d` / `y`），`:set nu` 显示行号，`:noh` 取消搜索高亮，`gg=G` 全文自动缩进，`:s/old/new/g` 当前行全局替换、`:%s/old/new/g` 全文替换。
 
-## 了解系统环境 {: .sec-expl}
+## 了解系统环境
+{: .sec-expl}
 
 两个命令确认系统版本与内核信息：
 
@@ -182,9 +186,11 @@ testuser
 > **注意：** `su - root` 中间的横杠表示"登录式切换"——连家目录、环境变量一起切成 root 的环境；不加横杠只换身份不换环境，排查环境变量问题时容易误判，新手容易栽在这。日常更推荐 `sudo`（按命令授权、有审计日志），而不是直接把 root 密码告诉所有人。`su`、`sudo` 与用户管理的完整内容见《用户权限与提权》篇。
 {: .sec-pit}
 
-## 命令提示符优化（PS1 环境变量） {: .sec-warn}
+## 命令提示符优化（PS1 环境变量）
+{: .sec-warn}
 
-### 默认配置与含义 {: .sec-expl}
+### 默认配置与含义
+{: .sec-expl}
 
 ```bash
 [root@linux-node1 test]# echo $PS1
@@ -197,7 +203,8 @@ testuser
 | `\h` | 显示系统主机名称 |
 | `\W` | 显示当前所在目录信息（目录结构的最后结尾信息） |
 
-### 修改提示符内容 {: .sec-warn}
+### 修改提示符内容
+{: .sec-warn}
 
 把 `\h` 换成 `\H`（显示完整主机名）、`\W` 换成 `\w`（显示完整路径），写入 `/etc/profile` 永久生效：
 
@@ -206,7 +213,8 @@ testuser
 export PS1='[\u@\H \w]\$ '
 ```
 
-### 修改提示符颜色 {: .sec-warn}
+### 修改提示符颜色
+{: .sec-warn}
 
 Linux 中给信息加颜色的通用写法：
 
@@ -264,25 +272,29 @@ yum 软件的优势：
 1. 不需要到官方网站单独下载软件包（yum 仓库）；
 2. 可以自动解决软件的依赖关系。
 
-### 优化基础 yum 源文件 {: .sec-expl}
+### 优化基础 yum 源文件
+{: .sec-expl}
 
 ```bash
 curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 ```
 
-### 优化扩展 yum 源文件 {: .sec-ext}
+### 优化扩展 yum 源文件
+{: .sec-ext}
 
 ```bash
 wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 ```
 
-### 检查可用的 yum 源信息 {: .sec-ver}
+### 检查可用的 yum 源信息
+{: .sec-ver}
 
 ```bash
 yum repolist
 ```
 
-### 实际下载软件验证 {: .sec-ver}
+### 实际下载软件验证
+{: .sec-ver}
 
 ```bash
 [root@linux-node1 ~]# yum install sl cowsay -y    # 需要提前优化好 epel 扩展源
@@ -330,7 +342,8 @@ SELINUXTYPE=targeted
 
 SELinux 的上下文是长这样的：`ls -Z 文件名` 能看到 `unconfined_u:object_r:admin_home_t:s0` 这样的标签。最常踩的坑是"文件挪了家"——把网站文件从 `/home` 挪到 `/www` 后 httpd 读不了，就是上下文没跟着走，`restorecon -Rv /www` 修好。
 
-## firewalld 与 iptables 基本操作 {: .sec-prac}
+## firewalld 与 iptables 基本操作
+{: .sec-prac}
 
 ### firewalld（CentOS 7 默认防火墙）
 
@@ -363,7 +376,8 @@ firewall-cmd --permanent --remove-port=8080/tcp  # 移除端口
 > **注意：** "改了不生效"是 firewalld 最高频的问题——`--permanent` 只写配置不激活，`--add-xxx` 激活但不持久，正确姿势是两条都执行（或永久改完 `--reload`）。另外远程改防火墙有把自己关在门外的风险，先用 `timeout` 兜底：`timeout 60 firewall-cmd --add-port=22/tcp`，改错了 60 秒后自动恢复。
 {: .sec-pit}
 
-### iptables（底层包过滤，CentOS 6 默认） {: .sec-know}
+### iptables（底层包过滤，CentOS 6 默认）
+{: .sec-know}
 
 ```bash
 iptables -L -n                             # 查看规则（-n 不解析域名，速度快）
@@ -522,7 +536,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 > **注意：** 密码的哈希值保存在 `/boot/grub2/grub.cfg` 和 `/etc/grub.d/40_custom` 中，设置前先确认 `/boot` 分区权限正常。物理安全（机房门禁、锁机柜）始终是第一道防线，GRUB 密码是它的延伸。云服务器（ECS）还应关闭控制台的"救援模式"直通，改走带审计的运维通道。GRUB 密码忘了的恢复路径：物理接触机器用救援盘，或云平台走带审计的控制台重置——最后又绕回物理安全这道题。
 {: .sec-pit}
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -535,7 +550,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 | Vim 保存时报 `E45: 'readonly' option is set` | 文件只读或用户无写权限 | `ls -l 文件` | `:w !sudo tee %` 借 sudo 保存 |
 | SELinux 导致服务读不了文件 | 文件安全上下文不对 | `ausearch -m avc`、`ls -Z` | `semanage fcontext` + `restorecon` 修正 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -548,7 +564,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 上本篇所有命令与配置路径完全一致；firewalld、sshd_config、systemd 的行为也无差异。systemd 的 `systemctl edit --full` 是现代管理 unit 文件的推荐方式（自动生成覆盖配置，不用直接改 `/usr/lib` 下的系统文件）。
 {: .sec-pit}
 
-## 课后练习 {: .sec-prac}
+## 课后练习
+{: .sec-prac}
 
 **基础练习**
 
@@ -559,7 +576,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 
 1. 如何实现彩色提示符：用户信息显示为红色、主机名信息显示为绿色、目录信息显示为蓝色。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. Vim 有三种模式（命令模式、插入模式、底行模式），掌握 `i/I/o/O/a/A/C/cc` 进入编辑、`G/gg/ngg/$/0` 移动光标、`dd/yy/p/u` 编辑文本就够了。
 2. 查看系统环境用 `cat /etc/redhat-release` 和 `uname -a`，要能说出系统版本、内核版本与位数。
@@ -570,7 +588,8 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 7. 系统优化按"安全 → 性能 → 规范"推进：SELinux 三种模式（enforcing / permissive / disabled）、firewalld 临时与永久规则要成对操作、systemd 服务管理掌握 enable/disable/mask、SSH 加固改端口禁 root 用密钥。
 8. 资源限制用 `ulimit`（临时）与 `/etc/security/limits.conf`（永久，仅 PAM 会话生效）；GRUB 密码守住单用户模式这个后门。
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. `systemctl disable nginx` 和 `systemctl mask nginx` 有什么区别？
 2. `firewall-cmd --permanent --add-port=8080/tcp` 执行后端口立刻通了吗？正确的完整操作是什么？

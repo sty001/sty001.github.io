@@ -12,7 +12,8 @@ slug: "linux-homework-48"
 
 课程第 45 天（监控服务 Zabbix 下）的作业有四题：①用 UserParameter 自定义监控 key（内存剩余、登录用户数、TCP 80 状态），取值命令在 Git Bash 真跑贴真实输出；②整理「监控项 → 触发器 → 动作」的配置流程表；③五种告警方式对比；④监控模板与主机关联。Web 界面操作给标准步骤，取值命令全部真跑。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-48"
 
 环境差异说明：本机 Git Bash 无 `free`、无 `ss`、`/proc/meminfo` 只有 MemTotal 与 MemFree（没有 MemAvailable），因此内存取值用 `/proc/meminfo` + awk 真跑，并在文中同时给出 CentOS 7 的 `free -m` 写法；TCP 统计用 Windows 自带的 `netstat -an`（语义与 CentOS 的 `ss -tan` 一致）。实操目录统一用 `/tmp/hw/day45`，输出中的用户名统一显示为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -30,13 +32,15 @@ slug: "linux-homework-48"
 | 题 3 | 五种告警方式对比（页面 / 声音 / 邮件 / 微信 / 短信电话） | 对比题（表格） |
 | 题 4 | 监控模板与主机关联 | B 级（Web 操作步骤） |
 
-## 题 1：自定义 UserParameter key {: .sec-know}
+## 题 1：自定义 UserParameter key
+{: .sec-know}
 
 **考察点**：UserParameter 的格式 `UserParameter=key[*],command`、带参数 key 的 `$1` 位置参数写法，以及「先在命令行把取值命令跑通，再写进配置」的正确顺序——agent 只是替你执行这条命令，命令本身不成立，监控项一定取不到值。
 
 **实现思路**：三个监控需求分别对应三种典型写法——无参数直接返回数值（内存剩余、登录用户数）、带参数的通用模板（端口状态统计）。第一步先把每个取值命令在本机跑通，第二步写进 `userparameter.conf`，第三步用 grep 校验定义。
 
-### 步骤 1：内存剩余取值命令（已实操） {: .sec-prac}
+### 步骤 1：内存剩余取值命令（已实操）
+{: .sec-prac}
 
 本机 Git Bash 无 `free`，直接读 `/proc/meminfo` 计算（与 CentOS 上 `free -m` 的 available 思路同源）：
 
@@ -63,7 +67,8 @@ free -m | awk '/^Mem/{print $7}'
 
 注意主笔记中的提醒：真正可用的内存要扣除 buff/cache，CentOS 7 用 `free -m` 的 available 列（第 7 列）而不是 free 列；本机 `/proc/meminfo` 没有 available 字段，所以用 MemFree 代替，真机上应以 available 为准。
 
-### 步骤 2：登录用户数取值命令（已实操） {: .sec-prac}
+### 步骤 2：登录用户数取值命令（已实操）
+{: .sec-prac}
 
 ```bash
 who | wc -l
@@ -90,7 +95,8 @@ awk 'END{print "登录用户数=" NR}' who_sim.txt
 
 `awk 'END{print NR}'` 数总行数即登录会话数，与 `who | wc -l` 等价。这个 key 的触发器可以设成「登录用户数大于 5 报警」，用于发现异常登录。
 
-### 步骤 3：TCP 80 状态取值命令（已实操） {: .sec-prac}
+### 步骤 3：TCP 80 状态取值命令（已实操）
+{: .sec-prac}
 
 CentOS 7 的标准写法是 `ss -tan | grep -c ':80 '`；本机无 `ss`，用 Windows 自带 netstat（语义一致）真跑：
 
@@ -124,7 +130,8 @@ netstat -an | grep ':443 ' | awk '{print $NF}' | sort | uniq -c | sort -rn
 
 第二条命令展示了「按 TCP 状态分布统计」的做法，与主笔记中 `ss -tan state established` 的用途一致：TIME_WAIT 异常增多往往意味着连接未正常复用，CLOSE_WAIT 增多意味着对端关闭后本端没处理，这些都能作为触发器的判据。
 
-### 步骤 4：写入 UserParameter 配置并校验（已实操） {: .sec-prac}
+### 步骤 4：写入 UserParameter 配置并校验（已实操）
+{: .sec-prac}
 
 三个取值命令都跑通了，写进 agent 的自定义配置目录 `/etc/zabbix/zabbix_agentd.d/`（片段如下）：
 
@@ -180,7 +187,8 @@ $ zabbix_get -s 172.16.1.7 -k tcp80.conn
 
 取不到值时优先在 agent 本机执行 `zabbix_agentd -t "key"` 直接看返回值与报错，把「命令本身失败」和「server 到 agent 不通」两类问题分开。
 
-### 步骤 5：扩展——复杂逻辑封装成脚本（已实操） {: .sec-ext}
+### 步骤 5：扩展——复杂逻辑封装成脚本（已实操）
+{: .sec-ext}
 
 UserParameter 的命令过长时，规范做法是封装成脚本、key 里只写脚本路径（可读性好、转义少）。以「内存剩余率监控」为例，把取值逻辑写成脚本并真跑：
 
@@ -210,7 +218,8 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 
 注意三点：脚本必须 `chmod +x` 且 agent 运行用户（zabbix）可读可执行；命令通过 `/bin/sh -c` 执行，所以管道、重定向在 UserParameter 里可用；单条命令耗时要控制在 agent 的 Timeout（默认 3 秒）以内。
 
-## 题 2：监控项 → 触发器 → 动作 配置流程 {: .sec-expl}
+## 题 2：监控项 → 触发器 → 动作 配置流程
+{: .sec-expl}
 
 **考察点**：Zabbix 告警链路的完整配置顺序，任何一环断了都收不到告警。
 
@@ -245,7 +254,8 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 
 经验法则：状态翻转用 last，趋势恶化用 avg；拿不准时优先 avg 加合理窗口，误报的代价远比晚 5 分钟发现要高。
 
-## 题 3：五种告警方式对比 {: .sec-warn}
+## 题 3：五种告警方式对比
+{: .sec-warn}
 
 **考察点**：不同告警渠道的实时性、成本与配置复杂度差异，以及「配置骨架相同、投递通道不同」这一共性。
 
@@ -273,14 +283,16 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 
 > **易错点**：在主机上直接修改模板继承来的监控项会与模板「断开联动」，之后模板更新不再同步到该主机；生产环境的规范做法是改模板统一生效。一台主机可以链接多个模板，但键值重复会导致采集冲突。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 1. 定义完整性：`grep '^UserParameter=' 配置文件` 输出与预期 key 一一对应（已实操验证）。
 2. 取值正确性：每个 key 的命令先在命令行真跑，数值合理（内存剩余率 55.6%、443 端口 61 条连接分布合理）。
 3. 链路正确性：`zabbix_get -k agent.ping` 返回 1 → `zabbix_get -k 自定义key` 返回数值 → 最新数据有记录 → 手工压阈值触发 → 问题页出现告警 → 媒介送达。
 4. 退出码细节：`grep -c` 无匹配输出 0 但退出码为 1，脚本判断要用输出数字而非 `$?`。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 自定义监控的正确顺序是「命令行跑通取值命令 → 写 UserParameter → 重启 agent → zabbix_get 验证 → Web 建监控项」，跳过第一步的配置十有八九取不到值。
 2. UserParameter 三种典型形态：无参数直返数值（mem.available、login.users）、带 `[*]` 参数的通用模板（server_state[*]，`$1` 为位置参数）、复杂逻辑封装脚本只留路径。

@@ -49,6 +49,3 @@
     {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
   </p>
 </footer>
-
-<!-- 全站雪花特效：纯 CSS 动画 + 静态 DOM（不依赖 JS，必然显示） -->
-<div id="snow-fx" aria-hidden="true">{% for i in (1..28) %}<span class="snowflake" style="left: {{ forloop.index | times: 37 | modulo: 100 }}%; animation-duration: {{ 8 | plus: forloop.index | modulo: 7 | plus: 5 }}s; animation-delay: -{{ forloop.index | times: 13 | modulo: 10 }}s; font-size: {{ 10 | plus: forloop.index | times: 7 | modulo: 10 | plus: 8 }}px; --sway: {{ forloop.index | times: 53 | modulo: 12 | minus: 6 }}vw;">❄</span>{% endfor %}</div>

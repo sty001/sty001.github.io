@@ -12,7 +12,8 @@ slug: "linux-homework-32"
 
 课程第 32 天留了两道作业：①用脚本实现实时同步（while 循环）；②让 Xshell 这类终端工具也走密钥连接，另外要提前装好 ansible。第一题的关键是想清楚「while 轮询式同步」和 day31「inotify 事件驱动」差在哪，然后用 while 循环脚本真跑周期同步（rsync 本环境不可用，用 cp 模拟）；第二题整篇围绕密钥认证——A 级真跑 `ssh-keygen` 生成密钥对、给出 `ssh-copy-id` 部署公钥的标准命令与预期，再补 Xshell 导入私钥的步骤和 `sshd_config` 两个关键配置（`StrictModes` / `PubkeyAuthentication`）。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker）。经 `command -v` 实测：`ssh-keygen` / `ssh-copy-id` 存在，但本环境 `sshd` 未监听（无运行中的 SSH 服务），且 `rsync` / `sshpass` 不存在。因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-32"
 
 本篇主机名统一用 `linux-node01`（管理端）/ `linux-node02`（被管理端），域名统一用 `example.com`，命令输出中的属主统一显示为 `user`，口令一律以 `ssh-password`（占位）表示。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -34,7 +36,8 @@ slug: "linux-homework-32"
 
 **实现思路**：脚本里用 `while true`（或带次数的 `while`）反复执行一次 rsync 增量同步，每次循环之间 `sleep` 一个间隔。源目录没变时 rsync 比对后几乎零传输，有变则增量推送。本环境没有 rsync，先用 `cp -a` 模拟 rsync 把循环逻辑真跑通，再给生产真机版。
 
-### 步骤 1：编写 while 循环周期同步脚本（已实操） {: .sec-prac}
+### 步骤 1：编写 while 循环周期同步脚本（已实操）
+{: .sec-prac}
 
 ```bash
 mkdir -p /tmp/hw/day32/src /tmp/hw/day32/dst
@@ -85,7 +88,8 @@ total 2
 
 每轮间隔约 2 秒（`sleep 1` 加命令耗时），三轮都在把源目录同步到目标目录，目标端得到与源端一致的 `f1.txt` / `f2.txt`。这就是 while 轮询式同步的最小可用骨架。
 
-### 步骤 2：验证「增量」语义（已实操） {: .sec-ver}
+### 步骤 2：验证「增量」语义（已实操）
+{: .sec-ver}
 
 while 循环里每次都跑整轮 rsync，但只有变化才真正传输。验证：再往源端加一个文件，单独跑一次，目标端应只多出新增文件：
 
@@ -107,7 +111,8 @@ f3.txt
 
 `f3.txt` 进入目标端，旧文件保持不变——这就是 rsync 增量比对的效果（用 `cp` 模拟时表现为「目标端始终等于源端」）。
 
-### 步骤 3：生产真机版（B 级） {: .sec-prac}
+### 步骤 3：生产真机版（B 级）
+{: .sec-prac}
 
 把 `cp` 换成真正的 rsync，并做成常驻后台、带间隔的轮询守护。注意间隔别太密（如 5~30 秒），避免频繁比对占用 CPU。
 
@@ -136,7 +141,8 @@ f3.txt
 sent 102 bytes  received 35 bytes  274.00 bytes/sec
 ```
 
-### 步骤 4：把轮询脚本托管为 systemd 服务（B 级） {: .sec-prac}
+### 步骤 4：把轮询脚本托管为 systemd 服务（B 级）
+{: .sec-prac}
 
 `nohup ... &` 不够稳健：机器一重启进程就丢，崩了也不会自愈。生产上写成 systemd unit，开机自启和崩溃拉起都交给 systemd：
 
@@ -190,7 +196,8 @@ $ systemctl status sync_poll.service
 
 **密钥认证原理（理解后才好排错）**：把私钥比作钥匙、公钥比作锁头。登录时，服务端用存放在 `authorized_keys` 里的公钥发一个「质询」给客户端，客户端用本地私钥解开并回传结果，服务端验证通过即证明「对方确实持有对应私钥」，从而放行。整个过程私钥从不离开管理端——服务端只是验证「你解得开质询」，不需要也拿不到私钥内容，这是非对称加密做认证的经典用法。比口令强在哪：口令是双方共知的秘密，走加密通道也仍可能被暴力破解或撞库；密钥是 256 位的随机数，没有字典可猜，`PasswordAuthentication no` 之后爆破直接失去目标。生产服务器收敛安全，都是先普及密钥、再关口令认证。
 
-### 步骤 1：管理端生成密钥对（已实操） {: .sec-prac}
+### 步骤 1：管理端生成密钥对（已实操）
+{: .sec-prac}
 
 在管理端 `linux-node01` 生成 ed25519 密钥对。选型依据：ed25519 密钥仅 256 位、长度只有 RSA 的一小半，安全强度却对标 3072 位 RSA，生成和验签还更快，是现代默认推荐。DSA 已被 OpenSSH 废弃，别再用；RSA 也不算错，只是得开到 3072 位以上才够看。
 
@@ -237,7 +244,8 @@ $ ls -l /tmp/hw/day32/id_ed25519*
 
 私钥 `id_ed25519` 权限必须是 `600`，公钥 `id_ed25519.pub` 是 `644`、可以随处分发。
 
-### 步骤 2：分发公钥到被管理端（B 级，标准命令 + 预期） {: .sec-best}
+### 步骤 2：分发公钥到被管理端（B 级，标准命令 + 预期）
+{: .sec-best}
 
 `ssh-copy-id` 把公钥追加到被管理端 `~/.ssh/authorized_keys`。本环境 `sshd` 未监听、且 `sshpass` 不存在，无法真跑，给出标准命令与 CentOS 7 预期。
 
@@ -284,7 +292,8 @@ linux-node02
 
 说白了，`ssh-copy-id` 干的事就是把公钥追加到对端的 `~/.ssh/authorized_keys`，手动 `cat 公钥.pub >> ~/.ssh/authorized_keys` 效果一样，只是它顺手处理了权限与重复键。生产上还可以在 `authorized_keys` 的公钥行首加选项做精细控制，例如 `from="10.0.0.*"` 限定该密钥只能从指定网段使用；离职回收权限时，按行删掉对应公钥即可。
 
-### 步骤 3：Xshell 基于密钥连接主机（B 级，标准步骤） {: .sec-best}
+### 步骤 3：Xshell 基于密钥连接主机（B 级，标准步骤）
+{: .sec-best}
 
 图形终端工具（Xshell、SecureCRT、PuTTY 等都同理）的密钥连接，本质和命令行一样：用私钥做认证。标准步骤：
 
@@ -299,7 +308,8 @@ linux-node02
 > **注意**：Xshell 原生支持 OpenSSH 的 ed25519 / RSA 私钥。若私钥是带 passphrase 的 PEM，导入时直接填密码即可；私钥文件务必妥善保管，不要明文发给他人，离职或换机器后应从服务端 `authorized_keys` 移除对应公钥。
 {: .sec-pit}
 
-### 步骤 4：sshd_config 关键配置（B 级，StrictModes / PubkeyAuthentication） {: .sec-prac}
+### 步骤 4：sshd_config 关键配置（B 级，StrictModes / PubkeyAuthentication）
+{: .sec-prac}
 
 密钥认证要生效、且要安全，服务端 `/etc/ssh/sshd_config` 有两项最相关：
 
@@ -364,7 +374,8 @@ Match all
 
 另外补充 `known_hosts`：首次连接某主机时，客户端会把服务端主机公钥指纹记到 `~/.ssh/known_hosts`，之后若服务端重装或换 IP 导致指纹变化，会报 `Host key verification failed`；此时用 `ssh-keygen -R 主机名` 删掉旧记录再重连即可。批量场景可在 `ssh-copy-id` 时加 `-o StrictHostKeyChecking=no` 跳过首次确认。
 
-### 密钥认证失败排查表 {: .sec-ts}
+### 密钥认证失败排查表
+{: .sec-ts}
 
 | 现象 | 原因 | 解决 |
 | --- | --- | --- |
@@ -382,13 +393,15 @@ Match all
 
 记法：`known_hosts` 管我连的别人，`authorized_keys` 管连我的别人。人员离职回收权限时，删的是各服务端 `authorized_keys` 里的行。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 - 密钥认证：执行 `ssh user@linux-node02 'hostname'` 不再提示口令且能返回主机名，即证明密钥登录打通。
 - while 同步：源端新增/删除文件后，下一轮循环目标端对应变化；用 `diff -r 源 目标` 应为空（无差异）。
 - 配置生效：`sshd -t` 无报错、`systemctl reload sshd` 成功，且现有连接不中断。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. while 轮询式实时同步 = `while true; do rsync -az --delete 源 目标; sleep N; done`，实现简单、自带全量兜底，实时性取决于间隔；与 day31 的 inotify 事件驱动差异只在「何时触发」。
 2. 密钥认证三步：管理端 `ssh-keygen -t ed25519` 生成密钥对 → `ssh-copy-id -i 公钥 user@主机` 分发公钥 → `ssh 主机` 免密验证。

@@ -12,7 +12,8 @@ slug: "linux-homework-44"
 
 课程第 43 天的进阶作业围绕两件事展开：基于 keepalived 的高可用负载均衡架构，①如何对主节点做「实时监控」，在 nginx 异常时通过 `vrrp_script` + `weight` 把 VIP 自动漂移到备机；②如何仿真理解 nginx `upstream` 模块的调度与上游节点故障剔除。本篇所有脚本与配置均已在本环境真实运行 / 整理，文中标注 `已实操`；切换前后的 `ip a` 真实输出直接取自仿真产物，并做成对比表。`/server/scripts/` 下被 `vrrp_script` 调用的 `check_nginx.sh` 健康检查脚本，其完整源码与联动原理留到 day43 一并展开。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境为 Git Bash（无法启动真实 keepalived 守护进程），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-44"
 
 实操目录统一用 `/tmp/hw/day43`（放 `sim_upstream.sh`）。脱敏约定：两台负载均衡节点主机名 → `linux-node01`（MASTER）、`linux-node02`（BACKUP）；VIP 用内网示意地址 `10.0.0.3/24`；上游真实服务器（RS）用 `10.0.0.7/8/9`；对外域名统一写 `example.com`；命令输出属主统一显示为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -30,13 +32,15 @@ slug: "linux-homework-44"
 | 题 3 | 用 `sim_upstream.sh` 仿真 upstream 四种调度与故障剔除 | A 级（脚本真跑） |
 | 题 4 | keepalived 切换前后 `ip a` 真实输出对比 | A 级（真实产物对比表） |
 
-## 题 1：keepalived 配置关键段解析（linux-node01 / linux-node02） {: .sec-expl}
+## 题 1：keepalived 配置关键段解析（linux-node01 / linux-node02）
+{: .sec-expl}
 
 **考察点**：读懂一份最小可用的 keepalived 高可用配置，搞清楚 `vrrp_instance`、`virtual_ipaddress`、`vrrp_script`、`track_script`、`state`、`priority`、`weight` 各自的作用，以及主备两份配置的差在哪里。
 
 **实现思路**：先分别给出主节点（MASTER）与备节点（BACKUP）的配置，再按「全局定义 → 健康检查脚本 → VRRP 实例 → VIP → 脚本绑定」五段逐行拆解，最后用一张差异对照表收口，看清楚「主备配置到底哪里不一样」。
 
-### 步骤 1：主节点 linux-node01 配置（已实操，已脱敏） {: .sec-prac}
+### 步骤 1：主节点 linux-node01 配置（已实操，已脱敏）
+{: .sec-prac}
 
 下面这份是 `linux-node01`（角色 MASTER）的 `keepalived.conf`，已把 `router_id` 脱敏为 `linux-node01`：
 
@@ -75,7 +79,8 @@ vrrp_instance VI_1 {
 }
 ```
 
-### 步骤 2：备节点 linux-node02 配置（已实操，已脱敏） {: .sec-prac}
+### 步骤 2：备节点 linux-node02 配置（已实操，已脱敏）
+{: .sec-prac}
 
 备节点 `linux-node02`（角色 BACKUP）的配置，与上面仅三处不同（`router_id`、`state`、`priority`），其余完全一致——手抄配置多改一行都是隐患，上线前 diff 一遍最稳：
 
@@ -114,7 +119,8 @@ vrrp_instance VI_1 {
 }
 ```
 
-### 步骤 3：逐段拆解关键字段（已实操） {: .sec-prac}
+### 步骤 3：逐段拆解关键字段（已实操）
+{: .sec-prac}
 
 - `global_defs { router_id ... }`：本机在 keepalived 集群里的唯一标识，两台必须不同（这里 `linux-node01` / `linux-node02`）。它不参与选举，只用于日志与多实例区分。
 - `vrrp_script chk_nginx { ... }`：定义一个名为 `chk_nginx` 的健康检查脚本段，但**它本身不绑定到任何实例**，必须靠下面 `track_script` 引用才生效。
@@ -132,7 +138,8 @@ vrrp_instance VI_1 {
   - `virtual_ipaddress { 10.0.0.3/24 dev eth0 label eth0:1 }`：VIP 地址、掩码、绑定的网卡与子接口标签（eth0:1）。
   - `track_script { chk_nginx }`：把前面定义的 `chk_nginx` 脚本挂到本实例上——这才是让「nginx 挂掉→VIP 漂移」真正生效的一行。
 
-### 步骤 4：主备配置差异对照表（已实操） {: .sec-chk}
+### 步骤 4：主备配置差异对照表（已实操）
+{: .sec-chk}
 
 | 字段 | linux-node01 (MASTER) | linux-node02 (BACKUP) | 是否影响选举 |
 | --- | --- | --- | --- |
@@ -153,13 +160,15 @@ vrrp_instance VI_1 {
 > - `state` 写 MASTER 并不代表永远当主，最终由「基础优先级 + weight 实时结果」决定，所以备机 `state BACKUP` 在抢占模式下也会随时反超；
 > - `weight` 为负时是「失败扣分」，为正时是「成功加分」，本题用的是 `-20`，不要写成 `20`（题 2 会专门解释两者差异）。
 
-## 题 2：vrrp_script + weight 实现优先级切换（原理推演） {: .sec-know}
+## 题 2：vrrp_script + weight 实现优先级切换（原理推演）
+{: .sec-know}
 
 **考察点**：理解 `weight` 的正负到底怎么改优先级，以及为什么「nginx 一挂，VIP 就从 linux-node01 漂到 linux-node02」。这是整套高可用方案的理论核心。
 
 **实现思路**：把 keepalived 的优先级计算规则翻译成一句话——`weight` 为负时「脚本失败 → 有效优先级 = 基础优先级 + weight；脚本成功 → 维持基础优先级」；`weight` 为正时「脚本成功 → 加 weight；失败 → 维持」。然后列出主健康 / 主故障 / 主恢复三个场景，手算有效优先级，看谁大谁当 MASTER。
 
-### 步骤 1：优先级计算规则（已实操） {: .sec-prac}
+### 步骤 1：优先级计算规则（已实操）
+{: .sec-prac}
 
 以本题 `priority 100 / 90`、`weight -20` 代入：
 
@@ -171,7 +180,8 @@ vrrp_instance VI_1 {
 
 **关键一句话**：linux-node01 的 nginx 一旦被 `check_nginx.sh` 判定为异常（脚本退出码非 0），它的有效优先级从 100 扣到 80，小于 linux-node02 的 90，于是 linux-node02 反超成为 MASTER，VIP `10.0.0.3` 漂移到 linux-node02。
 
-### 步骤 2：weight 正负对抢占的影响（已实操） {: .sec-prac}
+### 步骤 2：weight 正负对抢占的影响（已实操）
+{: .sec-prac}
 
 为什么生产上统一用**负** weight？把 `weight` 换成 `+20` 也能切，但有三处隐患：
 
@@ -189,13 +199,15 @@ vrrp_instance VI_1 {
 > - `fall 2` 表示要连续失败 2 次才判定异常，单次抖动不会触发切换；`rise 1` 表示恢复 1 次即回血，恢复比故障「宽容」；
 > - 默认 `preempt` 抢占是开启的，所以主恢复后会自动抢回 VIP；若想让备机「接管后不归还」，需显式配置 `nopreempt`（通常用于状态有损的服务，nginx 这种无状态代理一般保留抢占）。
 
-## 题 3：upstream 四种调度算法与故障剔除仿真 {: .sec-ts}
+## 题 3：upstream 四种调度算法与故障剔除仿真
+{: .sec-ts}
 
 **考察点**：nginx 的 `upstream` 模块到底怎么把流量分给多台 RS，以及某台 RS 连续失败后如何被自动剔除、恢复后又如何加回。本题用 `sim_upstream.sh` 把 rr / wrr / ip_hash / least_conn 四种算法和 `max_fails`/`fail_timeout` 故障处理全部仿真一遍。
 
 **实现思路**：脚本里定义了 3 台 RS（web01/02/03，IP `10.0.0.7/8/9`），分别演示轮询、加权轮询、ip_hash 会话保持、最少连接，最后用时间轴推演「web02 连续失败 3 次被剔除、超时后又恢复」。
 
-### 步骤 1：sim_upstream.sh 核心源码（已实操） {: .sec-prac}
+### 步骤 1：sim_upstream.sh 核心源码（已实操）
+{: .sec-prac}
 
 下面截取脚本中定义 RS 与四个调度算法的关键片段（`djb2` 哈希函数用于在 Git Bash 里等价演示 nginx 的 `ip_hash` 会话保持）：
 
@@ -234,7 +246,8 @@ for ((t = 1; t <= 14; t++)); do
 done
 ```
 
-### 步骤 2：sim_upstream.sh 真实运行输出（已实操） {: .sec-prac}
+### 步骤 2：sim_upstream.sh 真实运行输出（已实操）
+{: .sec-prac}
 
 在 `/tmp/hw/day43` 下直接运行，输出为真实结果：
 
@@ -308,7 +321,8 @@ t=13s  健康池: web01 web02 web03     web02 累计失败=0
 t=14s  健康池: web01 web02 web03     web02 累计失败=0
 ```
 
-### 步骤 3：输出解读（已实操） {: .sec-prac}
+### 步骤 3：输出解读（已实操）
+{: .sec-prac}
 
 - **rr（轮询）**：10 个请求严格 `web01→web02→web03` 循环，三台均摊。
 - **wrr（加权轮询，3:1:1）**：web01 出现 6 次、web02/03 各 2 次，比例正好 3:1:1——权重高的机器吃更多流量。
@@ -341,7 +355,8 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
 
 **实现思路**：先贴切换前 linux-node01 持有 VIP、linux-node02 无 VIP；再贴切换后（linux-node01 的 nginx 故障触发 weight -20，优先级 80 < 90）linux-node01 失去 VIP、linux-node02 拿到 VIP；最后用一张「VIP 归属变化」对比表收口。
 
-### 步骤 1：切换前 linux-node01（MASTER）持有 VIP（已实操，真实产物） {: .sec-prac}
+### 步骤 1：切换前 linux-node01（MASTER）持有 VIP（已实操，真实产物）
+{: .sec-prac}
 
 切换前 linux-node01 的 `eth0` 上能看到 VIP `10.0.0.3/24`（标签 `eth0:1` 作为 secondary 地址），同时自身实 IP 是 `10.0.0.5`：
 
@@ -354,7 +369,8 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
        valid_lft forever preferred_lft forever
 ```
 
-### 步骤 2：切换前 linux-node02（BACKUP）无 VIP（已实操，真实产物） {: .sec-prac}
+### 步骤 2：切换前 linux-node02（BACKUP）无 VIP（已实操，真实产物）
+{: .sec-prac}
 
 切换前 linux-node02 只有自身实 IP `10.0.0.6`，看不到 `10.0.0.3`：
 
@@ -365,7 +381,8 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
        valid_lft forever preferred_lft forever
 ```
 
-### 步骤 3：切换后 linux-node01 失去 VIP（已实操，真实产物） {: .sec-prac}
+### 步骤 3：切换后 linux-node01 失去 VIP（已实操，真实产物）
+{: .sec-prac}
 
 linux-node01 的 nginx 被判定异常 → `chk_nginx` 脚本失败 → 优先级 100-20=80 < 90 → 释放 VIP。`eth0` 上 `10.0.0.3` 那行 secondary 地址已消失，只剩实 IP `10.0.0.5`：
 
@@ -376,7 +393,8 @@ linux-node01 的 nginx 被判定异常 → `chk_nginx` 脚本失败 → 优先�
        valid_lft forever preferred_lft forever
 ```
 
-### 步骤 4：切换后 linux-node02 拿到 VIP（已实操，真实产物） {: .sec-prac}
+### 步骤 4：切换后 linux-node02 拿到 VIP（已实操，真实产物）
+{: .sec-prac}
 
 linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上（标签 `eth0:1`）：
 
@@ -388,7 +406,8 @@ linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上�
        valid_lft forever preferred_lft forever
 ```
 
-### 步骤 5：VIP 归属对比表（已实操） {: .sec-prac}
+### 步骤 5：VIP 归属对比表（已实操）
+{: .sec-prac}
 
 | 时间点 | linux-node01 (eth0 实 IP 10.0.0.5) | linux-node02 (eth0 实 IP 10.0.0.6) | VIP 10.0.0.3 归属 |
 | --- | --- | --- | --- |
@@ -405,7 +424,8 @@ linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上�
 > - 切换有延迟，等于 `advert_int(1s)` + `fall(2)×interval(2s)` 约等于 1+4=5 秒量级，不要刚停 nginx 就立刻查 `ip a`，会误以为没切；
 > - 脑裂时两台都出现 VIP，需用 `arping` 看 MAC 是否冲突，单纯 `ip a` 看不出「两个 VIP 同时存在」的危害。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. keepalived 高可用配置按「`global_defs` 标识 → `vrrp_script` 定义健康检查 → `vrrp_instance` 定实例/VIP/优先级 → `track_script` 把脚本挂上实例」四段组织；主备配置只差 `router_id`/`state`/`priority` 三处，`virtual_router_id` 与 `auth_pass` 必须一致，否则脑裂。
 2. `vrrp_script` 定义后**必须**用 `track_script` 引用才生效；`weight -20` 是「失败扣分」模型：脚本非 0 → 有效优先级 = 100-20=80，小于备机 90，于是 VIP 漂走；这是整套联动的开关。

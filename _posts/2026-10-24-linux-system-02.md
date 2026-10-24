@@ -12,7 +12,8 @@ slug: "linux-system-02"
 
 文件操作是运维每天敲得最多的命令：`ls -l` 查属性、`touch` 建空文件、`vi` 编辑、`echo` 配合 `>` / `>>` 写入、`cat` 查内容、`cp` 备份、`rm` 删除、`mv` 移动重命名。每个命令下面都有实例，跟着敲。
 
-## 原理解析：一条命令在 Linux 中是怎么被执行的 {: .sec-know}
+## 原理解析：一条命令在 Linux 中是怎么被执行的
+{: .sec-know}
 
 理解命令的执行流程，很多"灵异现象"（比如命令明明存在却找不到、别名为什么不生效）都能解释清楚。
 
@@ -50,11 +51,13 @@ shell 处理一条命令的完整流程：
 | `Jun 7 2013` | 最后修改时间 |
 | `.`（权限后的点） | 表示该文件带有 SELinux 安全上下文 |
 
-### 拓展：`ls -l` 第一位认文件类型 {: .sec-ext}
+### 拓展：`ls -l` 第一位认文件类型
+{: .sec-ext}
 
 那串权限的第一位是文件类型：`-` 普通文件、`d` 目录、`l` 软链接、`b` 块设备（磁盘）、`c` 字符设备（终端）、`s` 套接字、`p` 管道。`ls -l /dev/sda` 能看到 `b` 开头的设备文件——"一切皆文件"在这里具象化。
 
-### `ls` 常用参数详解 {: .sec-expl}
+### `ls` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 | 示例 |
 | --- | --- | --- |
@@ -91,7 +94,8 @@ touch /data/test.txt
 
 批量建文件用花括号：`touch /data/{1..10}.txt` 一次建十个，配合 `mkdir -p`，搭实验环境两秒钟。
 
-### `touch` 常用参数详解 {: .sec-expl}
+### `touch` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -101,7 +105,8 @@ touch /data/test.txt
 | `-t` | 按 `[[CC]YY]MMDDhhmm[.ss]` 格式设置时间 |
 | `-r` | 把时间戳设置为与参考文件一致，如 `touch -r a.txt b.txt` |
 
-### 拓展：文件的三种时间戳 {: .sec-ext}
+### 拓展：文件的三种时间戳
+{: .sec-ext}
 
 `ls -l` 显示的只是 mtime（modify，内容修改时间）。完整的有三种：atime（access，读内容时更新）、mtime（写内容时更新）、ctime（change，inode 变化时更新——改权限、改属主、改内容都会变）。用 `stat 文件名` 一次看全。排错时的推论：文件内容没变不代表没被动过——只改了权限的话，mtime 不变、ctime 会变。
 
@@ -187,7 +192,8 @@ hello linux 02
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 ```
 
-### `cat` 常用参数详解 {: .sec-expl}
+### `cat` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -320,7 +326,8 @@ cp: overwrite '/tmp/test01/test03.txt'? y
 [root@linux-node1 test01]# \cp -r /data/test01/ /tmp/
 ```
 
-### `cp` 常用参数详解 {: .sec-expl}
+### `cp` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -335,11 +342,13 @@ cp: overwrite '/tmp/test01/test03.txt'? y
 > **注意：** 备份配置目录时推荐 `cp -a`：它连权限、属主、时间戳一起保留，还原后与原环境完全一致。脚本中批量复制用 `\cp -rf` 避免交互卡住。增量备份再往前一步是 rsync——`cp -u` 只比较时间戳，rsync 还比对大小与校验和，且支持断点续传和远程传输。
 {: .sec-pit}
 
-### 辨析：cp 与 mv 的底层差异 {: .sec-know}
+### 辨析：cp 与 mv 的底层差异
+{: .sec-know}
 
 `cp` 是真刀真枪搬数据：读源文件、分配新 inode、写目标数据块，大文件复制耗时与体积成正比；`mv` 在同一文件系统内只改目录映射，不动数据。备份用 `cp`（两份都在），腾挪用 `mv`（只剩一份）。二者还有个行为差异要记牢：`cp` 之后源文件还在，`mv` 之后源文件没了——脚本里用错，就是数据"消失"事故的常见来源。
 
-## 删除数据命令：`rm`（remove，慎用） {: .sec-warn}
+## 删除数据命令：`rm`（remove，慎用）
+{: .sec-warn}
 
 **用法**：`rm 要删除的数据信息`
 
@@ -448,7 +457,8 @@ mv: overwrite '/tmp/test.txt'?
 
 重命名要留神：`mv test.txt new.txt` 在 new.txt 已存在时会覆盖它，给重要文件改名前先确认目标名没被占用。
 
-### `mv` 常用参数详解 {: .sec-expl}
+### `mv` 常用参数详解
+{: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -501,7 +511,8 @@ tree -a /data              # 包含隐藏文件
 > **注意：** `tree` 不属于 CentOS 7 默认安装的软件，使用前需 `yum install -y tree`。
 {: .sec-pit}
 
-## 原理解析：硬链接与软链接（inode 视角） {: .sec-know}
+## 原理解析：硬链接与软链接（inode 视角）
+{: .sec-know}
 
 Linux 文件系统里，**文件名和文件数据是分开存储的**：
 
@@ -557,7 +568,8 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 
 > **补充：** inode 是有限资源，`df -i` 能看每个文件系统的 inode 总量与使用量。海量小文件（缓存目录、邮件目录）会把 inode 耗光，此时 `df -h` 明明还有空间，任何写入都报 `No space left on device`——经典故障，先查 `df -i` 再下结论。
 
-## 知识卡片：文件操作命令速查 {: .sec-know}
+## 知识卡片：文件操作命令速查
+{: .sec-know}
 
 | 命令 | 最高频用法 | 说明 |
 | --- | --- | --- |
@@ -574,7 +586,8 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 | `ln -s` | `ln -s /data /link` | 软链接，可跨文件系统 |
 | `ln` | `ln a.txt b.txt` | 硬链接，同 inode |
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -586,7 +599,8 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 | 软链接打开报 `Too many levels of symbolic links` | 软链形成了环（如 `a -> b`、`b -> a`） | `ls -l` 看指向 | 删除环上的某个链接 |
 | 移动大文件突然变慢 | 跨文件系统，退化为复制 + 删除 | `df -h` 对比源与目标 | 预期内行为，或先压缩再传 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -599,12 +613,14 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 等后继发行版上本篇所有命令与行为完全一致。若系统使用 journald 管理日志，`tail -f /var/log/messages` 的替代方案是 `journalctl -f`，并可按服务过滤：`journalctl -u nginx -f`。
 {: .sec-pit}
 
-## 课后练习 {: .sec-prac}
+## 课后练习
+{: .sec-prac}
 
 1. 总结已学命令及参数用法。
 2. 预习系统目录结构。
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. `touch` 创建空文件，`ls -l` 查看文件详细属性，`cat` 查看文件内容。
 2. 编辑文件有两种方式：`vi` 打开后按 `i` 进入插入模式、`:wq` 保存退出；或用 `echo` 配合重定向不打开直接写入。
@@ -615,7 +631,8 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 7. 通配符 `*` `?` `[]` 匹配真实文件，`{}` 是 shell 字符串展开；硬链接共用 inode 不能跨文件系统，软链接存路径可以跨文件系统但会因目标删除而失效。
 8. 写脚本一律用绝对路径；看最近改动用 `ls -ltr`；跟日志用 `tail -f`。
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. `>` 和 `>>` 的区别是什么？为什么 `echo a > f && echo b > f` 执行后文件里只有 `b`？
 2. 硬链接和软链接在 inode 层面有什么区别？为什么硬链接不能跨文件系统？

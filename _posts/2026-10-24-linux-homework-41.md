@@ -12,7 +12,8 @@ slug: "linux-homework-41"
 
 课程第 40 天的作业落在两件事上：①熟悉排序和去重命令，对文件里的数值信息做统计分析——找出用户访问最多的前 10 个页面；②对网站做压力测试。第一题先拿 sort/uniq 热身，再构造一份 274 行、nginx combined 格式的 access.log 样例，用 `awk + sort + uniq -c + sort -rn + head` 组合拳真跑出访问量前 10 的 URL，顺手扩展出 IP Top5、状态码分布、响应总流量、404 明细四组统计；第二题给出 ab（ApacheBench）与 webbench 两款压测工具的标准命令、完整预期输出与关键指标解读。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-41"
 
 环境实测：GNU bash 5.3、GNU awk 5.4、GNU sort 9.4，统计三件套与 CentOS 7 的行为完全一致。实操目录统一用 `/tmp/hw/day40`。日志中的 IP、URL、User-Agent 均为脱敏后的构造数据，属主统一显示为 `user`。`ab` 与 `webbench` 在本环境不存在，压测部分按 B 级给出。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -41,7 +43,8 @@ slug: "linux-homework-41"
 4. `sort -rn` 按次数从大到小排；
 5. `head -10` 取前 10 名。
 
-### 步骤 1：sort 与 uniq 基础热身（已实操） {: .sec-prac}
+### 步骤 1：sort 与 uniq 基础热身（已实操）
+{: .sec-prac}
 
 先在一个 6 行小文件上把「排序、去重、计数」三个动作看清楚：
 
@@ -75,7 +78,8 @@ $ sort fruit.txt | uniq -c | sort -rn
 
 三个结论：`sort` 把相同内容排到相邻；`uniq -c` 只合并**相邻**的重复行并输出次数；`sort -rn` 中 `-n` 按数值比较（否则 `10` 会排在 `2` 前面）、`-r` 倒序。
 
-### 步骤 2：构造 access.log 样例（已实操） {: .sec-ex}
+### 步骤 2：构造 access.log 样例（已实操）
+{: .sec-ex}
 
 统计前先要有像样的数据。用 Python 按固定随机种子生成一份 274 行、nginx combined 格式的日志（13 个 URL、8 个来源 IP、4 种状态码），保证结果可复现：
 
@@ -141,7 +145,8 @@ head -5 access.log
 10.0.0.88 - - [23/Oct/2026:18:14:07 +0800] "GET /article/1024.html HTTP/1.1" 200 36920 "https://www.example.com/index.html" "curl/7.29.0"
 ```
 
-### 步骤 3：统计访问次数前 10 的页面（已实操，作业主体） {: .sec-prac}
+### 步骤 3：统计访问次数前 10 的页面（已实操，作业主体）
+{: .sec-prac}
 
 ```bash
 awk '{print $7}' access.log | sort | uniq -c | sort -rn | head -10
@@ -164,7 +169,8 @@ awk '{print $7}' access.log | sort | uniq -c | sort -rn | head -10
 
 首页 `/index.html` 以 62 次居首，`/login` 与商品列表接口次之——与构造数据的设计一致，统计链路正确。这一条命令就是本题的标准答案写法。
 
-### 步骤 4：四组扩展统计（已实操） {: .sec-ext}
+### 步骤 4：四组扩展统计（已实操）
+{: .sec-ext}
 
 同一套组合拳换一列就能统计别的维度，这是本题真正的价值所在：
 
@@ -206,7 +212,8 @@ total_bytes=5079836
 
 解读：`4.1` 找出访问最频繁的来源（结合日志时间还能定位采集器或爬虫）；`4.2` 中 304 表示客户端缓存命中，占比高是好事；`4.3` 的 `s+=$10` 是 awk 最常用的累加模式；`4.4` 里 `/index.html` 出现 8 次 404 值得排查——很可能是热链或配置错误。这类统计在真实机器上建议落成定时任务，每天出一份 Top 榜，流量异动时才有基线可比。
 
-### 步骤 5：按小时统计访问量分布（已实操） {: .sec-prac}
+### 步骤 5：按小时统计访问量分布（已实操）
+{: .sec-prac}
 
 访问量分析还有一个常用维度——时间。日志第 4 列是 `[23/Oct/2026:10:16:12` 这样的时间戳（带方括号），用 awk 的 `substr($4,2,14)` 从第 2 个字符起截 14 位，正好得到「日期:小时」：
 
@@ -262,7 +269,8 @@ awk '{print substr($4,2,14)}' access.log | sort | uniq -c | sort -rn | head -3
 
 `substr($4,2,14)` 三个参数别写错：从第 2 位开始是为了跳过行首的 `[`，截 14 位才能把小时取全——只截 13 位会得到 `23/Oct/2026:1`，把 10 点、11 点混成一组。这个「日期+小时」聚合在做容量规划（几点扩容、几点跑批）时最常用。
 
-### 步骤 6：命令逐段拆解 {: .sec-prac}
+### 步骤 6：命令逐段拆解
+{: .sec-prac}
 
 | 片段 | 作用 | 关键点 |
 | --- | --- | --- |
@@ -280,7 +288,8 @@ awk '{print substr($4,2,14)}' access.log | sort | uniq -c | sort -rn | head -3
 > - URL 带查询串时（`/list?page=2`）会被当成不同页面，必要时先用 `awk -F'?' '{print $1}'` 切掉查询串再统计；
 > - awk 程序体务必用**单引号**包裹，防止 shell 把 `$7`、`$9` 当自己的位置参数吃掉。
 
-## 题 2：如何对网站进行压力测试 {: .sec-ver}
+## 题 2：如何对网站进行压力测试
+{: .sec-ver}
 
 **考察点**：ab（ApacheBench）与 webbench 两款压测工具的基本用法，以及压测报告里 QPS、平均耗时、百分位耗时等关键指标的读法。
 
@@ -383,7 +392,8 @@ Requests: 59280 susceed, 0 failed.
 
 两个指标：`Speed`（折算每分钟页面数，除以 60 即 QPS）与 `Requests`（成功/失败数）。
 
-### ab 与 webbench 对比及压测注意事项 {: .sec-warn}
+### ab 与 webbench 对比及压测注意事项
+{: .sec-warn}
 
 | 维度 | ab | webbench |
 | --- | --- | --- |
@@ -393,7 +403,8 @@ Requests: 59280 susceed, 0 failed.
 | 高并发支持 | 千级并发稳定 | 轻量，万级并发不易崩 |
 | 选型建议 | 常规压测、要看指标细节 | 极限并发摸顶 |
 
-### ab 常用扩展参数（B 级） {: .sec-ext}
+### ab 常用扩展参数（B 级）
+{: .sec-ext}
 
 | 参数 | 作用 | 示例 |
 | --- | --- | --- |
@@ -411,14 +422,16 @@ Requests: 59280 susceed, 0 failed.
 4. 每次 `ab` 结束看一眼服务端日志与负载（`uptime`、`free -m`），确定瓶颈在 CPU、内存还是磁盘 IO；
 5. 结果受环境影响大，对比实验要控制「同一台机、同一个页面、同一参数」才有效。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 1. 统计结果自检：Top10 URL 的次数加总应等于日志总行数中前 10 个 URL 的行数，`awk '{print $7}' access.log | wc -l` 应等于 `wc -l access.log` 的行数（274）；
 2. 把「先 sort 后 uniq」做反例验证：`awk '{print $7}' access.log | uniq -c | wc -l` 的结果远大于真实 URL 个数（13），证明跳过 sort 会得到错误结果；
 3. 压测自检：`ab -n 100 -c 10` 的 Complete requests 必须等于 100、Failed requests 为 0，且耗时随 `-c` 增大而 QPS 先升后平（或错误率上升），符合并发-吞吐曲线的基本规律；
 4. 压测前后 `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1/` 均返回 200，确认服务未被压垮。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 日志统计标准组合拳：`awk '{print $7}' | sort | uniq -c | sort -rn | head -10`，五段各司其职——取列、排序、计数、倒序、截取，换一列就能统计 IP、状态码等任意维度。
 2. 两条铁律：**先 sort 后 uniq**（uniq 只合并相邻重复行）、**sort 要加 `-n`**（数字比较而非字典序），漏掉任何一条结果都会错。

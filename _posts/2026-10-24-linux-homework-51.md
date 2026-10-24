@@ -10,7 +10,8 @@ slug: "linux-homework-51"
 
 
 
-## 本篇说明 {: .sec-expl}
+## 本篇说明
+{: .sec-expl}
 
 - **题量**：34 题。原卷共 35 题，第 08 题空缺，按原序号 01–07、09–35 顺延编排；每题 3 分、总分 105 分，**及格分 70 分**，折算下来答对 24 题左右
 - **覆盖章节**：系统重要配置文件、系统状态查看、软件安装方式、端口与网络排查、vi/vim 编辑器、运行级别、用户与权限、环境变量与别名、定时与开机自启、虚拟网络模式、挂载等
@@ -23,7 +24,8 @@ slug: "linux-homework-51"
 
 ---
 
-## 测验题目精讲 {: .sec-prac}
+## 测验题目精讲
+{: .sec-prac}
 
 ### 题 01：包含主机名到 IP 地址映射关系的文件是
 
@@ -173,7 +175,8 @@ LISTEN 0 128 :::8080 :::* users:(("java",pid=1234,fd=45))
 
 ---
 
-### 题 07：vi 基本使用流程与三种模式 {: .sec-expl}
+### 题 07：vi 基本使用流程与三种模式
+{: .sec-expl}
 
 > **答案**：
 > - 使用流程：`vi /data/linux/linux.txt`（自动创建文件，但路径不会自动创建）→ 命令模式按 `i` 进入编辑 → 写内容 → `Esc` 退回命令模式 → `:wq` 保存退出（`:q!` 强制不保存退出）
@@ -376,7 +379,8 @@ ifcfg-lo
 
 ---
 
-### 题 17：存放配置文件与系统命令的目录 {: .sec-expl}
+### 题 17：存放配置文件与系统命令的目录
+{: .sec-expl}
 
 > **答案**：
 > - 存放系统配置文件和子目录的目录：`/etc`
@@ -420,7 +424,8 @@ world-b
 
 ---
 
-### 题 19：创建系统用户、切换与确认 {: .sec-ver}
+### 题 19：创建系统用户、切换与确认
+{: .sec-ver}
 
 > **答案**：
 > - 创建：`useradd linuxuser`；设密：`passwd linuxuser` 或免交互 `echo "$PASS" | passwd --stdin linuxuser`（`$PASS` 为受控口令变量，禁止明文写入脚本）
@@ -460,7 +465,8 @@ linuxuser
 
 ---
 
-### 题 21：SSH 远程连接不通的排查思路 {: .sec-ts}
+### 题 21：SSH 远程连接不通的排查思路
+{: .sec-ts}
 
 > **答案**：
 > 01. 确认链路是否通畅：`ping 目标IP`
@@ -573,7 +579,8 @@ multi-user.target
 
 ---
 
-### 题 27：把查看网卡配置设为别名 catnet 并永久生效 {: .sec-expl}
+### 题 27：把查看网卡配置设为别名 catnet 并永久生效
+{: .sec-expl}
 
 > **答案**：
 > 1. 编辑 `/etc/profile`：`alias catnet='cat /etc/sysconfig/network-scripts/ifcfg-eth0'`
@@ -600,7 +607,8 @@ alias catnet='cat /etc/hosts'
 
 ---
 
-### 题 28：简述忘记 root 密码的解决方法 {: .sec-ts}
+### 题 28：简述忘记 root 密码的解决方法
+{: .sec-ts}
 
 > **答案**：利用单用户模式（CentOS 7）重置密码：
 > 1. 启动到引导菜单，按 `e` 编辑，在 `UTF-8` 行末追加 `init=/bin/bash`
@@ -671,7 +679,8 @@ test1
 
 ---
 
-### 题 30：把环境变量 OLD01=123 永久改成 OLD01=ABC {: .sec-expl}
+### 题 30：把环境变量 OLD01=123 永久改成 OLD01=ABC
+{: .sec-expl}
 
 > **答案**：`echo 'export OLD01=ABC' >> /etc/profile` 然后 `source /etc/profile`
 
@@ -697,7 +706,8 @@ echo "echo 'export OLD01=ABC' >> /etc/profile && source /etc/profile"
 
 ---
 
-### 题 31：开机自动备份并写提示信息 {: .sec-warn}
+### 题 31：开机自动备份并写提示信息
+{: .sec-warn}
 
 > **答案**：把备份命令写入 `/etc/rc.local`（CentOS 7 需 `chmod +x /etc/rc.d/rc.local` 保证可执行）：
 > ```bash
@@ -721,7 +731,8 @@ chmod +x /etc/rc.d/rc.local
 
 ---
 
-### 题 32：开机/登录提示信息 {: .sec-warn}
+### 题 32：开机/登录提示信息
+{: .sec-warn}
 
 > **答案**：
 > - 登录前提示（本地）：`/etc/issue`（远程 `/etc/issue.net`）
@@ -807,7 +818,8 @@ exit=2
 
 ---
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 34 题刷完，真正高频踩坑的就这几组：
 

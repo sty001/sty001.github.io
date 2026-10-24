@@ -12,14 +12,16 @@ slug: "linux-homework-49"
 
 本篇是整套课程的收尾篇，对应第 41 天的总复习作业：①用一张大表把「从裸机到高可用」的完整架构链路串一遍，检验每个环节是否真的掌握；②精讲 20 道高频运维面试题，每题给「标准答案 + 加分点」，可直接当面试弹药库用；③给出后续学习路线。其中软硬链接、find 删旧文件、awk 统计 IP 三题在本地环境真跑验证。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 - **A 级（已真实执行）**：shell 层面的命令（ln/ls/find/touch/awk/sort/uniq/du）在 Git Bash 环境实际运行，输出为真实结果，标注 `已实操`（属主统一显示为 `user`）；
 - **B 级（标准命令 + 预期输出）**：系统服务类操作（df、rsync、NFS、systemctl、nginx 等）给出真实可用的命令序列与 CentOS 7 标准预期输出，标注 `预期输出`。
 
 本环境无 symlink 权限（`ln -s` 实测不可用），软链接部分给 CentOS 7 预期输出；硬链接、find、awk 部分为真跑。实操目录统一用 `/tmp/hw/day45`，前一篇的日志样本 `/tmp/hw/day40/sample.log` 继续复用。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 内容 | 分级 |
 | --- | --- | --- |
@@ -27,7 +29,8 @@ slug: "linux-homework-49"
 | 题 2 | 20 道高频运维面试题精讲 | 3 题 A 级真跑 + 其余讲解 |
 | 题 3 | 后续学习路线 | 路线表（无实操） |
 
-## 题 1：全课程架构链路大回顾 {: .sec-sum}
+## 题 1：全课程架构链路大回顾
+{: .sec-sum}
 
 一张表从下往上把整套课程串起来。自查方法：遮住「关键技能」一列，看能否自己回忆出来；哪一行卡壳就回哪一章。
 
@@ -52,7 +55,8 @@ slug: "linux-homework-49"
 
 这条链路的骨架是：**硬件 → 单机运维 → 文本处理 → 权限与调度 → 数据同步 → 批量管理 → Web 服务 → 负载均衡 → 高可用 → 监控**。面试时能按这条线讲清「一台新机器从装系统到对外提供高可用服务要做哪些事」，就等于把课程复述了一遍。
 
-## 题 2：20 道高频运维面试题精讲 {: .sec-iv}
+## 题 2：20 道高频运维面试题精讲
+{: .sec-iv}
 
 ### 第 1 题：软链接与硬链接的区别（真跑）
 
@@ -149,7 +153,8 @@ Nginx access 日志的对应写法：`awk '{print $1}' access.log | sort | uniq 
 
 **加分点**：能讲出为什么要中间夹一个 `sort`（uniq 只合并相邻重复行）；更进阶用 awk 关联数组一步完成：`awk '{count[$1]++} END{for(ip in count) print count[ip],ip}' access.log | sort -rn | head -10`，少一次管道排序，大文件更快。
 
-### 第 4 题：磁盘满了，怎么排查？ {: .sec-ts}
+### 第 4 题：磁盘满了，怎么排查？
+{: .sec-ts}
 
 **标准答案**：第一步 `df -h` 确认哪个分区满；第二步 `du -sh /* 2>/dev/null | sort -rh | head`（CentOS 7 可用 `du -h --max-depth=1 / | sort -rh | head`）逐层下钻定位大目录；第三步看大文件（常见：大日志、core dump、/var/log、容器目录）后删除或轮转。
 
@@ -173,25 +178,29 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 
 **加分点**：说出常用参数组合 `rsync -avz --delete --exclude="*.log" src/ dst/`（注意 src 带不带斜杠的语义差别：带斜杠同步目录内容，不带同步目录本身）；rsync 还能以 daemon（873 端口）方式跑；`-P` = `--progress --partial`，断点续传。
 
-### 第 6 题：rsync + inotify 实时同步的原理？ {: .sec-know}
+### 第 6 题：rsync + inotify 实时同步的原理？
+{: .sec-know}
 
 **标准答案**：inotify 是内核提供的文件系统事件通知机制，监控工具（inotifywait/sersync）监听 create、modify、delete、move 等事件，一旦发生立即触发 rsync 把变化的文件推到远端，从而把「分钟级定时同步」提升到「秒级实时同步」。常见组合是 sersync（C++ 封装，自带多线程与失败重传）或自写脚本「inotifywait -m + rsync」。
 
 **加分点**：知道局限——inotify 只监控本机事件，双向同步要用 lsyncd 或 DRBD/GlusterFS；监控队列溢出（`sysctl fs.inotify.max_queued_events`）会导致漏同步，大目录要调大 `max_user_watches`。
 
-### 第 7 题：NFS 的作用与排错思路？ {: .sec-ts}
+### 第 7 题：NFS 的作用与排错思路？
+{: .sec-ts}
 
 **标准答案**：NFS 让客户端把服务端的共享目录像本地目录一样挂载（mount -t nfs），多台 web 挂同一个 NFS 即可共享上传文件，解决「负载均衡后文件不一致」。服务端配 `/etc/exports`（如 `/data 10.0.0.0/24(rw,sync,all_squash)`），`exportfs -rv` 生效；客户端 `mount -t nfs server:/data /mnt`。
 
 **加分点**：排错顺序是先 `rpcinfo -p` 看 rpcbind（111 端口）、再 `showmount -e server` 看导出清单、再看防火墙；`all_squash` 把所有用户压成匿名用户 nfsnobody，配合两端 uid 一致避免权限混乱；生产可换更现代的 GlusterFS/对象存储。
 
-### 第 8 题：Ansible playbook 与 shell 脚本对比，各适合什么场景？ {: .sec-ex}
+### 第 8 题：Ansible playbook 与 shell 脚本对比，各适合什么场景？
+{: .sec-ex}
 
 **标准答案**：shell 脚本面向**单机**，逻辑灵活但幂等性靠人肉保证，几十台机器要自己写 for 循环加 ssh；Ansible 基于 ssh 免客户端，playbook 用 YAML 声明**期望状态**，模块天然幂等（重复执行结果一致），支持模板（Jinja2）、变量、角色（roles）、失败回滚，适合批量配置下发、标准化初始化、持续变更。
 
 **加分点**：能举例说明幂等——`copy` 模块内容没变就不会写文件也不触发 notify；handler 只在状态真正变化时重启服务；对比中提一句「临时改一台机器用 ad-hoc 命令，可重复交付的编排用 playbook，规模上千用角色化 + 动态 inventory」。
 
-### 第 9 题：Nginx 出现 502 怎么排查？ {: .sec-ts}
+### 第 9 题：Nginx 出现 502 怎么排查？
+{: .sec-ts}
 
 **标准答案**：502 = nginx 作为代理收到了后端（php-fpm/tomcat）的**无效响应或连接失败**。排查路径：①后端进程活着吗——`ps -ef | grep php-fpm`、`ss -lntup | grep 9000`；②连接参数对吗——`fastcgi_pass 127.0.0.1:9000` 的 IP 端口、sock 文件路径与权限；③资源耗尽了吗——php-fpm 的 pm.max_children 打满、内存 OOM（`dmesg | tail`）；④看错误日志 `/var/log/nginx/error.log` 里的 `connect() failed` 或 `Connection refused` 字样定位。
 
@@ -203,7 +212,8 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 
 **加分点**：补充常见状态码速记——200 正常、301/302 重定向、403 权限（目录无 index 且未开 autoindex、文件权限不足）、404 资源不存在、413 请求体超限（client_max_body_size）、502/504 后端问题、503 后端全部 down 或限流。
 
-### 第 11 题：keepalived 脑裂是什么？怎么防？ {: .sec-know}
+### 第 11 题：keepalived 脑裂是什么？怎么防？
+{: .sec-know}
 
 **标准答案**：主备两台都持有 VIP、同时对外响应即为脑裂。根因几乎都是**心跳断了但双方都活着**：心跳线/交换链路故障、防火墙拦了 VRRP 组播（224.0.0.18）、vrrp 报文超时（notify 太重）。防法：双心跳线冗余、放行组播、备用机太弱时设 `nopreempt`、监控侧检测「同一 VIP 出现在两台机器上」即告警，必要时用 arping 巡检。
 
@@ -215,37 +225,43 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 
 **加分点**：说出调度算法——轮询、weight、ip_hash（会话保持）、least_conn；LVS 三种模式 DR/TUN/NAT 的差别（DR 性能最好要求同网段、NAT 跨网段但调度器易成瓶颈）；keepalived 最初就是为 LVS 的高可用而生。
 
-### 第 13 题：Nginx 平滑重载的原理？ {: .sec-know}
+### 第 13 题：Nginx 平滑重载的原理？
+{: .sec-know}
 
 **标准答案**：`nginx -s reload`（等价 `systemctl reload nginx`）向 master 发 HUP 信号：master 读取新配置、语法检查通过后 fork 新 worker，再通知旧 worker 优雅退出——旧 worker 停止接收新连接，把手头请求处理完再退出。整个过程端口不关、连接不断，即「平滑」。
 
 **加分点**：改完配置先 `nginx -t` 再 reload 是铁律；知道常见信号——QUIT 优雅退出、USR2 平滑升级二进制、WINCH 让 worker 优雅退出；reload 不生效多半是配置文件没被 include 或改错了 server 块。
 
-### 第 14 题：crontab 的五个字段是什么？定时任务不执行怎么查？ {: .sec-know}
+### 第 14 题：crontab 的五个字段是什么？定时任务不执行怎么查？
+{: .sec-know}
 
 **标准答案**：五段 = 分 时 日 月 周，例 `0 2 * * * /scripts/backup.sh`（每天 02:00）。不执行排查五连：①`systemctl status crond` 服务在不在；②`grep 脚本 /var/log/cron` 有没有调度记录；③手动用 **crontab 同款环境**跑：环境变量（PATH 很精简）、没有终端，脚本里用相对路径/依赖交互的都会翻车；④输出重定向排查：`>> /tmp/backup.log 2>&1` 看报错；⑤脚本有执行权限吗、文件是 DOS 格式吗（`dos2unix`）。
 
 **加分点**：说得出「写定时任务三原则」——命令写绝对路径、输出必须重定向（否则邮件堆积 /var/spool/postfix）、脚本先手动跑通再进 crontab；`/etc/cron.deny` 与 `/var/log/cron` 的作用；秒级需求用 systemd timer 或循环 sleep。
 
-### 第 15 题：权限 755、644 分别是什么？umask 干嘛的？ {: .sec-know}
+### 第 15 题：权限 755、644 分别是什么？umask 干嘛的？
+{: .sec-know}
 
 **标准答案**：权限三段 = 属主/属组/其他，各段 rwx 对应 4/2/1。755 = rwxr-xr-x，常用于**目录**与可执行脚本；644 = rw-r--r--，常用于普通文件与网站静态文件。umask 是新建文件/目录时要「减掉」的权限：umask 022 时，目录 777-022=755，文件 666-022=644（文件默认不继承 x 位）。
 
 **加分点**：网站目录安全惯例——目录 755、文件 644、属主是运行用户，上传目录单独给写权限且禁执行 php；`chattr +i` 给关键文件上不可修改锁；SUID/SGID/粘滞位各举一例（passwd、/tmp）。
 
-### 第 16 题：buff/cache 是什么？swap 什么时候用？ {: .sec-know}
+### 第 16 题：buff/cache 是什么？swap 什么时候用？
+{: .sec-know}
 
 **标准答案**：buff/cache 是内核用空闲内存做磁盘读写缓存，属于「可回收」内存，`free -h` 判断内存够不够要看 **available** 列而不是 free 列。swap 是内存不足时把冷页换出到磁盘——磁盘比内存慢几个数量级，频繁 si/so（`vmstat` 里的 si、so 持续非 0）就是内存瓶颈信号。
 
 **加分点**：`echo 3 > /proc/sys/vm/drop_caches` 只能清缓存不能「省内存」（缓存本来就会自动让位）；生产一般保留少量 swap 兜底，`swappiness` 调低（如 10）让内核尽量用真内存；OOM 时看 `dmesg` 里 `Out of memory: Kill process` 确认谁被杀。
 
-### 第 17 题：Linux 开机启动流程？ {: .sec-expl}
+### 第 17 题：Linux 开机启动流程？
+{: .sec-expl}
 
 **标准答案**（CentOS 7）：BIOS/UEFI 自检 → 读取 MBR/GRUB2 → 加载内核与 initramfs → 启动 PID 1 的 systemd → 按 target（multi-user.target/graphical.target）拉起各服务（并行）→ 启动 getty/登录。排错锚点：卡 GRUB 修引导、卡服务用 systemd 单用户模式（`rd.break` 或编辑启动项加 `systemd.unit=rescue.target`）。
 
 **加分点**：对比 CentOS 6 的 SysV 串行启动说明 7 并行的优势；`systemctl get-default` 看默认目标；服务排障三板斧 `systemctl status/ journalctl -u 服务名 / systemctl list-dependencies`。
 
-### 第 18 题：grep、sed、awk 各自适合什么场景？ {: .sec-ex}
+### 第 18 题：grep、sed、awk 各自适合什么场景？
+{: .sec-ex}
 
 **标准答案**：grep 是**过滤器**——按正则/固定串筛行，快、简单，配合 `-v/-c/-n/-E` 覆盖 90% 的「找出我要的行」；sed 是**流编辑器**——对行做增删改替换，强项是 `-i` 批量改文件（如改配置）与按行号操作；awk 是**列处理器**——按空白切列取 `$1/$NF`，还能算术、条件、关联数组，统计类需求（Top IP、求和、格式化报表）首选。一句话：找行用 grep、改行用 sed、取列算数用 awk。
 
@@ -257,7 +273,8 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 
 **加分点**：知道 SYN 洪水与 `sync cookies`、TIME_WAIT 过多与 `net.ipv4.tcp_tw_reuse`；「端口通但服务不响应」用 curl -v 看卡在 TCP 还是 HTTP 阶段——这句在排查 502/504 时非常实用。
 
-### 第 20 题：一台新服务器上线，你的标准化初始化清单是什么？ {: .sec-know}
+### 第 20 题：一台新服务器上线，你的标准化初始化清单是什么？
+{: .sec-know}
 
 **标准答案**（把前 19 题串起来）：①改主机名、配 IP/DNS、时间同步（chrony）；②最小化安装 + 关闭 SELinux/firewalld 按需放行；③创建运维用户 + sudo、禁 root 密码登录、改 SSH 端口、配密钥；④配 yum 源、装基础工具包；⑤文件句柄数/内核参数（ulimit、sysctl）；⑥rsync 定时备份 + 日志轮转（logrotate）；⑦fail2ban 防爆破；⑧接入 Zabbix 监控与告警；⑨Ansible 把以上动作写成 playbook，新机器一条命令初始化完毕。
 
@@ -275,7 +292,8 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 
 选路原则：先把「单机能扛」练扎实（巩固期 + 深化期），再谈「规模化与自动化」；每一阶段都用「能讲给别人听 + 有可复现的实验环境」作为通过标准。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 本篇的三个 A 级实验自查：
 
@@ -283,7 +301,8 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 2. find：造一新一旧三个文件，`-mtime +30` 只列出旧文件，删除后只剩新文件；
 3. awk 统计：样本日志 Top IP 与 day40 全量统计的前几名一致。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 全课程是一条「单机 → 数据 → 批量 → 集群 → 高可用 → 监控」的链路，复习时遮表自查，哪行卡壳回哪章；面试自我介绍也按这条线组织最清晰。
 2. 20 道面试题里最高频的三个引擎是：**三剑客统计流水线**（Top IP）、**磁盘/日志排查三板斧**（df/du/df -i/lsof deleted）、**负载均衡高可用链路**（Nginx/LVS/keepalived/502/504/脑裂），务必能脱稿讲。

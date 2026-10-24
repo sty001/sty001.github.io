@@ -12,7 +12,8 @@ slug: "linux-homework-10"
 
 课程第 10 天（系统优化实践·下）的作业有五道：rpm 卸载、第一阶段总结、课程复述，外加批量建户与 yum 安装流程两个扩展题。rpm 卸载从查询、卸载到依赖处理给全命令序列；阶段总结按"硬件 → 安装 → 命令 → 目录 → 优化"串成一条链，配一组真跑的链路小实验；批量建户与 yum 流程给标准脚本、预期输出和验证命令。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-10"
 
 实操目录统一用 `/tmp/hw` 下的子目录。本文 A 级输出均在 Git Bash（bash 5.3）中真实执行，本地用户名已按脱敏要求替换为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -39,7 +41,8 @@ slug: "linux-homework-10"
 
 **实现思路**：rpm 只认单个包、不管依赖，所以卸载的正确姿势是先查再卸：查装没装、查包里有什么、查谁依赖它；确认安全再 `rpm -e`。依赖报错优先交给 `yum remove` 自动解决，实在没辙才 `--nodeps`，用之前想清楚后果；卸完 `rpm -q` 验证，顺手清配置残留。
 
-### 步骤 1：卸载前先查询确认（预期输出，CentOS 7） {: .sec-ver}
+### 步骤 1：卸载前先查询确认（预期输出，CentOS 7）
+{: .sec-ver}
 
 ```bash
 rpm -q httpd                     # 查询单个包是否安装、装的是哪个版本
@@ -64,7 +67,8 @@ httpd-tools-2.4.6-97.el7.centos.x86_64
 > **注意：** `rpm -q --whatrequires` 是卸载前的"安检"——输出非空说明有别的包依赖它，直接卸载会把它们一起拖垮。另外 `rpm -qa` 的输出是按字母排序的，配合 `grep`、`wc -l` 可以快速筛选与统计。
 {: .sec-pit}
 
-### 步骤 2：标准卸载与验证（预期输出，CentOS 7） {: .sec-best}
+### 步骤 2：标准卸载与验证（预期输出，CentOS 7）
+{: .sec-best}
 
 ```bash
 rpm -e httpd        # -e 即 erase（卸载）；注意写的是包名，不是 rpm 文件名
@@ -80,7 +84,8 @@ package httpd is not installed
 
 `rpm -e` 执行成功时没有任何输出（Linux 命令"没消息就是好消息"）；再次 `rpm -q` 提示 `package httpd is not installed`，即卸载成功的标准凭据。
 
-### 步骤 3：遇到依赖报错怎么办（预期输出，CentOS 7） {: .sec-ts}
+### 步骤 3：遇到依赖报错怎么办（预期输出，CentOS 7）
+{: .sec-ts}
 
 如果 httpd 正被其他包依赖，`rpm -e` 会拒绝执行并列出依赖链：
 
@@ -152,13 +157,15 @@ rpm -e --nodeps httpd
 
 `--nodeps` 是双刃剑：它能卸掉"卸不掉的钉子户"，但被依赖它的程序会立刻崩溃——比如上面的例子里 mod_ssl 还登记在案，它的文件却已被删掉，`rpm -V mod_ssl` 会报出一大片 `missing`，httpd 相关服务直接起不来，想修复只能重装。使用前必须已经用 `rpm -q --whatrequires` 确认过后果，只在"这个包就是要彻底弄掉、连带损坏也能接受"时使用。
 
-### 辨析：yum 与 rpm 的依赖关系本质 {: .sec-know}
+### 辨析：yum 与 rpm 的依赖关系本质
+{: .sec-know}
 
 rpm 数据库（`/var/lib/rpm`）只登记"每个包自己声明需要谁"，不做全局决策——所以 `rpm -e` 一看有包依赖目标就拒绝，却给不出解决方案。yum 在 rpm 之上加了一层依赖求解器：装或卸之前先读所有仓库元数据，把"装 A 要拉 B、卸 C 会拖下 D"整笔账算完再动手。一句话：rpm 是执行者，yum 是带着账本算清再让 rpm 干活的管理者。
 
 这也是"yum 装的用 yum 卸、rpm 装的用 rpm 卸"的原因——两边操作的是同一个 rpm 数据库，但 yum 会顺带维护自己的事务历史（`yum history`）与缓存，混着卸容易留下账目对不上的状态。
 
-### 步骤 4：卸载后清理残留（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 4：卸载后清理残留（预期输出，CentOS 7）
+{: .sec-prac}
 
 rpm 只删除自己登记的文件，软件运行过程中生成的配置与数据目录常常留在系统里：
 
@@ -187,7 +194,8 @@ conf  conf.d  conf.modules.d  logs  modules  run
 
 > **参见**：软件安装与硬件信息查看
 
-## 题 2：总结第一个阶段课程知识 {: .sec-sum}
+## 题 2：总结第一个阶段课程知识
+{: .sec-sum}
 
 **题目原文**：总结第一个阶段课程知识。
 
@@ -195,7 +203,8 @@ conf  conf.d  conf.modules.d  logs  modules  run
 
 **实现思路**：先画全链路知识地图搭框架，五个阶段各整理一张表（核心知识点、关键命令、一句话原理），最后用一组链路小实验把分散在各阶段的命令（建目录、写文件、管道统计、打包）真跑一遍，总结落到真实输出上才算数。
 
-### 知识地图 {: .sec-sum}
+### 知识地图
+{: .sec-sum}
 
 ```text
 第一阶段（day1 - day10）
@@ -223,7 +232,8 @@ conf  conf.d  conf.modules.d  logs  modules  run
     └── 软件安装三种方式：yum（外卖）/ rpm（半成品）/ 编译（自己做饭）
 ```
 
-### 分阶段速查表 {: .sec-chk}
+### 分阶段速查表
+{: .sec-chk}
 
 **阶段一：硬件基础**
 
@@ -272,7 +282,8 @@ conf  conf.d  conf.modules.d  logs  modules  run
 | 软件安装 | `yum install`、`rpm -ivh`、`rpm -e` | 外卖 / 半成品 / 自己做饭；rpm 不解决依赖 |
 | SSH 加速 | `GSSAPIAuthentication no`、`UseDNS no` | 关掉两次多余等待，登录秒进 |
 
-### 链路小实验（已实操） {: .sec-prac}
+### 链路小实验（已实操）
+{: .sec-prac}
 
 总结不能只停在纸上。下面这组命令把第三阶段（文件操作、管道）、第四阶段（目录）、第五阶段（打包）的知识串成一条链，在 Git Bash 里真实执行：
 
@@ -310,7 +321,8 @@ $ du -sh stage1.tar.gz
 
 对照知识地图看这条链：`mkdir` 建目录（阶段四）→ `for` + `echo >` 循环建文件（阶段三）→ `ls -l` 看属性（阶段三）→ `cat | wc -l` 管道统计（阶段三）→ `grep -c` 过滤统计（阶段三）→ `tar czf` 打包（阶段五备份常用）→ `ls -lh` / `du -sh` 看大小（阶段一磁盘视角）。一条命令链就是半张知识地图。
 
-### 补充示例：文件属性与统计分析（已实操） {: .sec-ext}
+### 补充示例：文件属性与统计分析（已实操）
+{: .sec-ext}
 
 ```bash
 stat stage1_demo/file1.txt | sed -n '1,2p;4,7p'    # 查看文件属性（含三个时间）
@@ -377,7 +389,8 @@ $ sort fruit.txt | uniq -c | sort -rn
 | 08:00 - 09:30 | yum 安装流程 | 查源 → 搜索 → 安装 → 验证；EPEL 扩展源；排错四步 |
 | 09:30 - 10:00 | 收尾 | 挑三个今天最容易踩的坑回顾，收束全场 |
 
-### 各环节要点清单（讲不出就回去翻笔记） {: .sec-chk}
+### 各环节要点清单（讲不出就回去翻笔记）
+{: .sec-chk}
 
 **rpm 查询与卸载**
 
@@ -416,7 +429,8 @@ $ sort fruit.txt | uniq -c | sort -rn
 
 **验证方法**：录音回放，对照要点清单逐项打勾；标准是——脱稿讲满 10 分钟、五个环节无长时间空白、每个命令都能说清作用、被追问"为什么"时能用一句话原理接住。全部满足，说明这一天真的学会了。
 
-## 扩展题 1：批量创建用户（一次创建 50 个） {: .sec-ext}
+## 扩展题 1：批量创建用户（一次创建 50 个）
+{: .sec-ext}
 
 **题目原文**：如何批量创建多个用户（例如一次创建 50 个用户 user01 到 user50）。
 
@@ -424,7 +438,8 @@ $ sort fruit.txt | uniq -c | sort -rn
 
 **实现思路**：拆成五步——生成用户名序列 → 循环创建 → 批量设密 → 批量验证 → 批量清理。序列生成与随机串在 Git Bash 真跑（A 级）；涉及系统账号的命令给出 CentOS 7 标准脚本与预期输出（B 级）；验证用"创建前后 `/etc/passwd` 行数差 = 50"这个可靠标准。
 
-### 步骤 1：生成用户名序列（已实操） {: .sec-prac}
+### 步骤 1：生成用户名序列（已实操）
+{: .sec-prac}
 
 批量建户的第一步是解决"用户名从哪来"——用 `seq -w` 生成等宽序列：
 
@@ -455,7 +470,8 @@ user03
 
 `seq -w 1 50` 生成 `01` 到 `50` 的等宽数字——不加 `-w` 会得到 1 到 50，`user1` 到 `user50` 长短不齐，`ls /home` 时排序混乱。`$(...)` 命令替换把序列交给 `for` 循环逐个处理，这是批量操作的标准结构。别小看这个参数，忘了它的人不少。
 
-### 步骤 2：批量创建与设密的完整脚本（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 2：批量创建与设密的完整脚本（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 cat > /tmp/batch_users.sh <<'EOF'
@@ -515,7 +531,8 @@ done
 > **注意：** 随机密码发出去之前要先落盘（如 `> /tmp/user_passwords.txt` 并设 600 权限）再分发给用户，否则随机生成后没人知道密码，只能逐条重置。生产环境更推荐密钥认证或对接统一身份源，而不是维护一张密码表。
 {: .sec-pit}
 
-### 步骤 3：创建前先体检（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 3：创建前先体检（预期输出，CentOS 7）
+{: .sec-prac}
 
 动手前先记录基线，防止重复执行脚本时重名冲突，也方便最后算账：
 
@@ -534,7 +551,8 @@ grep -c '^user' /etc/passwd              # 记录创建前已有多少个 user �
 
 如果 `grep -c` 不为 0，说明已有 user 开头的账号，先确认编号是否重叠再执行，否则 `useradd` 会报 `user user01 already exists`。
 
-### 步骤 4：批量验证（预期输出，CentOS 7） {: .sec-ver}
+### 步骤 4：批量验证（预期输出，CentOS 7）
+{: .sec-ver}
 
 ```bash
 id user01                                # 单用户验证：uid / gid / 所属组
@@ -562,7 +580,8 @@ user50:x:1050:1050::/home/user50:/bin/bash
 
 四条输出各验证一个侧面：`id` 证明账号真实存在且信息正确；`passwd -S` 的 `PS`（Password set）证明密码已设置、可登录；`grep -c` 等于 50 证明数量齐了；`tail` 证明条目格式正确（用户名:密码占位 x:uid:gid:注释:家目录:shell）。创建前的行数因系统而异（最小化安装约 39 行），**只要"创建后减创建前的差值 = 50"即为正确**，不必纠结绝对值。
 
-### 步骤 5：批量清理（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 5：批量清理（预期输出，CentOS 7）
+{: .sec-prac}
 
 练手完毕把账号和家目录一起清掉，保持系统干净：
 
@@ -594,7 +613,8 @@ grep -c '^user' /etc/passwd              # 验证：应回到 0
 
 > **参见**：用户管理
 
-## 扩展题 2：yum 安装软件的标准流程 {: .sec-best}
+## 扩展题 2：yum 安装软件的标准流程
+{: .sec-best}
 
 **题目原文**：yum 安装软件的流程（预习内容的实操整理）。
 
@@ -602,7 +622,8 @@ grep -c '^user' /etc/passwd              # 验证：应回到 0
 
 **实现思路**：给一张六步流程表，每步配命令与预期输出；补充 EPEL 扩展源与本地源两种场景；最后给一棵排错决策树，把"装不上"的常见原因一次理清。
 
-### 标准六步流程（预期输出，CentOS 7） {: .sec-best}
+### 标准六步流程（预期输出，CentOS 7）
+{: .sec-best}
 
 | 步骤 | 命令 | 目的 |
 | --- | --- | --- |
@@ -688,7 +709,8 @@ cowsay-3.03-13.el7.noarch
 
 注意 `yum search` 的结果里 `cowsay` 来自 epel 仓库——官方 base / extras / updates 源里没有它，这就是下一步要讲的 EPEL。
 
-### EPEL 扩展源与本地源 {: .sec-ext}
+### EPEL 扩展源与本地源
+{: .sec-ext}
 
 EPEL（Extra Packages for Enterprise Linux）由 Fedora 社区维护，提供大量企业版官方源里没有的软件（`cowsay`、`htop`、`sl`、`ncdu` 等）：
 
@@ -719,7 +741,8 @@ yum clean all && yum makecache                  # 清缓存并重建元数据
 yum install -y nginx                            # 之后正常使用
 ```
 
-### 排错决策树（预期输出，CentOS 7） {: .sec-ts}
+### 排错决策树（预期输出，CentOS 7）
+{: .sec-ts}
 
 `yum install` 失败时按这棵树逐项排查：
 
@@ -759,7 +782,8 @@ root      12400  12398  0 10:31 pts/1    00:00:00 grep --color=auto yum
 
 > **参见**：软件安装与硬件信息查看
 
-## 自测 {: .sec-prac}
+## 自测
+{: .sec-prac}
 
 1. `rpm -e` 卸载时报 `error: Failed dependencies`，有哪两种处理方式？推荐哪种，为什么？
 2. 卸载前为什么要先执行 `rpm -q --whatrequires 包名`？它输出为空说明什么？
@@ -769,7 +793,8 @@ root      12400  12398  0 10:31 pts/1    00:00:00 grep --color=auto yum
 
 > **参考答案：** 1. 两种方式：`yum remove 包名`（自动分析并连带卸载依赖包，推荐）与 `rpm -e --nodeps 包名`（忽略依赖强制卸载，兜底）。推荐前者，因为 rpm 本身不认识依赖关系，强制卸会把依赖它的包拖成"登记在册但文件缺失"的半坏状态。2. 目的是在卸载前确认有没有别的包依赖它；输出为空说明没有任何包依赖它，可以安全卸载。3. `for i in $(seq -w 1 50); do useradd "user$i"; echo "user$i:<your-password>" | chpasswd; done`；`-w` 是等宽补零，生成 01 到 50 而不是 1 到 50，保证用户名长度一致、排序稳定。4. `id user01`（账号在）、`grep -c '^user' /etc/passwd` 等于 50 且 `wc -l /etc/passwd` 前后差值等于 50（数量对）、`passwd -S user01` 显示 `PS`（密码已设）。5. 先确认 cowsay 是否在 EPEL 扩展源（`yum install -y epel-release` 后重试）；若已装 EPEL 仍找不到，执行 `yum clean all && yum makecache` 清缓存重建元数据；再不行检查 `/etc/yum.repos.d/` 下的源文件是否被改坏。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 五道题过完，留下这几条主干：
 

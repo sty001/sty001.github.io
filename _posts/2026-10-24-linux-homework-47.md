@@ -12,7 +12,8 @@ slug: "linux-homework-47"
 
 课程第 44 天（监控服务 Zabbix 上）的作业共四题：①监控体系与 Zabbix 组件概念辨析；②Zabbix Server 服务端完整部署；③Zabbix Agent 客户端部署；④部署自测（配置文件参数校验、中文乱码处理、服务端 zabbix_get 自测 agent 存活）。部署类动作为 B 级标准命令加预期输出，配置校验类在 Git Bash 真跑，输出为真实结果。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-47"
 
 规划两台主机：服务端 linux-node01（172.16.1.71，部署 zabbix-server、zabbix-web、mariadb），客户端 linux-node02（172.16.1.7，部署 zabbix-agent）。Zabbix 版本选 4.0 LTS。A 级实操目录统一用 `/tmp/hw/day44`，配置片段中的数据库口令统一用 `<your-password>` 占位，部署时替换为自己的口令。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -30,7 +32,8 @@ slug: "linux-homework-47"
 | 题 3 | Zabbix Agent 客户端部署 | B 级（四步标准命令） |
 | 题 4 | 部署自测：conf 参数 grep 校验、口令一致性检查、zabbix_get 自测 | A 级（校验真跑）+ B 级（zabbix_get 预期） |
 
-## 题 1：监控体系概念辨析 {: .sec-know}
+## 题 1：监控体系概念辨析
+{: .sec-know}
 
 **考察点**：能否说清 Zabbix 各组件的部署位置、职责与通信端口，这是面试与排错的基础。监控系统由「采集、存储、可视化、告警」四个环节构成，Zabbix 的组件正是按这四个环节分工的。
 
@@ -71,7 +74,8 @@ slug: "linux-homework-47"
 
 **实现思路**：服务端 Web 环境是 LAMP（apache + php 模块 + mariadb），流程与部署 wordpress 类似。按「装源 → 装包 → 改配置 → 初始化数据库 → 启动服务 → Web 向导 → 登录」七步走。数据库那两步（utf8 字符集、口令一致）是整个部署里最容易翻车的地方，后面自测篇专门为它们做了前置校验。
 
-### 步骤 1：安装 Zabbix yum 源（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 1：安装 Zabbix yum 源（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/zabbix/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-1.el7.noarch.rpm
@@ -84,7 +88,8 @@ Updating / installing...
    1:zabbix-release-4.0-1.el7         ################################# [100%]
 ```
 
-### 步骤 2：安装服务端软件（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 2：安装服务端软件（预期输出，CentOS 7）
+{: .sec-prac}
 
 软件清单：zabbix-server-mysql（服务端程序）、zabbix-web-mysql + httpd + php（Web 界面）、mariadb-server（数据库）。
 
@@ -101,7 +106,8 @@ Dependency Installed:
 Complete!
 ```
 
-### 步骤 3：修改服务端配置（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 3：修改服务端配置（预期输出，CentOS 7）
+{: .sec-prac}
 
 编辑 `/etc/zabbix/zabbix_server.conf`，第 126 行指定数据库口令；编辑 `/etc/httpd/conf.d/zabbix.conf`，第 21 行设置时区：
 
@@ -115,7 +121,8 @@ php_value date.timezone Asia/Shanghai
 
 口令必须与步骤 4 中 grant 授权时一致，否则 zabbix-server 会因数据库认证失败起不来；时区不设会导致 Web 界面时间差 8 小时。
 
-### 步骤 4：初始化数据库（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 4：初始化数据库（预期输出，CentOS 7）
+{: .sec-prac}
 
 启动 mariadb 后建库、授权、导入初始 schema。**建库必须指定 `character set utf8 collate utf8_bin`**，否则 Web 界面中文会乱码：
 
@@ -158,7 +165,8 @@ MariaDB [zabbix]> show tables;
 （共 144 张表，此处节选监控核心表）
 ```
 
-### 步骤 5：启动服务（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 5：启动服务（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 systemctl start zabbix-server.service httpd mariadb.service
@@ -174,7 +182,8 @@ systemctl status zabbix-server.service
 
 看到 `active (running)` 即服务端启动成功；若启动失败，先看 `/var/log/zabbix/zabbix_server.log`，绝大多数是数据库口令或数据库未启动。
 
-### 步骤 6 与步骤 7：Web 初始化向导与登录（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 6 与步骤 7：Web 初始化向导与登录（预期输出，CentOS 7）
+{: .sec-prac}
 
 浏览器访问 `http://172.16.1.71/zabbix/setup.php`，按向导走五步：①前置条件检查页确认 PHP 扩展全部 OK（有 FAIL 项先装扩展）；②数据库连接页填 MySQL、库名 zabbix、用户 zabbix、口令、端口 3306；③填写 Zabbix server 名称与地址（本机填 172.16.1.71）；④摘要页确认后生成配置；⑤完成安装。初始化信息写入 `/etc/zabbix/web/zabbix.conf.php`。最后用默认账号 `Admin` / `zabbix` 登录，登录后立即改密并停用 guest。
 
@@ -184,7 +193,8 @@ systemctl status zabbix-server.service
 
 **实现思路**：agent 装在 linux-node02 上，只需装包、写 Server 地址、启动、验证 10050 监听。
 
-### 步骤 1 与步骤 2：装源与安装（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 1 与步骤 2：装源与安装（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/zabbix/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-1.el7.noarch.rpm
@@ -197,7 +207,8 @@ Installed:
 Complete!
 ```
 
-### 步骤 3：配置 Server 地址（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 3：配置 Server 地址（预期输出，CentOS 7）
+{: .sec-prac}
 
 编辑 `/etc/zabbix/zabbix_agentd.conf`，第 98 行：
 
@@ -207,7 +218,8 @@ Server=172.16.1.71
 
 `Server` 是被动模式的白名单：只有列表中的地址才能来拉数据，写错 IP 就是「主机图标不变绿」的最常见原因。主动推送需另配 `ServerActive`，两者含义不同。
 
-### 步骤 4：启动并验证（预期输出，CentOS 7） {: .sec-ver}
+### 步骤 4：启动并验证（预期输出，CentOS 7）
+{: .sec-ver}
 
 ```bash
 systemctl start zabbix-agent
@@ -220,11 +232,13 @@ tcp   LISTEN 0  128  0.0.0.0:10050   0.0.0.0:*   users:(("zabbix_agentd",pid=450
 
 看到 10050 处于 LISTEN 即 agent 启动成功。
 
-## 题 4：部署自测——配置校验与 zabbix_get（A 级 + B 级） {: .sec-prac}
+## 题 4：部署自测——配置校验与 zabbix_get（A 级 + B 级）
+{: .sec-prac}
 
 **考察点**：部署完成后必须做参数自测。zabbix_get、systemctl 依赖真实 Zabbix 环境，属 B 级；「把配置片段写成文件、用 grep 校验关键参数」可以在本机真跑，属 A 级，用来在真实部署前先确认配置文件该写哪些行。
 
-### 步骤 1：服务端配置片段与参数校验（已实操） {: .sec-prac}
+### 步骤 1：服务端配置片段与参数校验（已实操）
+{: .sec-prac}
 
 ```bash
 cd /tmp/hw/day44
@@ -250,7 +264,8 @@ grep -nE '^(ListenPort|DBHost|DBName|DBUser|DBPassword)=' zabbix_server.conf.sni
 
 五个关键参数全部命中，服务端配置骨架完整。口令行只校验「存在」（`grep -c '^DBPassword='` 输出 `1`），不回显值，符合脱敏要求。
 
-### 步骤 2：Agent 配置片段与参数校验（已实操） {: .sec-prac}
+### 步骤 2：Agent 配置片段与参数校验（已实操）
+{: .sec-prac}
 
 ```bash
 cat > zabbix_agentd.conf.snippet <<'EOF'
@@ -273,7 +288,8 @@ grep -nE '^(Server|ServerActive|Hostname|ListenPort)=' zabbix_agentd.conf.snippe
 
 四个参数全部命中。Hostname 必须与 Web 端创建的主机名完全一致，这是后续主动模式不出错的前提。
 
-### 步骤 3：口令一致性与建库语句检查（已实操） {: .sec-ver}
+### 步骤 3：口令一致性与建库语句检查（已实操）
+{: .sec-ver}
 
 DBPassword 与 grant 授权口令不一致是「zabbix-server 起不来」的头号原因。把两处写成文件后用脚本比对（只输出结论、不回显口令）：
 
@@ -297,7 +313,8 @@ DBPassword 与 grant 授权口令一致: MATCH
 
 两条自测都通过：口令一致、建库语句带了 utf8 字符集（防中文乱码的关键行）。
 
-### 步骤 4：zabbix_get 自测 agent 存活（预期输出，CentOS 7） {: .sec-prac}
+### 步骤 4：zabbix_get 自测 agent 存活（预期输出，CentOS 7）
+{: .sec-prac}
 
 在服务端 linux-node01 上安装 zabbix-get 并测试 agent（agent.ping 返回 1 即存活）：
 
@@ -314,7 +331,8 @@ Linux linux-node02 3.10.0-1160.el7.x86_64 #1 SMP x86_64
 
 zabbix_get 报 `ZBX_NOTSUPPORTED` 或超时的排查顺序：agent 的 `Server=` 是否写了本服务端 IP、10050 是否 LISTEN、两机之间网络是否放通。
 
-### 步骤 5：部署常见故障排查表 {: .sec-ts}
+### 步骤 5：部署常见故障排查表
+{: .sec-ts}
 
 部署环节的高频故障与排查路径汇总如下（源自主笔记排错章节，供真机部署时对照）：
 
@@ -328,7 +346,8 @@ zabbix_get 报 `ZBX_NOTSUPPORTED` 或超时的排查顺序：agent 的 `Server=`
 
 其中「口令错误」「字符集不符」「时区未设」三类正是题 4 步骤 3 在真机部署前可以提前自测掉的问题——把配置片段落盘、用 grep 与比对脚本过一遍，能省掉一轮「启动失败再回头看日志」的往返。
 
-### 步骤 6：服务端口自测清单（已实操） {: .sec-chk}
+### 步骤 6：服务端口自测清单（已实操）
+{: .sec-chk}
 
 把服务端与客户端的端口约定写成清单文件并校验（部署完后逐项对照），本机真跑：
 
@@ -351,14 +370,16 @@ grep -c '1005[01]' ports.txt
 
 10051/10050 两条端口约定在清单中齐备。真机验证时对应三条命令：服务端 `ss -lntup | grep 10051`、客户端 `ss -lntup | grep 10050`、数据库 `ss -lntup | grep 3306`。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 1. 服务端：`systemctl status zabbix-server httpd mariadb` 三个服务均为 active，Web 能打开 setup.php 并完成向导。
 2. 数据库：`use zabbix; show tables;` 能看到 hosts、items、triggers、history 等表。
 3. 客户端：`ss -lntup | grep 10050` 有 LISTEN；Web 端添加主机后图标变绿。
 4. 配置自测：题 4 的 grep 校验全部命中、口令比对 MATCH；`zabbix_get -k agent.ping` 返回 1。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 监控体系四环节（采集、存储、可视化、告警）在 Zabbix 中分别由 agent、数据库、web、server+触发器+动作承担，proxy 是跨公网采集的中转件。
 2. 端口记忆法：被动模式 server 拉数据连 agent 的 10050，主动模式 agent 推数据连 server 的 10051；主/被以 agent 视角区分，监控项类型必须与模式配套。

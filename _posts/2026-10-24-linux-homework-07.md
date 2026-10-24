@@ -12,7 +12,8 @@ slug: "linux-homework-07"
 
 本篇对应课程第 7 天（操作命令与目录结构）的课后作业：光驱开机自动挂载、系统 7 个运行级别作用与 CentOS 7 设置方法、单用户模式重置密码、永久设置 rm 别名。四条作业全部完成——系统级操作给出 CentOS 7 标准命令序列与预期输出，别名部分在 Git Bash 中做了四组真实对比实验。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-07"
 
 实操目录统一用 `/tmp/hw` 下的子目录。本文 A 级输出均在 Git Bash（bash 5.3）中真实执行，本地用户名已按脱敏要求替换为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -36,7 +38,8 @@ slug: "linux-homework-07"
 
 **实现思路**：开机自动挂载靠 `/etc/fstab`——系统启动时按这个文件的内容自动挂载存储设备。光驱的配置行与普通磁盘相同，只是文件系统类型写 `iso9660`。配置后必须 `mount -a` 验证，写错时还能在系统里修复。
 
-### 实现步骤（预期输出，CentOS 7） {: .sec-prac}
+### 实现步骤（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 ls -l /dev/cdrom                        # 第一步：确认光驱设备文件（软链接，指向 /dev/sr0）
@@ -69,7 +72,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 > **原理：** 光驱挂载时提示 `write-protected, mounting read-only` 是正常现象——光盘是只读介质，内核自动以只读方式挂载，这正是 `iso9660` 文件系统的特性。
 
-### 补充：udisks 是什么 {: .sec-know}
+### 补充：udisks 是什么
+{: .sec-know}
 
 课程问题"实现自动挂载的特殊服务是什么"，标准答案是 **fstab**（开机自动挂载）。在现代图形桌面环境（GNOME、KDE）中，还有另一条路径：**udisks/udisks2** 守护进程。插入 U 盘或光盘后，udisks 通过监听内核设备事件自动挂载到 `/media/用户名/卷标` 下，拔除时自动卸载。两者区别：
 
@@ -88,7 +92,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 > **参见**：系统目录结构与挂载
 
-## 题 2：总结系统 7 个运行级别作用（CentOS 7 查看与永久设置） {: .sec-sum}
+## 题 2：总结系统 7 个运行级别作用（CentOS 7 查看与永久设置）
+{: .sec-sum}
 
 **考察点**：7 个运行级别各自的用途；CentOS 7 中运行级别与 target 的对应关系；查看当前级别与永久设置默认级别的命令。
 
@@ -106,7 +111,8 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 | 5 | 图形化界面级别 | — |
 | 6 | 系统的重启级别 | — |
 
-### CentOS 7 的 target 对照关系 {: .sec-expl}
+### CentOS 7 的 target 对照关系
+{: .sec-expl}
 
 CentOS 7 起数字级别只是 systemd 的兼容入口，实际由 target 承载：
 
@@ -182,7 +188,8 @@ multi-user.target
 
 **实现思路**：CentOS 7 开机引导界面按 `e` 编辑内核启动参数，在 `linux16` 行末尾追加 `init=/bin/sh`，直接以单用户 shell 启动；此时根文件系统默认只读，先 `remount` 为读写，再 `passwd` 重置，最后处理 SELinux 重打标签并重启。
 
-### 实现步骤（预期输出，CentOS 7） {: .sec-prac}
+### 实现步骤（预期输出，CentOS 7）
+{: .sec-prac}
 
 ```bash
 # 第一步：重启系统，在 grub 引导菜单界面（倒计时内）按 e 进入编辑模式
@@ -235,7 +242,8 @@ sh-4.2# exec /sbin/init
 
 **实现思路**：先用真跑实验讲清"别名什么时候生效、什么时候不生效"，再给出写入 `~/.bashrc` 的标准做法，最后演示 rm 别名防误删的经典案例。
 
-### alias 定义与查看（已实操） {: .sec-know}
+### alias 定义与查看（已实操）
+{: .sec-know}
 
 语法：`alias 别名名称='命令信息'`。查看当前所有别名用 `alias`。
 
@@ -281,7 +289,8 @@ $ catnet
 NET-TYPE=Ethernet
 ```
 
-### 实验一：别名在交互式 shell 中定义即生效（已实操） {: .sec-know}
+### 实验一：别名在交互式 shell 中定义即生效（已实操）
+{: .sec-know}
 
 ```bash
 cd /tmp/hw/day7
@@ -296,7 +305,8 @@ catnet
 NET-TYPE=Ethernet
 ```
 
-### 实验二：别名在脚本中默认不生效（已实操） {: .sec-prac}
+### 实验二：别名在脚本中默认不生效（已实操）
+{: .sec-prac}
 
 把同样的三行写进脚本执行：
 
@@ -316,7 +326,8 @@ $ ./demo-script.sh
 
 > **原理：** 脚本是非交互 shell，不加载 `/etc/bashrc` 与 `~/.bashrc`，且默认关闭别名展开（`expand_aliases` 为 off）。这就是"ssh 登录定义了别名，脚本里却用不了"的原因。
 
-### 实验三：脚本中开启 expand_aliases 后生效（已实操） {: .sec-prac}
+### 实验三：脚本中开启 expand_aliases 后生效（已实操）
+{: .sec-prac}
 
 ```bash
 printf '#!/bin/bash\nshopt -s expand_aliases\nalias catnet="cat net.txt"\ncatnet\n' > demo-script2.sh
@@ -332,7 +343,8 @@ $ ./demo-script2.sh
 NET-TYPE=Ethernet
 ```
 
-### 实验四：rm 别名防误删（已实操） {: .sec-prac}
+### 实验四：rm 别名防误删（已实操）
+{: .sec-prac}
 
 把 `rm` 别名成一句提醒，危险命令就被"截胡"：
 
@@ -377,7 +389,8 @@ ls: cannot access 'keep.txt': No such file or directory
 | 反斜杠（撬棍） | `\rm -rf /data` | 只绕过这一次 |
 | 绝对路径 | `/usr/bin/rm -rf /backup` | 绕开别名与 PATH 顺序 |
 
-### 永久生效：写入 ~/.bashrc（已实操演示机制） {: .sec-know}
+### 永久生效：写入 ~/.bashrc（已实操演示机制）
+{: .sec-know}
 
 临时定义的别名退出登录即失效。永久做法是写入用户家目录的 `~/.bashrc`（别名与函数放 bashrc 系，环境变量放 profile 系），写入后 `source` 立即在当前终端生效，新开终端自动加载。
 
@@ -440,7 +453,8 @@ NET-TYPE=Ethernet
 
 > **参见**：重要系统文件与运行级别
 
-## 自测 {: .sec-prac}
+## 自测
+{: .sec-prac}
 
 1. 光驱开机自动挂载的 fstab 配置行怎么写？文件系统类型一列填什么？
 2. CentOS 7 中运行级别 3 对应哪个 target？永久设置为字符界面用什么命令？
@@ -449,7 +463,8 @@ NET-TYPE=Ethernet
 
 > **参考答案：** 1. `/dev/cdrom /mnt iso9660 defaults 0 0`，类型填 `iso9660`。2. `multi-user.target`，`systemctl set-default multi-user.target`。3. `mount -o remount,rw /`、`touch /.autorelabel`、`init=/bin/sh` 要加在内核引导行行尾。4. 脚本是非交互 shell，默认不展开别名；加 `shopt -s expand_aliases` 可开启。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 1. 开机自动挂载靠 `/etc/fstab`，光驱配置行为 `/dev/cdrom /mnt iso9660 defaults 0 0`，类型必须是 `iso9660`，fsck 写 `0`；配完 `mount -a` 验证再重启。
 2. 现代桌面环境的即插即用自动挂载由 udisks 守护进程完成（挂到 `/media/用户名/卷标`）；服务器最小化安装没有 udisks，以 fstab 为准。

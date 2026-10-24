@@ -12,9 +12,11 @@ slug: "linux-userperm-02"
 
 用户相关的四个配置文件（重点是 `/etc/passwd` 七列含义）、用户的增删改查命令（`useradd` / `usermod` / `userdel` / `passwd`）、用户组命令、属主属组修改（`chown`）、用户信息查看（`id` / `w`），以及普通用户获得 root 能力的三种方式。在此基础上深入权限模型的工作原理、特殊权限位（SUID / SGID / Sticky）、umask 细节、`/etc/sudoers` 完整语法、`su` 与 `sudo -i` 的差异、最小权限原则与常见提权风险点。目标：建账号、改属主、给同事配 sudo 权限时，知道每一步的安全边界在哪。
 
-## 一、上节回顾 {: .sec-sum}
+## 一、上节回顾
+{: .sec-sum}
 
-### 1.1 系统启动流程 {: .sec-expl}
+### 1.1 系统启动流程
+{: .sec-expl}
 
 ```bash
 1 开机自检 → 2 MBR 引导 → 3 grub 菜单（选择内核 / 进入单用户模式）→ 4 加载内核
@@ -108,9 +110,11 @@ $UID              显示当前登录系统用户的 uid 数值
 # 脚本作用:
 ```
 
-## 二、权限模型原理解析 {: .sec-know}
+## 二、权限模型原理解析
+{: .sec-know}
 
-### 2.1 进程身份与权限判定流程 {: .sec-expl}
+### 2.1 进程身份与权限判定流程
+{: .sec-expl}
 
 Linux 的权限检查对象不是"用户"，而是**进程**。每个进程持有三组身份：real uid / effective uid / saved set uid（组同理），日常访问控制只看 euid 与 egid。当进程访问一个文件时，内核按以下顺序判定：
 
@@ -135,7 +139,8 @@ Linux 的权限检查对象不是"用户"，而是**进程**。每个进程持�
 
 结论：对目录来说，**r 是"看见名字"的能力，x 是"穿过目录"的能力，w+x 才是"增删文件"的能力**。只有 r 没有 x 时，文件名能列出来但读不到 inode，属性就显示为 `???`。
 
-### 2.3 umask 深入 {: .sec-ext}
+### 2.3 umask 深入
+{: .sec-ext}
 
 umask 是 shell 内置命令，作用于当前 shell 及其子进程。要点：
 
@@ -303,7 +308,8 @@ lp      :x  :4  :7  :lp      :/var/spool/lpd :/sbin/nologin
 /usr/sbin/nologin
 ```
 
-### 5.2 /etc/shadow 字段速查 {: .sec-chk}
+### 5.2 /etc/shadow 字段速查
+{: .sec-chk}
 
 配套的 `/etc/shadow` 每行 9 个字段，记录密码本身与有效期：
 
@@ -637,7 +643,8 @@ LOGNAME=root
 
 再补一层根因：`su` 与 `su -` 的分水岭是**登录 shell**。`su -` 会以 login shell 启动目标用户的 shell，完整走一遍 `/etc/profile` → `~/.bash_profile` 的加载链，所以 USER、MAIL、PATH、家目录全部换成目标用户的；不带 `-` 的 `su` 是非登录 shell，只读 `~/.bashrc` 一层，大部分继承自当前会话。这也解释了两个高频故障：用 `su` 切过去后 `ifconfig` 找不到命令（sbin 不在继承来的 PATH 里），或者环境变量"改了不生效"（改的是 profile，而当前会话没按 login shell 加载）。排查切换类环境问题，先问自己一句：这个 shell 是不是登录 shell。
 
-### 10.2 sudo 工作原理与 /etc/sudoers 语法详解 {: .sec-know}
+### 10.2 sudo 工作原理与 /etc/sudoers 语法详解
+{: .sec-know}
 
 **原理解析：sudo 一次授权背后发生了什么**
 
@@ -805,7 +812,8 @@ sudo 常用子命令与参数：
 
 这些原则落到执行层面可以压缩成一句话：sudoers 里每一行都应该能回答"谁、在哪台机器、以什么身份、能跑哪条命令"四个问题——答不全的行就是过宽的授权，迟早要收回来。
 
-### 10.4 常见提权风险点 {: .sec-warn}
+### 10.4 常见提权风险点
+{: .sec-warn}
 
 | 风险点 | 原理 | 排查命令 | 防护建议 |
 | --- | --- | --- | --- |
@@ -816,7 +824,8 @@ sudo 常用子命令与参数：
 | 家目录与 `.ssh` 权限过松 | 他人可改 `~/.ssh/authorized_keys` 或历史命令文件 | `ls -la ~/.ssh` | 家目录 700，`authorized_keys` 600 |
 | `NOPASSWD: ALL` | 免密全量授权，任何拿到该账号的人直接是 root | `grep -r NOPASSWD /etc/sudoers /etc/sudoers.d/` | 精确到命令，仅自动化场景使用 |
 
-## 常见错误与排错 {: .sec-ts}
+## 常见错误与排错
+{: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -828,7 +837,8 @@ sudo 常用子命令与参数：
 | 文件改不动但权限是 777 | `chattr +i` 加锁或只读挂载 | `lsattr 文件`；`mount | grep ro` | `chattr -i` 解锁；重新挂载为 rw |
 | su 切换后找不到命令 | `su` 未完整切换 PATH | `echo $PATH` | 用 `su -` 完整加载环境变量 |
 
-## 知识卡片 {: .sec-know}
+## 知识卡片
+{: .sec-know}
 
 **特殊权限位卡**
 
@@ -857,7 +867,8 @@ sudo 常用子命令与参数：
 | `Cmnd_Alias X = /a, /b` | 命令别名 |
 | `Defaults timestamp_timeout=5` | 免密时间窗 5 分钟 |
 
-## 现代环境补充 {: .sec-ext}
+## 现代环境补充
+{: .sec-ext}
 
 CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentOS Stream）在用户与权限领域的变化：
 
@@ -870,7 +881,8 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 | `chage` / `passwd -x` 管密码 | 同样有效；配合 `pwquality` 模块加强复杂度 | `pam_pwquality` 强制密码长度与字符种类 |
 | `/etc/shadow` 加密算法 MD5 | SHA-512（`$6$`）或 yescrypt（`$y$`） | `$1$`（MD5）已不安全，新系统不再默认使用 |
 
-## 自测题 {: .sec-prac}
+## 自测题
+{: .sec-prac}
 
 1. 一个进程访问文件时，内核按什么顺序判定权限？
 
@@ -900,7 +912,8 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 - 定时任务与 crond
 - 附录-命令速查表
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 用户信息集中在 `/etc/passwd`（七列：用户名、密码占位、uid、gid、注释、家目录、登录 shell）、`/etc/shadow`、`/etc/group`、`/etc/gshadow`。
 2. `useradd` 的 `-M -s /sbin/nologin` 创建虚拟用户，`-u` / `-g` / `-G` / `-c` 分别指定 uid、主要组、附属组与注释；`usermod` 参数与之对应（`-G` 是覆盖式，追加必须加 `-a`），`userdel -r` 连家目录一起删除。

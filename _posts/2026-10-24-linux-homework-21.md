@@ -12,7 +12,8 @@ slug: "linux-homework-21"
 
 本篇对应课程第 21 天（用户与权限管理）的课后作业，共四题：①批量创建用户 stu01..stu10 并给每个用户设置随机密码；②写出 `/etc/passwd` 与 `/etc/shadow` 每一列的含义对照；③给指定用户配置 sudo 权限；④说清 `su` 与 `su -` 的区别。第一题沿用 day17 的「随机信息 + 变量 + 循环」三要素框架，随机生成与循环部分真跑，`useradd`/`chpasswd` 建号动作为 B 级预期输出；第二、三、四题以对照表与标准命令为主，配合本环境可真跑的解析演示。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-21"
 
 实操目录统一用 `/tmp/hw/day21`。环境实测：GNU bash 5.3.15；`useradd`、`chpasswd` 在本环境不存在（已用 `command -v` 验证，返回非 0），`/etc/passwd` 在本环境不可读，故建号与账号文件部分按 B 级处理。命令输出中的属主统一显示为 `user`，所有口令要么用 `<your-password>` 占位，要么用脚本现场随机生成的示例串。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -36,7 +38,8 @@ slug: "linux-homework-21"
 
 **实现思路**：把大题拆成三步分别验证，再合成完整脚本——①先用三种方法真跑随机串生成，选定 `/dev/urandom` + `tr` 作为主力；②用 `seq -w` 补零生成 stu01..stu10；③循环里每次生成一个随机密码并拼成 `用户名:密码` 格式，本环境用 `[DRYRUN]` 干跑验证逻辑，真机上把干跑行换成 `useradd` + `chpasswd` 即可。
 
-### 知识点 1：随机密码的三种生成方法（已实操） {: .sec-prac}
+### 知识点 1：随机密码的三种生成方法（已实操）
+{: .sec-prac}
 
 #### 方法 1：`$RANDOM` + md5 截取
 
@@ -81,7 +84,8 @@ RZfFDScPxg
 
 拆解：`tr -dc 'a-zA-Z0-9'` 中 `-d` 是删除、`-c` 是取补集，合起来等于「只保留字母和数字」；`head -c 10` 取前 10 个字节，正好满足 10 位密码的题目要求。本题最终采用这一方法。
 
-#### 方法 3：`openssl rand`（已实操） {: .sec-prac}
+#### 方法 3：`openssl rand`（已实操）
+{: .sec-prac}
 
 ```bash
 openssl rand -base64 12
@@ -107,7 +111,8 @@ $ openssl rand -hex 8
 | `/dev/urandom` + tr | `tr -dc 'a-zA-Z0-9' </dev/urandom \| head -c 10` | 字符集可控、长度精确 | 命令稍长 |
 | openssl rand | `openssl rand -base64 12` | 最短、随机性最好 | base64 可能含 `+/=`，需二次过滤 |
 
-### 知识点 2：seq -w 补零生成用户名序列（已实操） {: .sec-prac}
+### 知识点 2：seq -w 补零生成用户名序列（已实操）
+{: .sec-prac}
 
 ```bash
 seq -w 1 10 | head -3
@@ -129,7 +134,8 @@ stu03
 
 `seq -w` 自动按最大值的宽度补零，10 以内就是两位。也可以用 `{01..10}` 大括号展开，但范围含变量时大括号不展开，所以脚本里统一用 `seq -w` 更通用。
 
-### 知识点 3：循环拼接 用户名:密码（已实操） {: .sec-prac}
+### 知识点 3：循环拼接 用户名:密码（已实操）
+{: .sec-prac}
 
 ```bash
 for n in $(seq -w 1 10); do
@@ -156,7 +162,8 @@ stu10:gDJb4aIwlg
 
 每行输出都是 `chpasswd` 认的 `用户名:密码` 输入格式，10 个密码两两不同、长度都是 10。变量赋值两个要点：`=` 两边不能有空格；把命令结果存变量用 `$(命令)`。
 
-### 完整脚本：干跑验证 + 真机落地 {: .sec-ver}
+### 完整脚本：干跑验证 + 真机落地
+{: .sec-ver}
 
 先在本环境用 `[DRYRUN]` 干跑版验证循环与变量拼接逻辑（已实操）：
 
@@ -232,7 +239,8 @@ stu02 创建完成
 stu10 创建完成
 ```
 
-### 验证方法（真机执行后） {: .sec-ver}
+### 验证方法（真机执行后）
+{: .sec-ver}
 
 ```bash
 id stu01                        # 单个用户是否建成
@@ -267,13 +275,15 @@ $ wc -l < /tmp/hw/day21/stu_pass.txt
 
 > **参见**：用户管理 · day17 批量建用户真跑
 
-## 题 2：/etc/passwd 与 /etc/shadow 每列含义对照 {: .sec-expl}
+## 题 2：/etc/passwd 与 /etc/shadow 每列含义对照
+{: .sec-expl}
 
 **考察点**：账号体系两大核心文件的结构。`/etc/passwd` 全局可读（任何进程都要靠它把 uid 翻译成用户名），所以密码只留占位符 `x`，真实密文放在仅 root 可读的 `/etc/shadow`——这是「为什么要有两个文件」的标准答案。
 
 **实现思路**：先用 awk 对一行标准 passwd 记录做按列解析，直观看到 7 列的分界（A 级），再给出两份逐列对照表（B 级，真机用 `head /etc/passwd` 与 `head /etc/shadow` 核对）。
 
-### awk 按列解析演示（已实操） {: .sec-ex}
+### awk 按列解析演示（已实操）
+{: .sec-ex}
 
 本环境 `/etc/passwd` 不可读，用一条标准记录演示按 `:` 分列：
 
@@ -310,7 +320,8 @@ adm:x:3:4:adm:/var/adm:/sbin/nologin
 lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 ```
 
-### /etc/passwd 七列对照表 {: .sec-chk}
+### /etc/passwd 七列对照表
+{: .sec-chk}
 
 以 `stu01:x:1001:1001::/home/stu01:/bin/bash` 为例：
 
@@ -324,7 +335,8 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 | 6 | `/home/stu01` | 家目录 |
 | 7 | `/bin/bash` | 登录 shell；`/sbin/nologin` 表示不能交互登录 |
 
-### /etc/shadow 九列对照表 {: .sec-chk}
+### /etc/shadow 九列对照表
+{: .sec-chk}
 
 以 `stu01:$6$xxxx...:19900:0:99999:7:::` 为例：
 
@@ -350,13 +362,15 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 
 > **参见**：用户管理 · 用户权限与提权
 
-## 题 3：给指定用户配置 sudo 权限 {: .sec-expl}
+## 题 3：给指定用户配置 sudo 权限
+{: .sec-expl}
 
 **考察点**：`visudo` 的语法检查价值、sudoers 行的「用户 主机=(身份) 命令」四段结构、`sudo -l` 验证方式，以及最小权限原则。
 
 **实现思路**：以给 ops 用户授权「建用户、删文件」两条命令为例，走「visudo 编辑 → 语法检查 → sudo -l 验证 → 实际执行」四步；再给一份常见写法对照表。真机操作流程如下（B 级）。
 
-### 步骤 1：visudo 编辑授权（B 级） {: .sec-prac}
+### 步骤 1：visudo 编辑授权（B 级）
+{: .sec-prac}
 
 ```bash
 visudo                     # 必须用 visudo 而不是 vi /etc/sudoers，前者保存时自动做语法检查
@@ -386,7 +400,8 @@ ops    ALL=(ALL)       NOPASSWD: /usr/sbin/useradd        # 免密执行指定�
 ops    ALL=(ALL)       /usr/sbin/*, !/usr/sbin/visudo     # 授权目录并排除特权命令
 ```
 
-### 步骤 2：语法检查（B 级） {: .sec-ver}
+### 步骤 2：语法检查（B 级）
+{: .sec-ver}
 
 ```bash
 visudo -c
@@ -399,7 +414,8 @@ visudo -c
 /etc/sudoers: parsed OK
 ```
 
-### 步骤 3：验证与使用（B 级） {: .sec-ver}
+### 步骤 3：验证与使用（B 级）
+{: .sec-ver}
 
 ```bash
 su - ops
@@ -498,7 +514,8 @@ HOME=/root
 
 > **参见**：用户权限与提权
 
-## 小结 {: .sec-sum}
+## 小结
+{: .sec-sum}
 
 1. 批量建号 = 三要素合体：随机信息用 `tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 10`，序列用 `seq -w 1 10` 自动补零，循环里变量拼接 `user="stu${n}"` 后喂给 `useradd` + `chpasswd`；脚本加 `id` 判断做幂等，密码清单 `chmod 600` 用完即删。
 2. 随机串三法各有取舍：`$RANDOM`+md5 零依赖但字符集窄，`/dev/urandom`+tr 字符集与长度最可控（本题主力），`openssl rand` 最短但 base64 需二次过滤。

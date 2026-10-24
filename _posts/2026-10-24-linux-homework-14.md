@@ -12,7 +12,8 @@ slug: "linux-homework-14"
 
 课程第 14 天的作业：目录里混着 `.jpg`、`.png` 等其它文件，要把其中所有以 `.txt` 结尾的文件统一压缩处理。作业原文只给了目录清单和一句「思路」，这里把思路补全，用三种主流做法（find -exec、find | xargs、tar --exclude）逐一真跑，`.txt` 后缀匹配的边界情况（文件名含空格、`.txt.bak`、大写后缀、子目录递归）也全部实测。
 
-## 实操环境说明 {: .sec-prac}
+## 实操环境说明
+{: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -21,7 +22,8 @@ slug: "linux-homework-14"
 
 本篇 find、tar、xargs、gzip 全部为 A 级真跑，tar 版本为 GNU tar 1.35（与 CentOS 7 的 tar 1.26 参数完全兼容，本文未使用 1.35 独有参数）。实操目录统一用 `/tmp/hw/day14`，示例中的文件名做了通用化处理（test01.txt 等），输出中的本地用户名已按脱敏要求替换为 `user`。
 
-## 题目总览 {: .sec-prac}
+## 题目总览
+{: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -47,7 +49,8 @@ slug: "linux-homework-14"
 | tar --exclude | `tar -czf x.tar.gz --exclude="*.jpg" --exclude="*.png" 目录` | 目录内容清晰、只需排除少数类型 | 一条命令、无需 find | 新增一种非 txt 类型就要加一条 exclude，容易漏 |
 | tar -T 清单 | `find 目录 -name "*.txt" > list && tar -czf x.tar.gz -T list` | 清单需复核/复用、要配合定时任务 | 清单可存档、可 diff、可人工修订 | 多一步落盘，空格文件名仍需注意（tar -T 按行读取，可容忍空格） |
 
-### 步骤 1：构造测试数据（已实操） {: .sec-ver}
+### 步骤 1：构造测试数据（已实操）
+{: .sec-ver}
 
 先还原作业目录结构：3 个 txt、1 个 jpg、1 个 png。
 
@@ -74,7 +77,8 @@ total 5
 -rw-r--r-- 1 user 197609 8 Oct 24 04:35 test05.png
 ```
 
-### 步骤 2：先确认 find 的筛选结果（已实操） {: .sec-ver}
+### 步骤 2：先确认 find 的筛选结果（已实操）
+{: .sec-ver}
 
 打包前**必须**先单独跑一遍 find 看清单对不对，这是避免「打包错文件」的关键习惯。
 
@@ -93,7 +97,8 @@ data/test03.txt
 
 清单里只有 txt，jpg 与 png 已被排除，可以作为后续打包的输入。
 
-### 步骤 3：做法一 find -exec（先踩坑，再修正）（已实操） {: .sec-warn}
+### 步骤 3：做法一 find -exec（先踩坑，再修正）（已实操）
+{: .sec-warn}
 
 `-exec` 结尾有两种写法，含义完全不同，这是本题最重要的一个坑：
 
@@ -136,7 +141,8 @@ data/test03.txt
 
 > **易错点**：`-exec` 结尾的 `+` 并不是「永远只执行一次」。当文件数量大到命令行长度超过系统上限时，find 会自动**分批**调用，此时 `-czf` 的覆盖问题会再次出现，最终包里只剩最后一批。文件数量可能过千时，改用步骤 7 的「`-rf` 追加后再 gzip」写法。
 
-### 步骤 4：做法二 find 管道 xargs（已实操） {: .sec-prac}
+### 步骤 4：做法二 find 管道 xargs（已实操）
+{: .sec-prac}
 
 ```bash
 find data -name "*.txt" | xargs tar -czf txt_xargs.tar.gz
@@ -166,7 +172,8 @@ tar -rf append2.tar 'data/my report.txt' data/test01.txt data/test02.txt data/te
 
 可以看到 xargs 把多行结果拼成了一条命令的参数，这是它比 `-exec \;` 高效的原因（少启进程）。
 
-### 步骤 5：做法三 tar --exclude 反向排除（已实操） {: .sec-prac}
+### 步骤 5：做法三 tar --exclude 反向排除（已实操）
+{: .sec-prac}
 
 不筛选，直接打包目录，把 jpg/png 挡在外面：
 
@@ -187,7 +194,8 @@ data/test03.txt
 
 注意输出里多了一行 `data/`——因为这次打包的是**目录本身**，tar 会把目录项也记进归档。前两种做法打包的是文件清单，不带目录项。两者解压后的目录结构一致，只是归档内容描述不同。
 
-### 步骤 6：补充做法 tar -T 读取文件清单（已实操） {: .sec-ext}
+### 步骤 6：补充做法 tar -T 读取文件清单（已实操）
+{: .sec-ext}
 
 ```bash
 find data -name "*.txt" > txt_list.txt
@@ -211,7 +219,8 @@ data/test03.txt
 
 `-T`（等价于 `--files-from`）按**行**读取清单，因此文件名里的空格不会被拆断，这一点比裸 xargs 安全。清单落盘后可以用 `wc -l` 核对数量、用 `grep` 复核内容，是备份脚本里最稳的写法。
 
-### 步骤 7：边界一 文件名含空格（已实操） {: .sec-prac}
+### 步骤 7：边界一 文件名含空格（已实操）
+{: .sec-prac}
 
 生产环境的文件名带空格非常常见。先造一个：
 
@@ -293,7 +302,8 @@ data/test03.txt
 | `find -exec ... {} +` | 是 | 不经过 shell 单词切分 |
 | `tar -T 清单` | 是 | 按行读取 |
 
-### 步骤 8：边界二 .txt 后缀的匹配边界（已实操） {: .sec-prac}
+### 步骤 8：边界二 .txt 后缀的匹配边界（已实操）
+{: .sec-prac}
 
 再补几个「看起来像 txt 但其实不是」的文件，看 `-name "*.txt"` 的真实边界：
 
@@ -377,7 +387,8 @@ data/TEST07.TXT
 
 注意它把 `.txt.bak` 和 `.TXT` 也放行了——「反向排除」的语义是「不是 jpg/png 的都要」，比「只要 txt」宽得多，两者不等价。
 
-### 步骤 9：分批覆盖的复现与安全写法（已实操） {: .sec-prac}
+### 步骤 9：分批覆盖的复现与安全写法（已实操）
+{: .sec-prac}
 
 用 `xargs -n1` 模拟「每批只处理一个文件」，把步骤 3 的覆盖问题放大看清楚：
 
@@ -431,7 +442,8 @@ data/test02.txt
 data/test03.txt
 ```
 
-### 步骤 10：解压验证（已实操） {: .sec-ver}
+### 步骤 10：解压验证（已实操）
+{: .sec-ver}
 
 打完包必须验证，这是备份类操作的底线动作。解压到独立目录再核对：
 
@@ -471,7 +483,8 @@ verify/data/test03.txt => hello 03
 
 > **生产注意**：备份脚本里打包前先 find 清单落盘或 `tar -tzf` 核对数量，压缩完成校验退出码再动源文件——「压缩完就删原始数据」没有回退余地。
 
-### 步骤 11：踩坑补充 绝对路径打包（已实操） {: .sec-warn}
+### 步骤 11：踩坑补充 绝对路径打包（已实操）
+{: .sec-warn}
 
 直接给 tar 传绝对路径，tar 会**剥掉开头的 `/`**：
 
@@ -497,7 +510,8 @@ tar -czf rel.tar.gz -C /tmp/hw/day14 data/test01.txt
 
 `-C` 的含义是「执行到这一步时先切换目录」，打包、解压两个方向都能用：`tar -czf /backup/x.tgz -C /var/www html` 相当于先 `cd /var/www` 再打包 html，包内路径干净；解压侧 `tar -xzf x.tgz -C /target` 把内容直接释放到指定目录，省去「解压在当前目录再挪走」的麻烦。注意 `-C` 的位置有讲究——它影响的是**其后**的路径参数，写在文件名前面还是后面结果不同。
 
-## 三种做法的完整对比与选型建议 {: .sec-best}
+## 三种做法的完整对比与选型建议
+{: .sec-best}
 
 | 维度 | find -exec `{} +` | find -print0 \| xargs -0 | tar --exclude |
 | --- | --- | --- | --- |
@@ -521,7 +535,8 @@ find data -type f -name "*.txt" -print0 | xargs -0 tar -czf txt_final.tar.gz
 
 要点三个：`-type f` 只收普通文件（排除目录、软链等）、`-print0` 与 `xargs -0` 成对出现保证空格安全、打包前先单独跑一次 find 核对清单。文件数量可能过万时，换成步骤 9 的「`-rf` 追加 + gzip」写法。
 
-## 验证方法 {: .sec-ver}
+## 验证方法
+{: .sec-ver}
 
 按以下四条自查，全部满足即证明做对：
 
@@ -530,7 +545,8 @@ find data -type f -name "*.txt" -print0 | xargs -0 tar -czf txt_final.tar.gz
 3. 解压到临时目录后，`find 临时目录 -type f` 的文件名与源文件名一一对应，`cat` 内容一致。
 4. 文件名里带空格的文件在归档列表中显示为**一个完整成员**（不会被拆成两行）。
 
-## 本篇小结 {: .sec-sum}
+## 本篇小结
+{: .sec-sum}
 
 把这一题摊开，是七条：
 
