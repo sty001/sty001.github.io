@@ -8,7 +8,9 @@ slug: "linux-homework-56"
 
 {% raw %}
 
-## 本篇说明
+
+
+## 本篇说明 {: .sec-expl}
 
 - **覆盖章节**：day6 运维基础章节——系统目录结构与核心配置文件。前半是主机名、本地解析、磁盘挂载、运行级别（CentOS 6/7 差异）几道概念题，后半对应四类实操：改主机名、配永久环境变量、设别名、重置 root 密码。
 - **题目来源**：day6 基础概念测验 + 基础练习测验（共 8 题，含官方答案）。
@@ -20,7 +22,7 @@ slug: "linux-homework-56"
 
 ---
 
-## 一、基础概念部分
+## 一、基础概念部分 {: .sec-know}
 
 ### 题 1：主机名称修改文件路径
 
@@ -96,7 +98,7 @@ cat /etc/fstab
 
 ---
 
-### 题 4：系统运行级别及查看/配置方法
+### 题 4：系统运行级别及查看/配置方法 {: .sec-expl}
 
 > **答案**：系统运行级别共 7 种：
 > - 0：关机
@@ -132,9 +134,9 @@ Created symlink /etc/systemd/system/default.target -> /usr/lib/systemd/system/mu
 
 ---
 
-## 二、基础练习部分
+## 二、基础练习部分 {: .sec-prac}
 
-### 题 1（练习）：如何修改主机名称
+### 题 1（练习）：如何修改主机名称 {: .sec-prac}
 
 > **答案**：
 > - 临时修改：`hostname linux-node01`（立即生效，重启丢失）
@@ -162,7 +164,7 @@ linux-node01
 
 ---
 
-### 题 2（练习）：让 linuxvar=123456 永久生效并调取
+### 题 2（练习）：让 linuxvar=123456 永久生效并调取 {: .sec-prac}
 
 > **答案**：
 > 1. 编辑 `/etc/profile`（全局）或 `~/.bashrc`（用户级）：写入 `linuxvar=123456`
@@ -193,7 +195,7 @@ echo "echo 'export linuxvar=123456' >> /etc/profile && source /etc/profile"
 
 ---
 
-### 题 3（练习）：设置别名 net 等价于 cat 网卡配置
+### 题 3（练习）：设置别名 net 等价于 cat 网卡配置 {: .sec-prac}
 
 > **答案**：
 > - 临时：`alias net='cat /etc/sysconfig/network-scripts/ifcfg-eth0'`
@@ -221,7 +223,7 @@ alias net='cat /etc/hosts'
 
 ---
 
-### 题 4（练习）：系统密码忘记如何重置（CentOS 7）
+### 题 4（练习）：系统密码忘记如何重置（CentOS 7） {: .sec-prac}
 
 > **答案**：利用单用户模式（救援模式）重置，步骤如下：
 > 1. 启动到引导菜单，按 `e` 编辑启动项，在含 `UTF-8` 的内核行末追加 `init=/bin/bash`
@@ -253,7 +255,7 @@ passwd: password updated successfully
 
 ---
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 这几道题串起来就是"服务器的身份信息怎么管"：
 
@@ -266,7 +268,7 @@ passwd: password updated successfully
 
 ---
 
-## 知识点速记
+## 知识点速记 {: .sec-chk}
 
 考前扫一眼这张表就够了：
 
@@ -279,4 +281,6 @@ passwd: password updated successfully
 | 永久变量 | /etc/profile + source | 加 export 子进程才继承，等号两边不留空格 |
 | 别名 | alias / unalias | 写 profile 才永久，查看用 alias，取消用 unalias |
 | 忘记密码 | 单用户模式 | init=/bin/bash → remount,rw → passwd → autorelabel |
+
+
 {% endraw %}

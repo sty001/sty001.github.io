@@ -8,7 +8,9 @@ slug: "linux-homework-53"
 
 {% raw %}
 
-## 本篇说明
+
+
+## 本篇说明 {: .sec-expl}
 
 - **题量**：40 题。每题 3 分、总分 120 分，**及格分 75 分**，约答对 25 题
 - **覆盖章节**：文件查找与处理（find/xargs）、文本替换（sed）、打包压缩（tar）、链接文件（软/硬链接）、权限与属性、inode/block、磁盘空间排查、日期处理、正则表达式、用户与别名、开机自启等进阶主题
@@ -21,7 +23,7 @@ slug: "linux-homework-53"
 
 ---
 
-## 测验题目精讲
+## 测验题目精讲 {: .sec-prac}
 
 ### 题 01：查找 7 天以前的 log 文件并删除（至少三种方法）
 
@@ -225,7 +227,7 @@ total 2
 
 ---
 
-### 题 08：设置别名 net 显示网卡配置并永久生效
+### 题 08：设置别名 net 显示网卡配置并永久生效 {: .sec-expl}
 
 > **答案**：
 > 1. `echo "alias net='cat /etc/sysconfig/network-scripts/ifcfg-eth0'" >> /etc/profile`
@@ -313,7 +315,7 @@ cat: /tmp/linux_link.txt: No such file or directory
 
 ---
 
-### 题 12：No space left on device 但 df 未满的原因与解决
+### 题 12：No space left on device 但 df 未满的原因与解决 {: .sec-ts}
 
 > **答案**：
 > - 原因一：**inode 耗尽**（`df -i` 查看），小文件过多占满 inode
@@ -565,7 +567,7 @@ Change: 2026-10-24 07:50:32
 
 ---
 
-### 题 24：grep 识别扩展正则（至少两种）
+### 题 24：grep 识别扩展正则（至少两种） {: .sec-ext}
 
 > **答案**：
 > - `grep -E '正则'`（`-E` 启用扩展正则）
@@ -621,7 +623,7 @@ cp -r /data/rxdir /tmp/
 
 ---
 
-### 题 26：管道+xargs 与 find -exec 的执行原理
+### 题 26：管道+xargs 与 find -exec 的执行原理 {: .sec-know}
 
 > **答案**：
 > - 管道 + xargs：前命令输出逐行/逐块作为后命令的**参数**传入，`xargs` 批量拼接到一行执行，效率高；文件名含空格需用 `-print0 | xargs -0`
@@ -688,7 +690,7 @@ uid=1001(linuxuser) gid=1001(linuxuser) groups=1001(linuxuser)
 
 ---
 
-### 题 29：目录存在才创建 xxoo.avi，成功/失败均有提示且不显示错误
+### 题 29：目录存在才创建 xxoo.avi，成功/失败均有提示且不显示错误 {: .sec-ts}
 
 > **答案**：
 > ```bash
@@ -780,7 +782,7 @@ du -sh /var/* 2>/dev/null | sort -rh | head
 
 ---
 
-### 题 33：inode 和 block 是什么
+### 题 33：inode 和 block 是什么 {: .sec-know}
 
 > **答案**：
 > - inode：索引节点，存文件的元信息（权限、属主、大小、时间戳、数据块指针），不含文件名
@@ -857,7 +859,7 @@ find /data -type f -size +100M -exec ls -lh {} \;
 
 ---
 
-### 题 37：检查 linuxuser 用户并显示 id；按 id 分类用户
+### 题 37：检查 linuxuser 用户并显示 id；按 id 分类用户 {: .sec-ver}
 
 > **答案**：
 > - 检查并看 id：`id linuxuser`
@@ -905,7 +907,7 @@ ln: '/data/linux': hard link not allowed for directory
 
 ---
 
-### 题 39：sed 的 -n 与 -r 参数含义
+### 题 39：sed 的 -n 与 -r 参数含义 {: .sec-expl}
 
 > **答案**：
 > - `-n`：抑制默认输出，只打印被 `p` 命令显式指定的行（常与 `p` 配合）
@@ -955,7 +957,7 @@ echo '/dev/sdb1 /data xfs defaults 0 0' >> /etc/fstab
 
 ---
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 第 4 周开始上强度，下面这些点错了最容易扣分：
 
@@ -967,4 +969,6 @@ echo '/dev/sdb1 /data xfs defaults 0 0' >> /etc/fstab
 6. 磁盘：`df -h` 看空间、`df -i` 看 inode；删了不释放多是进程占用；`du -sh | sort -rh` 定位大文件。
 7. 时间三件套：atime/mtime/ctime，`stat` 查看，`ls -l` 显示 mtime。
 8. 引号：`''` 强引用、`""` 弱引用、`` ` ` ``/`` $( ) `` 命令替换；新盘四步：分区→格式化→挂载→fstab。
+
+
 {% endraw %}

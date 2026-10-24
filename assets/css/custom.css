@@ -411,13 +411,20 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   --h5-color: #e3b341;
   --h6-color: #9aa7b6;
 
-  /* 内容区块（callout）主题色 */
-  --sec-bianxi-c: #58a6ff;   /* 辨析：蓝 */
-  --sec-card-c:   #3fb950;   /* 知识卡片：绿 */
-  --sec-variant-c:#bc8cff;   /* 变式追问：紫 */
-  --sec-why-c:    #e3a857;   /* 原理/为什么：橙 */
-  --sec-pit-c:    #f85149;   /* 坑位：红 */
-  --sec-note-c:   #d29922;   /* 注意/提示：琥珀 */
+  /* 内容区块（callout）13 类语义色：--c 文字/主色，--b 底色，--i 图标 */
+  --sec-sum-c:#56d364; --sec-sum-b:rgba(46,160,67,.15);   --sec-sum-i:"📋 ";
+  --sec-prac-c:#79c0ff;--sec-prac-b:rgba(56,139,253,.15); --sec-prac-i:"🛠 ";
+  --sec-expl-c:#b6c2d1;--sec-expl-b:rgba(139,152,168,.12); --sec-expl-i:"📖 ";
+  --sec-know-c:#56d3c9;--sec-know-b:rgba(45,164,156,.15); --sec-know-i:"📌 ";
+  --sec-ver-c:#d2a8ff;--sec-ver-b:rgba(163,113,247,.15);  --sec-ver-i:"🔎 ";
+  --sec-ts-c:#ffae6b; --sec-ts-b:rgba(219,109,40,.16);    --sec-ts-i:"🔧 ";
+  --sec-ext-c:#56d3ff;--sec-ext-b:rgba(56,189,248,.13);   --sec-ext-i:"🚀 ";
+  --sec-chk-c:#e3b98a;--sec-chk-b:rgba(210,153,34,.14);   --sec-chk-i:"📑 ";
+  --sec-ex-c:#ff9ecb; --sec-ex-b:rgba(219,39,119,.15);    --sec-ex-i:"📝 ";
+  --sec-think-c:#e69cff;--sec-think-b:rgba(188,84,201,.15);--sec-think-i:"❓ ";
+  --sec-warn-c:#ff8f8a;--sec-warn-b:rgba(248,81,73,.16);  --sec-warn-i:"⚠️ ";
+  --sec-best-c:#7ee787;--sec-best-b:rgba(63,185,80,.15);  --sec-best-i:"✅ ";
+  --sec-iv-c:#ff9a76; --sec-iv-b:rgba(219,76,40,.16);     --sec-iv-i:"🎯 ";
 }
 
 /* ---------- 1) 标题层级：颜色 + 左侧色条 + 字重，形成清晰层级 ---------- */
@@ -460,54 +467,108 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   margin-top: 1rem;
 }
 
-/* ---------- 2) 内容区块 callout：特殊标题染成"标签条"，明显区别于普通标题 ---------- */
-.post-content .sec-bianxi,
-.post-content .sec-card,
-.post-content .sec-variant,
-.post-content .sec-why,
-.post-content .sec-pit,
-.post-content .sec-note {
-  display: inline-block;
-  padding: 0.18rem 0.7rem;
+/* ---------- 2) 内容区块 callout：13 类性质标题做成"横幅标签"，一眼识别类型 ---------- */
+.post-content h2[class*="sec-"],
+.post-content h3[class*="sec-"],
+.post-content h4[class*="sec-"],
+.post-content h5[class*="sec-"] {
+  display: block;
+  border: 1px solid var(--cc);
+  border-left: 5px solid var(--cc);
+  background: var(--cb);
+  color: var(--cc);
   border-radius: 8px;
-  border-left: none !important;       /* 覆盖上面的通用左侧色条 */
+  padding: 0.42rem 0.85rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  margin: 1.6rem 0 0.9rem;
+  margin: 1.9rem 0 0.9rem;
   box-shadow: 0 1px 0 rgba(0,0,0,0.25);
 }
-/* 给区块标题前加一个符号，强化"这是什么类型"的识别 */
-.post-content .sec-bianxi::before  { content: "🔍 "; }
-.post-content .sec-card::before    { content: "📌 "; }
-.post-content .sec-variant::before { content: "❓ "; }
-.post-content .sec-why::before     { content: "💡 "; }
-.post-content .sec-pit::before     { content: "⚠️ "; }
-.post-content .sec-note::before    { content: "✏️ "; }
-
-.post-content .sec-bianxi  { color: #cfe8ff; background: rgba(88,166,255,0.16);  border:1px solid rgba(88,166,255,0.45); }
-.post-content .sec-card    { color: #c9f2d4; background: rgba(63,185,80,0.16);   border:1px solid rgba(63,185,80,0.45); }
-.post-content .sec-variant { color: #e6d6ff; background: rgba(188,140,255,0.16); border:1px solid rgba(188,140,255,0.45); }
-.post-content .sec-why     { color: #ffe9c7; background: rgba(227,168,87,0.16);  border:1px solid rgba(227,168,87,0.45); }
-.post-content .sec-pit     { color: #ffd7d4; background: rgba(248,81,73,0.16);   border:1px solid rgba(248,81,73,0.5); }
-.post-content .sec-note    { color: #ffeec2; background: rgba(210,153,34,0.16);  border:1px solid rgba(210,153,34,0.45); }
-
-/* ---------- 3) 让代码块 / 表格 / 引用在长文中更"成块"，降低阅读疲劳 ---------- */
-.post-content pre,
-.post-content .highlight {
-  border: 1px solid rgba(240,246,252,0.12);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+.post-content h2[class*="sec-"]::before,
+.post-content h3[class*="sec-"]::before,
+.post-content h4[class*="sec-"]::before,
+.post-content h5[class*="sec-"]::before {
+  content: var(--ico);
+  margin-right: 0.15em;
 }
-.post-content table {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  border: 1px solid rgba(240,246,252,0.14);
-  border-radius: 10px;
-}
-.post-content table th { color: #e6edf3; font-weight: 700; }
+/* 每个分类映射其语义变量 */
+.post-content .sec-sum   { --cc:var(--sec-sum-c);   --cb:var(--sec-sum-b);   --ico:var(--sec-sum-i); }
+.post-content .sec-prac  { --cc:var(--sec-prac-c);  --cb:var(--sec-prac-b);  --ico:var(--sec-prac-i); }
+.post-content .sec-expl  { --cc:var(--sec-expl-c);  --cb:var(--sec-expl-b);  --ico:var(--sec-expl-i); }
+.post-content .sec-know  { --cc:var(--sec-know-c);  --cb:var(--sec-know-b);  --ico:var(--sec-know-i); }
+.post-content .sec-ver   { --cc:var(--sec-ver-c);   --cb:var(--sec-ver-b);   --ico:var(--sec-ver-i); }
+.post-content .sec-ts    { --cc:var(--sec-ts-c);    --cb:var(--sec-ts-b);    --ico:var(--sec-ts-i); }
+.post-content .sec-ext   { --cc:var(--sec-ext-c);   --cb:var(--sec-ext-b);   --ico:var(--sec-ext-i); }
+.post-content .sec-chk   { --cc:var(--sec-chk-c);   --cb:var(--sec-chk-b);   --ico:var(--sec-chk-i); }
+.post-content .sec-ex    { --cc:var(--sec-ex-c);    --cb:var(--sec-ex-b);    --ico:var(--sec-ex-i); }
+.post-content .sec-think { --cc:var(--sec-think-c); --cb:var(--sec-think-b); --ico:var(--sec-think-i); }
+.post-content .sec-warn  { --cc:var(--sec-warn-c);  --cb:var(--sec-warn-b);  --ico:var(--sec-warn-i); }
+.post-content .sec-best  { --cc:var(--sec-best-c);  --cb:var(--sec-best-b);  --ico:var(--sec-best-i); }
+.post-content .sec-iv    { --cc:var(--sec-iv-c);    --cb:var(--sec-iv-b);    --ico:var(--sec-iv-i); }
+
+/* ---------- 3) 引用块 / 表格 / 代码块：强化"成块"观感，分区更清晰 ---------- */
+/* 引用块基础样式：所有 > 引用都形成独立区块（底色+左边框），明显区别于正文 */
 .post-content blockquote {
-  border-left-width: 4px !important;
+  border-left: 4px solid var(--accent-color) !important;
+  background: rgba(110, 118, 129, 0.10);
+  border-radius: 0 10px 10px 0;
+  padding: 0.7rem 1.15rem;
+  color: inherit !important;
   font-style: normal;
+  margin: 1.1rem 0;
+}
+.post-content blockquote p { margin-bottom: 0.4rem; }
+.post-content blockquote.sec-pit  { border-left-color:#f85149 !important; background:rgba(248,81,73,.10); }
+.post-content blockquote.sec-note { border-left-color:#d29922 !important; background:rgba(210,153,34,.10); }
+
+/* 表格：斑马纹 + 表头底色 + 悬停高亮，长表好读 */
+.post-content table {
+  display: block; width: 100%; overflow-x: auto;
+  border-collapse: separate; border-spacing: 0;
+  border: 1px solid rgba(240,246,252,0.14);
+  border-radius: 10px; overflow: hidden;
+  font-size: 0.95rem;
+}
+.post-content table th {
+  background: rgba(240,246,252,0.08);
+  color: #e6edf3; font-weight: 700;
+  border-bottom: 2px solid rgba(240,246,252,0.18);
+}
+.post-content table td { border-bottom: 1px solid rgba(240,246,252,0.08); padding: 0.5rem 0.8rem; }
+.post-content table tbody tr:nth-child(even) { background: rgba(240,246,252,0.035); }
+.post-content table tbody tr:hover { background: rgba(88,166,255,0.08); }
+
+/* 代码块：区分"命令行 / 配置 / 输出 / 代码"，右上角加类型标签 */
+.post-content .highlight {
+  position: relative;
+  border: 1px solid rgba(240,246,252,0.12);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  margin: 1.1rem 0;
+}
+.post-content .highlight::after {
+  content: "代码"; position: absolute; top: 0; right: 0;
+  font-size: 0.68rem; line-height: 1.4;
+  padding: 0.1rem 0.55rem; color: #fff;
+  background: rgba(110,118,129,0.85);
+  border-bottom-left-radius: 6px;
+}
+.post-content .highlight:has(code.language-bash)::after,
+.post-content .highlight:has(code.language-sh)::after,
+.post-content .highlight:has(code.language-console)::after {
+  content: "命令行"; background: rgba(56,139,253,0.9);
+}
+.post-content .highlight:has(code.language-ini)::after,
+.post-content .highlight:has(code.language-nginx)::after,
+.post-content .highlight:has(code.language-yaml)::after,
+.post-content .highlight:has(code.language-conf)::after,
+.post-content .highlight:has(code.language-xml)::after,
+.post-content .highlight:has(code.language-sql)::after,
+.post-content .highlight:has(code.language-php)::after {
+  content: "配置/代码"; background: rgba(63,185,80,0.88);
+}
+.post-content .highlight:has(code.language-text)::after {
+  content: "输出"; background: rgba(188,140,255,0.88);
 }
 
 /* ---------- 4) 浅色模式：同步调整配色，保证同样清晰 ---------- */
@@ -516,19 +577,30 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   --h3-color: #1a7f37;
   --h4-color: #8250df;
   --h5-color: #9a6700;
-  --sec-bianxi-c:#0969da; --sec-card-c:#1a7f37; --sec-variant-c:#8250df;
-  --sec-why-c:#bc4c00; --sec-pit-c:#cf222e; --sec-note-c:#9a6700;
+  --sec-sum-c:#0c6b2e;   --sec-sum-b:rgba(26,127,55,.10);
+  --sec-prac-c:#0a58ca;  --sec-prac-b:rgba(9,105,218,.10);
+  --sec-expl-c:#3a4350;  --sec-expl-b:rgba(60,67,80,.07);
+  --sec-know-c:#0c7a6e;  --sec-know-b:rgba(26,127,55,.10);
+  --sec-ver-c:#6b3fa0;   --sec-ver-b:rgba(130,80,223,.10);
+  --sec-ts-c:#b4530a;    --sec-ts-b:rgba(219,109,40,.12);
+  --sec-ext-c:#0a78a8;   --sec-ext-b:rgba(56,189,248,.10);
+  --sec-chk-c:#8a5a00;   --sec-chk-b:rgba(210,153,34,.12);
+  --sec-ex-c:#b8146e;    --sec-ex-b:rgba(219,39,119,.10);
+  --sec-think-c:#8a1fa0; --sec-think-b:rgba(188,84,201,.10);
+  --sec-warn-c:#cf222e;  --sec-warn-b:rgba(207,34,46,.10);
+  --sec-best-c:#1a7f37;  --sec-best-b:rgba(26,127,55,.10);
+  --sec-iv-c:#b8410f;    --sec-iv-b:rgba(219,76,40,.12);
 }
-:root[data-bs-theme='light'] .post-content .sec-bianxi  { color:#05306b; background:rgba(9,105,218,0.10); }
-:root[data-bs-theme='light'] .post-content .sec-card    { color:#0c3d1e; background:rgba(26,127,55,0.10); }
-:root[data-bs-theme='light'] .post-content .sec-variant { color:#3d1f6b; background:rgba(130,80,223,0.10); }
-:root[data-bs-theme='light'] .post-content .sec-why     { color:#5c2a00; background:rgba(188,76,0,0.10); }
-:root[data-bs-theme='light'] .post-content .sec-pit     { color:#7a0d12; background:rgba(207,34,46,0.10); }
-:root[data-bs-theme='light'] .post-content .sec-note    { color:#5c3d00; background:rgba(154,103,0,0.10); }
 :root[data-bs-theme='light'] .post-content h2 { color: var(--h2-color); }
 :root[data-bs-theme='light'] .post-content h3 { color: var(--h3-color); }
 :root[data-bs-theme='light'] .post-content h4 { color: var(--h4-color); }
 :root[data-bs-theme='light'] .post-content h5 { color: var(--h5-color); }
+:root[data-bs-theme='light'] .post-content blockquote {
+  background: rgba(60,67,80,0.06);
+  color: #3a4350 !important;
+}
+:root[data-bs-theme='light'] .post-content blockquote.sec-pit  { background:rgba(207,34,46,.08); }
+:root[data-bs-theme='light'] .post-content blockquote.sec-note { background:rgba(154,103,0,.08); }
 
 /* 让总览页(page 布局，容器为 .page-content)也套用一致的标题层级配色 */
 .page-content h2, .page-content h3, .page-content h4, .page-content h5 {

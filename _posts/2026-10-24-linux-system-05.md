@@ -8,6 +8,8 @@ slug: "linux-system-05"
 
 {% raw %}
 
+
+
 系统基础的收尾篇：别名永久生效、内置命令与外置命令的区别、登录前后提示文件、`/usr/local` 目录与 yum / rpm / 编译三种安装方式、yum 排错、系统日志，最后是 CPU、内存、磁盘、负载的查看方法。学完这篇，一台新服务器的基础配置就能独立拿下了。
 
 ## 别名如何永久设置
@@ -41,7 +43,7 @@ vi /root/.bashrc
 #alias rm='rm -i'
 ```
 
-### 补充：内置命令与外置命令
+### 补充：内置命令与外置命令 {: .sec-ext}
 
 系统中将命令分为两个大类：
 
@@ -59,7 +61,7 @@ mkdir is /usr/bin/mkdir
 
 > **原理：** 内置命令（builtin）编译在 bash 程序内部，如 `cd`、`echo`、`alias`，执行时不创建新进程，因此 `cd` 才能改变当前 shell 的工作目录；外置命令是磁盘上的可执行文件，执行时通过 fork + exec 加载。内置命令随 shell 存在，换一个 shell（如 dash、zsh）可能就不存在——这也是脚本开头要写 `#!/bin/bash` 的原因之一。
 
-### 环境变量与别名相关的配置文件
+### 环境变量与别名相关的配置文件 {: .sec-expl}
 
 | 配置文件 | 生效范围 |
 | --- | --- |
@@ -93,8 +95,9 @@ alias 别名='命令信息'
 ```
 
 > **注意：** 三个里程的完整逻辑是——第 1、2 里程改的是全局 `/etc/profile`（对所有用户生效），第 3 里程改的是 root 自己的 `~/.bashrc`（只对 root 生效）。用户级的 `~/.bashrc` 优先级高于全局配置，所以想让设置只对某个账号起作用，就写在自己的 `~/.bashrc` 里。
+{: .sec-pit}
 
-## 登录之后的提示文件 `/etc/motd`
+## 登录之后的提示文件 `/etc/motd` {: .sec-warn}
 
 ```bash
 [root@linux-node1 ~]# cat /etc/motd
@@ -110,8 +113,9 @@ linux-node-01
 **作用**：登录成功后显示的内容，可以对操作系统的用户进行注意事项说明（如操作规范、告警信息）。
 
 > **说明：** motd 即 message of the day。上面示例中 `Connecting to ...` 与 `Last login ...` 部分实际是 Xshell 客户端和 sshd 的提示，`linux-node-01` 才是 `/etc/motd` 里配置的内容。`Last login` 信息由 sshd 打印，来自 `/var/log/lastlog`，与 motd 无关。
+{: .sec-note}
 
-## 登录之前的提示文件 `/etc/issue`、`/etc/issue.net`
+## 登录之前的提示文件 `/etc/issue`、`/etc/issue.net` {: .sec-warn}
 
 ```bash
 [root@linux-node1 ~]# cat /etc/issue
@@ -139,6 +143,7 @@ echo "" > /etc/issue      # 清空文件（实际写入一个空行）
 ```
 
 > **注意：** 登录前的提示文件会暴露系统版本信息，从安全角度建议清空或替换成自定义内容。
+{: .sec-pit}
 
 两个文件的区别：`/etc/issue` 显示在本地控制台登录前；`/etc/issue.net` 显示在远程 ssh 登录前（受 sshd 的 `Banner` 配置影响）。
 
@@ -170,7 +175,7 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 | 02 | 买半成品（速冻饺子，加工一下） | **rpm 安装软件** | 需要有软件安装包 |
 | 03 | 自己做饭（买食材，自己做） | **编译安装软件** | 可以灵活调整编译参数 |
 
-## 原理解析：rpm 与 yum 的关系 {: .sec-why}
+## 原理解析：rpm 与 yum 的关系 {: .sec-know}
 
 - **rpm（RedHat Package Manager）**：直接操作 `.rpm` 包的工具。它只关心**单个包**——包里有什么文件、依赖谁，它自己不知道，也不负责帮你找。所以 `rpm -ivh` 装一个复杂软件时，经常因为缺依赖连环报错；
 - **yum（Yellowdog Updater Modified）**：rpm 之上的**仓库管理层**。它从 yum 源（仓库）里读取所有软件包的元数据（含依赖关系表），你装 A 它自动算出还要装 B 和 C，一并下载安装，并校验 GPG 签名；
@@ -185,8 +190,9 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 | 底层实现 | 读写 rpm 数据库（`/var/lib/rpm`） | 解析 repodata，最终仍调用 rpm 安装 |
 
 > **注意：** yum 安装软件时底层仍然调用 rpm 完成安装，rpm 数据库是唯一的事实来源。所以 `rpm -qa` 能看到通过 yum 装的所有包，两种查询方式结果一致。
+{: .sec-pit}
 
-### rpm 常用命令表
+### rpm 常用命令表 {: .sec-chk}
 
 | 命令 | 作用 |
 | --- | --- |
@@ -208,12 +214,13 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 装本地 rpm 同时自动补依赖：`yum localinstall 包.rpm`（或 `yum install ./包.rpm`），比裸 `rpm -ivh` 省心得多。
 
 > **注意：** `rpm -e --nodeps` 是双刃剑：能卸掉卸不掉的"钉子户"，但被依赖它的程序会立刻崩溃。卸载前先用 `rpm -q --whatrequires 包名` 看看谁在依赖它。
+{: .sec-pit}
 
 ### rpm -U 与 -F 的差别
 
 `-Uvh` 是"没装过就装、装过就升级"；`-Fvh` 是"装过才升级、没装过直接跳过"。批量刷新一整批包时用 `-F` 只更新系统里已有的，不会把新软件意外带进来——灰度更新时这个差别很关键。
 
-### yum 常用命令表
+### yum 常用命令表 {: .sec-chk}
 
 | 命令 | 作用 |
 | --- | --- |
@@ -234,7 +241,7 @@ drwxr-xr-x. 12 root root 131 Mar 28 10:40 /usr/local/
 
 yum 还带"后悔药"：`yum history` 列出每次安装/升级事务，`yum history undo 编号` 能整体回滚一次操作——升级出问题时的第一救援手段。查"最近装了什么把系统搞坏"用 `rpm -qa --last`，按安装时间倒序一击即中。
 
-### 辨析：yum install 与 yum update {: .sec-bianxi}
+### 辨析：yum install 与 yum update
 
 `yum install 软件名` 只动指定的软件及其依赖；`yum update`（不带包名）会把全系统所有可升级的包一口气升到最新——内核、glibc 全在里面。生产服务器跑 `yum update` 前必须想清楚：升完内核要重启，老依赖可能失效，回滚很麻烦。惯例是平时只 `yum update 指定包`（打安全补丁），系统级升级安排在维护窗口统一做。
 
@@ -275,6 +282,7 @@ yum install -y vim tree wget net-tools nmap bash-completion
 ```
 
 > **注意：** `bash-completion` 用于补全 CentOS 7 中的部分命令参数，装完之后命令行补齐体验会好很多。
+{: .sec-pit}
 
 ### 本地 yum 源与 EPEL
 
@@ -305,8 +313,9 @@ yum install -y epel-release
 ```
 
 > **注意：** 只有 base 源没有的软件才需要 EPEL，装了 EPEL 之后 `yum install` 同名软件可能优先从 EPEL 装，版本号可能与官方源不同。生产环境要评估这个风险，必要时在源配置里调 `priority`。新手容易栽在这：明明 `yum install` 成功了，跑起来行为却和文档对不上，查一下才发现装的是 EPEL 的版本。
+{: .sec-pit}
 
-### yum 安装软件的排错流程
+### yum 安装软件的排错流程 {: .sec-ts}
 
 **01. 能不能访问外网**
 
@@ -351,6 +360,7 @@ yum groupinstall -y "Development Tools"
 ```
 
 > **注意：** `./configure` 报错 `not found` 通常是缺依赖开发库，缺什么装什么，如 `yum install -y zlib-devel pcre-devel openssl-devel`。卸载编译安装的软件直接删除安装目录（`rm -rf /usr/local/nginx`），这也是编译安装最大的软肋——没有统一的注册表，时间久了谁也说不清系统里装过什么。
+{: .sec-pit}
 
 三种安装方式对比：
 
@@ -465,6 +475,7 @@ CPU(s):                      4    --- 整个服务器有几核
 | `MHz` | 当前运行频率（随节能策略浮动） |
 
 > **注意：** `processor` 条目数是**逻辑核**数，开了超线程后是物理核数的两倍；判断物理颗数看 `physical id` 有几个不同值，判断每颗几个核看 `cpu cores`。云服务器的 `/proc/cpuinfo` 看到的是虚拟 CPU，颗数与核数是宿主机抽象出来的，不代表物理硬件。
+{: .sec-pit}
 
 ### 负载（CPU 处理任务过多）
 
@@ -538,10 +549,11 @@ Swap:          1.0G        0B(*)       1.0G
 | `CommitLimit` | 允许的超额承诺内存上限 |
 
 > **注意：** `free` 看到的 `free` 很小不用慌——Linux 的设计是"内存闲着也是闲着，不如拿来做缓存"，`buff/cache` 会在应用程序需要时立刻释放。**判断内存够不够要看 `available` 列**——老版本 free（CentOS 6 及更早）没有这一列，那时只能拿 free 加 buff/cache 手工估算，新版本是内核直接给的估算值，它才是应用程序实际可用量。当 `available` 持续走低、`SwapCached` 增大时，才需要关注内存压力。
+{: .sec-pit}
 
 内存真耗尽时内核会启动 OOM Killer：按评分挑一个占用最大的进程直接杀掉，`dmesg | grep -i "out of memory"` 能找到"被害人"记录。swap 只能延缓不能避免这一刻——这也是数据库服务器宁可加内存也不依赖 swap 的原因。
 
-### 辨析：Buffers 与 Cached {: .sec-bianxi}
+### 辨析：Buffers 与 Cached
 
 两者都是拿内存当缓存，方向不同：`Buffers` 对应写——块设备的元数据、还没落盘的数据块先放这里攒一批再写，减少碎片化的小写入；`Cached` 对应读——读过的文件内容留在内存，下次命中就不用碰磁盘。`free -h` 把它们合并显示成 `buff/cache`，日常不用分太细，记住"都可在内存紧张时回收"就行。
 
@@ -572,7 +584,7 @@ tmpfs           199M     0  199M   0% /run/user/0
 
 df 与 du 对不上时别慌，通常两个原因：一是进程握着已删除文件的句柄（du 查不到但空间没释放，重启对应进程即恢复）；二是挂载点下又挂了别的设备（du 只算目录里的，df 把挂载进来的也算上）。先用 `lsof | grep deleted` 和 `mount` 排这两项。
 
-### 硬件信息查看命令速查表
+### 硬件信息查看命令速查表 {: .sec-chk}
 
 | 命令 | 作用 | 备注 |
 | --- | --- | --- |
@@ -597,10 +609,11 @@ uname -r                             # 3.10.0-862.el7.x86_64
 ```
 
 > **注意：** `dmidecode` 读的是主板 BIOS 信息，真实物理机信息准确；虚拟机里看到的是虚拟硬件信息。`lscpu` 输出的 `Architecture: x86_64` 表示 64 位系统，如果显示 `i686` 则是 32 位——装软件时下错架构的包就是从这里看出来的。另外 dmidecode 的输出含序列号等资产信息，截图发群前注意脱敏。
+{: .sec-pit}
 
 内存容量还有个换算的坑：`free` 显示的 G 是 GiB（1024 进制），内存条标的 G 是 GB（1000 进制），32G 的机器 free 显示 30G 出头是正常的，不是内存条少装了。想看磁盘 IO 详情用 `iostat -x 1`（sysstat 包），`%util` 接近 100% 就是这块盘打满了。
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -613,7 +626,7 @@ uname -r                             # 3.10.0-862.el7.x86_64
 | `free` 显示 free 很小 | 被缓存占用 | `free -h` 看 available | 正常现象，关注 available 列即可 |
 | CPU 核数对不上 | 开了超线程（逻辑核）或虚拟化 | `lscpu` 对比 socket / core / CPU(s) | 理解逻辑核与物理核的区别 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -625,15 +638,16 @@ uname -r                             # 3.10.0-862.el7.x86_64
 | `dmidecode` 看硬件 | `lscpu` / `lsmem` / `lsblk` | 优先用标准化工具，dmidecode 需 root |
 
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 上 `yum` 命令仍可用（兼容符号链接），底层实际是 `dnf`，本篇所有命令在这些系统上原样可用。`/proc` 文件系统在所有 Linux 上行为一致，`lscpu`、`free` 等来自 util-linux 与 procps-ng 包，任何发行版都有。
+{: .sec-pit}
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 1. 将之前的课程进行回顾总结。
 2. 总结命令 / 参数。
 3. 预习系统优化方法。
 4. 练习 vim 使用技巧。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 别名永久生效要改 `/etc/profile`（全局）和用户家目录的 `~/.bashrc`（单用户），改完用 `source` 加载；`type` 命令可区分内置命令与外置命令。
 2. `/etc/motd` 是登录后的提示文件，`/etc/issue` 与 `/etc/issue.net` 是登录前的提示文件，后者建议清空以避免泄露系统版本。
@@ -643,7 +657,7 @@ uname -r                             # 3.10.0-862.el7.x86_64
 6. 硬件信息查看口诀：CPU 用 `lscpu`、内存用 `free -h`、磁盘用 `df -h`、负载用 `w`；对应文件分别是 `/proc/cpuinfo`、`/proc/meminfo`、`/proc/mounts`、`/proc/loadavg`。
 7. 判断内存够不够看 `free` 的 `available` 列；判断 CPU 颗数看 `physical id`，核数看 `cpu cores`；物理机硬件信息用 `dmidecode`。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. `rpm -ivh` 和 `yum install` 有什么区别？为什么装复杂软件推荐用 yum？
 2. 服务器不能上外网，如何用安装光盘做一个本地 yum 源？
@@ -665,4 +679,6 @@ uname -r                             # 3.10.0-862.el7.x86_64
 - 重要系统文件与运行级别
 - 系统优化实践（上）：yum 源优化
 - 附录-命令速查表
+
+
 {% endraw %}

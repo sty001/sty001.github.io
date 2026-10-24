@@ -8,9 +8,11 @@ slug: "linux-manual-04"
 
 {% raw %}
 
+
+
 本手册按「症状 → 原因 → 排查 → 解决 → 验证 → 预防」组织，覆盖系统启动与登录、磁盘与文件系统、网络、权限与用户、服务与应用、性能六大类，共 60 余张故障卡，供实战查阅。文中示例 IP 均为私有网段占位地址，口令以 `<your-password>` 占位，请按实际环境替换。
 
-## 排错方法论
+## 排错方法论 {: .sec-ts}
 
 排错不是碰运气，而是一条可复用的闭环流程：**先复现 → 看日志 → 缩小范围 → 验证假设 → 修复 → 复盘**。每一步都有明确的产出，跳过任何一步都容易误判。
 
@@ -220,7 +222,7 @@ reboot
 
 ---
 
-### SSH 登录提示 Connection refused
+### SSH 登录提示 Connection refused {: .sec-warn}
 
 **现象**：`ssh: connect to host 10.0.0.7 port 22: Connection refused`。
 
@@ -398,7 +400,7 @@ ssh -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 user@10.0.0.7
 
 ---
 
-### su 切换用户失败或环境变量异常
+### su 切换用户失败或环境变量异常 {: .sec-ts}
 
 **现象**：`su: Authentication failure`；或切换成功后命令找不到、`echo $HOME` 仍是原用户家目录。
 
@@ -835,7 +837,7 @@ fsck -y  /dev/sdb1            # ext 系列
 
 ---
 
-### fstab 配置错误导致系统无法启动
+### fstab 配置错误导致系统无法启动 {: .sec-ts}
 
 **现象**：重启后进入 `emergency mode`，提示 `Failed to mount /xxx` 或卡在 `A start job is running for /mount01` 超过 90 秒。
 
@@ -1534,7 +1536,7 @@ nmcli con up eth0
 
 ---
 
-### bonding 网卡绑定异常
+### bonding 网卡绑定异常 {: .sec-ts}
 
 **现象**：配置了 bonding 但网络不通、只有一个 slave 生效、或切换时业务中断。
 
@@ -1593,7 +1595,7 @@ cat /proc/net/bonding/bond0 | grep -iE "mode|miimon|status"
 
 ---
 
-### ARP 异常与网关不可达
+### ARP 异常与网关不可达 {: .sec-ts}
 
 **现象**：`arp -a` 中学不到网关 MAC，或学到错误的 MAC；网络时断时续；提示 `Destination Host Unreachable`。
 
@@ -1764,7 +1766,7 @@ semanage port -a -t http_port_t -p tcp 8080
 
 ## 四、权限与用户
 
-### 执行文件或访问目录提示 Permission denied
+### 执行文件或访问目录提示 Permission denied {: .sec-warn}
 
 **现象**：`bash: ./script.sh: Permission denied`；或访问某目录文件时被拒绝，`ls` 显示属性为 `???`。
 
@@ -1990,7 +1992,7 @@ chage -d 0 用户名
 
 ---
 
-### SUID 权限带来的提权风险
+### SUID 权限带来的提权风险 {: .sec-warn}
 
 **现象**：安全扫描发现系统中存在大量 SUID 文件，或普通用户执行某些命令时能获得 root 权限。
 
@@ -2099,7 +2101,7 @@ find /data -xdev -nouser -exec chown www {} + 2>/dev/null
 
 ---
 
-### 新用户登录后提示符显示为 -bash-4.2$
+### 新用户登录后提示符显示为 -bash-4.2$ {: .sec-warn}
 
 **现象**：新建用户登录后提示符是 `-bash-4.2$` 而非正常格式，且很多命令别名不可用。
 
@@ -3217,7 +3219,7 @@ unicast_peer {
 
 ---
 
-### keepalived 主节点故障 VIP 不漂移
+### keepalived 主节点故障 VIP 不漂移 {: .sec-ts}
 
 **现象**：主节点服务已停止或机器宕机，VIP 仍停留在主节点，备节点没有接管。
 
@@ -3452,7 +3454,7 @@ yum provides 命令名                 # 定位命令属于哪个包
 
 ---
 
-### Ansible 剧本执行报错
+### Ansible 剧本执行报错 {: .sec-ts}
 
 **现象**：`ERROR! Syntax Error while loading YAML`；`'Data_dir' is undefined`；任务执行后未生效。
 
@@ -4176,7 +4178,7 @@ systemctl reload nginx
 
 ---
 
-## 排错速查索引
+## 排错速查索引 {: .sec-ts}
 
 按症状关键词检索对应故障卡。「类别」列对应本文的六个大类简称：启动、磁盘、网络、权限、服务、性能。
 
@@ -4282,7 +4284,7 @@ systemctl reload nginx
 
 ---
 
-## 附：通用排错命令速查
+## 附：通用排错命令速查 {: .sec-ts}
 
 | 场景 | 命令 |
 | --- | --- |
@@ -4305,4 +4307,6 @@ systemctl reload nginx
 | 找已删除未释放的文件 | `lsof +L1`、`lsof \| grep deleted` |
 | 逐级看路径权限 | `namei -l 完整路径` |
 | 看文件特殊属性 | `lsattr 文件` |
+
+
 {% endraw %}

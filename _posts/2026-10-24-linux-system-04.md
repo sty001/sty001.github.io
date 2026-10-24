@@ -8,9 +8,11 @@ slug: "linux-system-04"
 
 {% raw %}
 
+
+
 `/etc` 下有几个文件值得单独拎出来讲：主机名配置文件、`/etc/hosts` 本地解析、`/etc/fstab` 开机挂载、`/etc/rc.local` 开机自执行；再往后是运行级别（CentOS 6 与 7 的对应关系，面试常考）和变量、别名的配置。
 
-## 一、主机名称配置文件
+## 一、主机名称配置文件 {: .sec-expl}
 
 ### CentOS 7
 
@@ -49,14 +51,14 @@ hostname linux-node-01
 vi /etc/sysconfig/network
 ```
 
-### 补充：如何查看系统版本
+### 补充：如何查看系统版本 {: .sec-ext}
 
 ```bash
 [root@linux-node-01 ~]# cat /etc/redhat-release
 CentOS Linux release 7.5.1804 (Core)
 ```
 
-### `hostnamectl` 详解
+### `hostnamectl` 详解 {: .sec-expl}
 
 `hostnamectl` 是 systemd 提供的统一管理工具，一条命令同时改内核主机名并写入配置文件：
 
@@ -78,6 +80,7 @@ CentOS Linux release 7.5.1804 (Core)
 生产环境主机名要带信息量：机房 + 业务 + 编号（如 `bj-nginx-01`），监控、日志、报修单全靠它定位机器——默认 localhost 才是灾难现场。
 
 > **注意：** 修改主机名后，`/etc/hosts` 里最好同步加一条 `127.0.0.1 新主机名`，否则很多依赖主机名解析的服务（如 MySQL、部分监控 Agent）启动会变慢或报错，新手容易栽在这。
+{: .sec-pit}
 
 ## 二、本地解析映射文件 `/etc/hosts`
 
@@ -117,6 +120,7 @@ UUID=62100743-6f8a-4f83-a37d-e2088c4830e2 swap    swap    defaults        0 0
 上面示例里 swap 那行的挂载点是 `swap`，不是笔误——swap 分区不挂任何目录，该列写 `swap` 占位即可。
 
 > **注意：** fstab 六字段的逐列详解、UUID 的查询方法（`blkid`）以及配置后的验证方法（`mount -a`）详见《系统目录结构与挂载》篇。改 fstab 前务必备份，写错可能导致系统无法启动。
+{: .sec-pit}
 
 ## 四、开机自动加载文件 `/etc/rc.local`
 
@@ -143,6 +147,7 @@ systemctl start sshd
 2. 文件中编写的内容，一定是命令信息。
 
 > **注意：** 使用 `/etc/rc.local` 前，记得给 `/etc/rc.d/rc.local` 加上可执行权限（`chmod +x`），否则文件里的命令不会被执行。
+{: .sec-pit}
 
 还有个时机问题：rc.local 在所有常规服务启动完之后才执行。写进去的命令如果依赖某个服务（比如依赖网络），得自己保证服务已就绪；比 rc.local 更早执行的需求，就得写 unit 文件了。
 
@@ -154,10 +159,11 @@ echo "example.com" > /backup/backup.txt
 ```
 
 > **注意：** 运维人员工作的宗旨是——简单、高效、稳定。
+{: .sec-pit}
 
 > **补充：** 在 CentOS 7 中 `/etc/rc.local` 由 systemd 的 `rc-local.service` 负责执行，它内部就是一个普通的 unit 文件。如果 `rc-local.service` 启动失败，用 `systemctl status rc-local` 查看原因。现代规范更推荐为每个自启任务编写独立的 systemd unit，而不是把所有命令堆在 rc.local 里——这样每个服务可以单独管理（start / stop / 开机自启 / 看日志），互不影响。
 
-## 五、系统运行级别（重点，面试题）
+## 五、系统运行级别（重点，面试题） {: .sec-iv}
 
 类比 Windows：系统出现故障时会进入安全模式。Linux 启动时哪些服务程序、网络、安全服务会启动，由**运行级别**决定。
 
@@ -243,18 +249,19 @@ rescue.target
 3. 如何修改设置运行级别。
 
 > **注意：** CentOS 7 起，数字运行级别只是 systemd 的兼容入口：`init 3` 实际等价于 `systemctl isolate multi-user.target`，`runlevel` 命令读的也是 systemd 记录的状态。学习重点是 target 概念本身，`/etc/inittab` 在 CentOS 7 中已不再生效。另外 2/3/4 级在 CentOS 7 中全部映射到 `multi-user.target`，这是 systemd 的简化设计，并非遗漏。
+{: .sec-pit}
 
 `/etc/inittab` 当年管的事不少：默认级别、ctrlaltdel 按键行为、电源状态响应；systemd 把这些职责全部拆散到各 target 与独立配置里，才有了"inittab 废弃"的说法。
 
-### 辨析：runlevel、init 与 systemctl get-default {: .sec-bianxi}
+### 辨析：runlevel、init 与 systemctl get-default
 
 三个命令看的是同一个体系，但不是一回事：`runlevel` 报告"上一级别 当前级别"，`N` 表示开机后没切过；`init N` 是 SysV 时代的切换命令，CentOS 7 里被 systemd 转译成 `systemctl isolate`；`systemctl get-default` 看的是开机默认进入的 target，跟当前状态是两个概念。面试时能说清"当前状态"与"默认目标"的区别，就赢过一多半人。
 
-## 六、用户身份相关文件（知识卡片）
+## 六、用户身份相关文件（知识卡片） {: .sec-know}
 
 用户信息分散在 `/etc/passwd`、`/etc/shadow`、`/etc/group` 三个文件中，理解这三个文件是用户管理的基础（详细操作见《用户管理》篇）。
 
-### `/etc/passwd` 逐字段详解
+### `/etc/passwd` 逐字段详解 {: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# head -3 /etc/passwd
@@ -274,7 +281,7 @@ bin:x:1:1:bin:/bin:/sbin/nologin
 
 登录 Shell 那一行多说一句：给 MySQL、nginx 这类服务账号配 `/sbin/nologin` 是标准做法——账号能跑服务却登不进系统，攻击面直接收窄。反过来，要给人用的账号千万别配成 nologin，否则 ssh 连上就掉线。
 
-### `/etc/shadow` 逐字段详解
+### `/etc/shadow` 逐字段详解 {: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# head -2 /etc/shadow
@@ -294,12 +301,13 @@ root:$6$xyz123...:18000:0:99999:7:::
 | 保留字段 | 预留未用 | — |
 
 > **注意：** `/etc/shadow` 只有 root 能读，因为里面是密码哈希。`!` 开头的密码表示账号被 `passwd -l` 或 `usermod -L` 锁定；忘记 root 密码可以通过单用户模式或 `passwd` 重置。密码字段的格式是 `$算法$盐值$哈希`，如 `$6$` 为 SHA-512、`$1$` 为 MD5。
+{: .sec-pit}
 
 shadow 里的密码策略不必手改文件：`chage -l 用户名` 查看、`chage -M 90 用户名` 设置 90 天有效期、`chage -d 0 用户名` 强制下次登录改密。批量管密码策略，比 vi 改文件快得多也安全得多。
 
 密码哈希为什么不直接放 passwd？历史原因是早年确实放在 passwd 里，后来发现 passwd 必须全局可读（很多程序要查用户信息），哈希跟着暴露，于是把密码字段挪进只有 root 可读的 shadow——passwd 里的 `x` 占位符就是那次分离留下的痕迹。
 
-### `/etc/group` 逐字段详解
+### `/etc/group` 逐字段详解 {: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# tail -3 /etc/group
@@ -318,10 +326,11 @@ devgroup:x:1001:testuser,alice
 把用户加进组不建议手改 `/etc/group`：用 `gpasswd -a 用户 组名` 添加、`gpasswd -d 用户 组名` 移除。手改文件一个逗号写错，整个成员列表就坏了。
 
 > **注意：** `wheel` 组有特殊意义——`su` 命令和 sudo 配置（`%wheel ALL=(ALL) ALL`）默认信任该组成员，把普通用户加进 wheel 组等价于授予完整 root 权限，操作前务必确认。
+{: .sec-pit}
 
-## 七、变量与别名配置文件 `/etc/profile`
+## 七、变量与别名配置文件 `/etc/profile` {: .sec-expl}
 
-### 什么是变量
+### 什么是变量 {: .sec-know}
 
 两种理解方式：
 
@@ -345,7 +354,7 @@ devgroup:x:1001:testuser,alice
 
 取变量时单引号与双引号行为不同：双引号会展开变量、单引号原样输出——`echo '$X'` 打出来的是字面 `$X`。新手容易栽在这。
 
-### 脚本的概念
+### 脚本的概念 {: .sec-know}
 
 1. 将多个命令整合在一个文件；
 2. 通过执行加载一个文件可以完成多件事。
@@ -375,7 +384,7 @@ source /etc/profile
 - **普通变量**：需要人为设置；
 - **环境变量**：系统默认就有的变量。
 
-### 原理解析：环境变量的加载顺序 {: .sec-why}
+### 原理解析：环境变量的加载顺序 {: .sec-know}
 
 不同的 shell 场景加载的配置文件完全不同，这是"改了 profile 不生效"的根源所在。
 
@@ -388,8 +397,9 @@ profile.d 的好处正是"一个软件一个文件"：装卸干净、互不干�
 5. **非交互 shell**（执行脚本）不加载上述任何文件，脚本开头缺什么变量就自己 export。
 
 > **注意：** 由此得出两条配置规范：环境变量（如 `PATH`、`LANG`）写在 `/etc/profile` 或 `/etc/profile.d/` 下；别名与函数写在 `~/.bashrc`（用户级）或 `/etc/bashrc`（全局）。改完后执行 `source 文件名` 立即在当前终端生效；`echo $变量名` 验证。
+{: .sec-pit}
 
-### 环境变量 PATH 的作用
+### 环境变量 PATH 的作用 {: .sec-expl}
 
 先说清普通变量和环境变量的差别，差别在"能不能被子进程继承"：`X=1234` 是普通变量，只活在当前 shell；`export X=1234` 导出后成为环境变量，fork 出的子进程（脚本、子 shell）都能读到。这也是脚本里读不到父 shell 变量的原因——父 shell 忘了 export。
 
@@ -432,10 +442,11 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/data
 ```
 
 > **注意：** PATH 决定了敲命令时系统在哪些目录里查找可执行文件。命令明明装了却提示 `command not found`，多半是 PATH 配置有问题——说白了，PATH 就是 shell 找命令的购物清单，清单上没有的店它不去。
+{: .sec-pit}
 
 > **补充：** 修改 PATH 时建议用追加而不是覆盖，例如 `export PATH=$PATH:/data`——直接写全量路径容易漏掉原有目录，导致 `ls`、`vi` 都找不到，整个终端瘫痪。PATH 中各目录用冒号分隔，按从左到右的顺序查找，同名命令只有第一个会被执行。
 
-### PS1 提示符变量详解
+### PS1 提示符变量详解 {: .sec-warn}
 
 提示符内容由 `PS1` 环境变量控制，默认值为：
 
@@ -464,8 +475,9 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/data
 | `\[` 与 `\]` | 包裹不可打印字符（如颜色控制序列），防止光标位置错乱 |
 
 > **注意：** `\$`（美元符号）与 `\#`（井号）含义不同：`\$` 按用户身份智能显示 `#` 或 `$`，写死在脚本外的提示符里最省心；`\#` 纯粹是命令计数器。彩色提示符的写法是 `\[\e[32;1m\]内容\[\e[0m\]`，其中 `\[` 和 `\]` 必须成对出现，包裹住颜色控制序列，否则 shell 计算行长会出错，表现为长命令折行混乱。
+{: .sec-pit}
 
-### history 历史命令机制
+### history 历史命令机制 {: .sec-know}
 
 ```bash
 [root@linux-node1 ~]# history            # 查看历史命令，带编号
@@ -503,8 +515,9 @@ export HISTCONTROL=ignoredups            # 连续重复的命令只记一次
 召回历史命令还有一个比 `!n` 更顺手的方式：`Ctrl + r` 输入关键字实时匹配最近命令，回车执行、按方向键取出编辑；匹配不到继续按 `Ctrl + r` 跳上一条。配合 `HISTTIMEFORMAT` 用，翻旧账很快。
 
 > **注意：** 历史命令是双刃剑：好处是 `!n` 快速复用、`Ctrl + r` 搜索；风险是**凡是敲过的密码都会明文留在 `~/.bash_history` 里**。生产规范中，涉及密码的命令要么用 `ignorespace` + 前置空格屏蔽，要么定期清理。另外未正常退出（直接关终端）时，最后若干条命令不会写入文件。
+{: .sec-pit}
 
-### 系统别名的概念
+### 系统别名的概念 {: .sec-know}
 
 ```bash
 [root@linux-node1 ~]# ls -l /etc/hosts
@@ -567,15 +580,15 @@ rm command is weixian,not use -rf /data/
 1. 永久设置变量信息；
 2. 设置别名信息。
 
-### 辨析：临时别名与永久别名 {: .sec-bianxi}
+### 辨析：临时别名与永久别名
 
 命令行里敲 `alias catnet='...'` 只在当前会话有效，关掉终端就没了——适合临时验证。想永久生效必须写进配置文件：用户级写 `~/.bashrc`，全局写 `/etc/bashrc`（别名按惯例放 bashrc，不放 profile）。写完 `source` 一下立即生效，不用重新登录。还有一点容易忽略：脚本里别名默认全部失效，因为脚本是"非交互 shell"，根本不加载这些文件——脚本里要写完整命令。
 
-### 全局配置与用户配置谁优先
+### 全局配置与用户配置谁优先 {: .sec-expl}
 
 配置加载顺序是"先全局、后用户"，后加载的覆盖先加载的——`~/.bash_profile` 里的同名变量会盖掉 `/etc/profile` 的设置。团队统一环境写全局，个人偏好写用户级；排查"我的变量怎么跟别人不一样"时，先查用户级文件里有没有覆盖。
 
-## 八、`/etc/bashrc` 与相关配置文件的区别
+## 八、`/etc/bashrc` 与相关配置文件的区别 {: .sec-expl}
 
 | 配置文件 | 加载时机 | 适用场景 |
 | --- | --- | --- |
@@ -587,8 +600,9 @@ rm command is weixian,not use -rf /data/
 | `/etc/motd` | 登录成功后展示 | 登录后的提示信息 |
 
 > **注意：** 两份文件开头的英文注释本身就写明了分工：`/etc/profile` 注释是 "System wide environment and startup programs, for login setup"（登录时设置全局环境），`/etc/bashrc` 注释是 "Functions and aliases go in /etc/bashrc"（函数和别名放这里）。实践建议：环境变量放 profile 系，别名函数放 bashrc 系，不要混着写。
+{: .sec-pit}
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -600,7 +614,7 @@ rm command is weixian,not use -rf /data/
 | fstab 错误导致无法开机 | 开机挂载失败陷入 emergency | 开机看 emergency 提示 | 用 `mount -o remount,rw /` 后修正 fstab |
 | hostnamectl 改了名服务报错 | hosts 里没有新主机名解析 | `grep 主机名 /etc/hosts` | 补一条 `127.0.0.1 新主机名` |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -612,8 +626,9 @@ rm command is weixian,not use -rf /data/
 | `/etc/rc.local` 堆命令 | 独立的 systemd unit 文件 | 每个服务可独立管理与查日志 |
 
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 等系统上本篇所有文件路径与命令行为一致；`runlevel`、`init N` 这些旧命令仍被保留以兼容旧脚本，但内部全部转为对 target 的操作。
+{: .sec-pit}
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 **基础作业**
 
@@ -626,7 +641,7 @@ rm command is weixian,not use -rf /data/
 
 1. 安装部署一个 CentOS 6 的系统。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 主机名：CentOS 7 用 `/etc/hostname`，`hostnamectl set-hostname` 可临时 + 永久同时生效；CentOS 6 用 `/etc/sysconfig/network`。
 2. `/etc/hosts` 用于本地建立 IP 与主机名的对应关系，优先级高于 DNS，是排查域名解析问题的第一站。
@@ -637,7 +652,7 @@ rm command is weixian,not use -rf /data/
 7. PATH 决定命令搜索路径，修改用追加写法 `PATH=$PATH:新目录`；别名可让长命令变短、让危险命令变安全，失效三法：`unalias`、反斜杠、绝对路径。
 8. `PS1` 控制提示符，`\u` `\h` `\W` 分别代表用户、主机、目录，颜色用 `\[\e[F;Bm\] ... \[\e[0m\]` 包裹；`history` 机制配合 `HISTTIMEFORMAT` 可以给历史命令加时间戳，但注意密码会留在历史文件里。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. ssh 登录一台机器后执行 `alias ll='ls -l'`，再新开一个终端窗口，`ll` 还有效果吗？把这条别名写进哪个文件能保证每次登录都生效？
 2. 登录 shell 和非登录交互 shell 分别会加载哪些配置文件？
@@ -659,4 +674,6 @@ rm command is weixian,not use -rf /data/
 - 系统目录结构与挂载
 - 软件安装与硬件信息查看
 - 附录-命令速查表
+
+
 {% endraw %}

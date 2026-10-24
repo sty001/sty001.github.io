@@ -8,9 +8,11 @@ slug: "linux-homework-13"
 
 {% raw %}
 
+
+
 课程第 13 天（文件属性知识）的作业分三段：作业题目（tail 参数 `-f`/`-F`）、基础作业（总结 find 命令、总结文件属性信息）、扩展作业（随机字符信息、批量创建运维账号并设随机密码）。全部做完：tail 给结论，完整真跑演示指向 day12；find 给速查表并按名/类型/时间/大小/`-exec` 真跑；文件属性拆 `ls -l` 十段用 `stat` 验证；扩展部分真跑 3 种随机字符生成方法，配批量建账号脚本。
 
-## 实操环境说明
+## 实操环境说明 {: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -19,7 +21,7 @@ slug: "linux-homework-13"
 
 实操目录统一用 `/tmp/hw` 下的子目录。本文 find、ls、stat、随机字符部分为 A 级真跑；批量创建用户涉及 `useradd` 等系统命令，为 B 级。输出中的本地用户名已按脱敏要求替换为 `user`；Git Bash 环境与 CentOS 7 的固有差异（无 SELinux 标记点、属组名显示为数字、inode 数值巨大）会在对应位置说明，属正常。
 
-## 题目总览
+## 题目总览 {: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -29,7 +31,7 @@ slug: "linux-homework-13"
 | 题 4 | 扩展：如何产生随机字符信息 | A 级（3 种方法真跑） |
 | 题 5 | 扩展：批量创建 10 个运维账号并设随机密码 | B 级（脚本 + 预期输出） |
 
-## 题 1：tail 命令参数 -f 或者 -F（作业题目回顾）
+## 题 1：tail 命令参数 -f 或者 -F（作业题目回顾） {: .sec-prac}
 
 **考察点**：`tail -f` 与 `tail -F` 的跟随对象差异，以及日志场景的选择。
 
@@ -44,13 +46,13 @@ slug: "linux-homework-13"
 
 > **参见**：tail -f 与 tail -F 的区别
 
-## 题 2：总结 find 命令
+## 题 2：总结 find 命令 {: .sec-sum}
 
 **考察点**：find 的查找条件（按名、按类型、按时间、按大小）与动作（`-exec`）的组合用法，以及"查找条件之间默认是与关系"这一核心模型。
 
 **实现思路**：先给参数速查表建立全貌，再在 `/tmp/hw/day13/data` 下构造一棵包含不同后缀、不同类型、不同修改时间、不同大小的目录树，逐组真跑验证，最后用 `-exec` 演示对查找结果的批量处理。
 
-### 步骤 1：构造测试目录树（已实操）
+### 步骤 1：构造测试目录树（已实操） {: .sec-ver}
 
 ```bash
 mkdir -p /tmp/hw/day13/data/{logs,conf,scripts}
@@ -98,7 +100,7 @@ total 1
 
 注意 `old.log` 的时间是 4 天前、`error.log` 是 10 分钟前，这是后面时间类查找的对照基准；`big1.bin`（100KB）与 `big2.bin`（2MB）是大小类查找的对照基准。
 
-### 步骤 2：按文件名查找（已实操）
+### 步骤 2：按文件名查找（已实操） {: .sec-prac}
 
 ```bash
 find data -name "*.log"
@@ -113,7 +115,7 @@ data/logs/error.log
 data/logs/old.log
 ```
 
-### 步骤 3：按文件类型查找（已实操）
+### 步骤 3：按文件类型查找（已实操） {: .sec-prac}
 
 ```bash
 find data -type f
@@ -140,7 +142,7 @@ data/logs
 data/scripts
 ```
 
-### 步骤 4：按时间查找（已实操）
+### 步骤 4：按时间查找（已实操） {: .sec-prac}
 
 ```bash
 find data -type f -mtime +2
@@ -167,7 +169,7 @@ data/scripts/backup.sh
 
 `-mtime +30` 这类写法有个语义坑，单独说：find 把文件年龄按 24 小时取整成整天数，`+30` 的意思是「取整后的天数大于 30」，实际命中修改时间超过 31 天前的文件；`-mtime 30` 命中的是 30~31 天前；`-mtime -30` 才是 30 天以内。所以「删 30 天前的日志」用 `+30` 会少删一天以内的量，要精确就用 `+29` 或直接 `-mmin`。分钟级场景干脆用 `-mmin`，别跟取整规则较劲。
 
-### 步骤 5：按大小查找（已实操）
+### 步骤 5：按大小查找（已实操） {: .sec-prac}
 
 ```bash
 find data -type f -size +1M
@@ -192,7 +194,7 @@ data/scripts/backup.sh
 
 `+1M` 只命中 2MB 的 `big2.bin`，`-200k` 命中其余 8 个小文件，两组结果正好互补。
 
-### 步骤 6：-exec 对结果批量处理（已实操）
+### 步骤 6：-exec 对结果批量处理（已实操） {: .sec-prac}
 
 ```bash
 find data -name "*.log" -exec wc -l {} +
@@ -221,7 +223,7 @@ old.log
 
 注意第二组：`my.cnf` 里明明也有 `port=3306`，却没有被 `grep` 到——因为 `-name "*.conf"` 匹配不到 `my.cnf`（它的后缀是 `.cnf`）。find 的条件是按顺序与文件名逐条匹配的，模式写错就静默漏掉结果。
 
-### find 参数速查表
+### find 参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 示例 |
 | --- | --- | --- |
@@ -254,13 +256,13 @@ old.log
 
 > **参见**：文件相关扩展命令 find、文件属性实战
 
-## 题 3：总结文件属性信息
+## 题 3：总结文件属性信息 {: .sec-sum}
 
 **考察点**：`ls -l` 输出每一列的含义、权限位对文件与目录的不同语义、`stat` 查看完整属性与三种时间（atime/mtime/ctime）。
 
 **实现思路**：先 `ls -li` 真跑一行输出，按十段结构逐段拆，`stat` 验证各字段，最后用一次读操作真跑看 atime 变化。
 
-### 步骤 1：ls -li 真跑一行输出（已实操）
+### 步骤 1：ls -li 真跑一行输出（已实操） {: .sec-prac}
 
 ```bash
 cd /tmp/hw/day13
@@ -312,7 +314,7 @@ $ ls -lid data data/logs
 2. 访问 `/a/b/c.txt` 需要路径上每一级目录都有 `x`，缺一级就 `Permission denied`；
 3. 目录只有 `r` 没有 `x`：能列出文件名但看不到属性详情；只有 `x` 没有 `r`：进得去却列不出内容。
 
-### 步骤 2：stat 查看完整属性（已实操）
+### 步骤 2：stat 查看完整属性（已实操） {: .sec-prac}
 
 ```bash
 stat data/logs/access.log
@@ -338,7 +340,7 @@ data/logs/access.log 类型:regular file 权限:644 大小:18 inode:844424930223
 
 `stat` 一次性给出全部属性：`Access: (0644/-rw-r--r--)` 同时显示八进制与符号形式，方便和 `chmod` 的八进制写法互相对照。
 
-### 步骤 3：三种时间的区别（已实操）
+### 步骤 3：三种时间的区别（已实操） {: .sec-prac}
 
 ```bash
 stat -c "atime:%x mtime:%y ctime:%z" data/logs/access.log
@@ -367,11 +369,11 @@ atime:2026-10-24 03:37:33.254945200 +0800 mtime:2026-10-24 03:36:49.818403700 +0
 | mtime | modify time | 文件内容被修改时 | `ls -l` 默认显示的时间，`find -mtime` 的依据 |
 | ctime | change time | inode 信息变化时（改名、改权限、改属主） | 追踪权限篡改，普通用户无法伪造 |
 
-### 辨析：mtime 与 ctime {: .sec-bianxi}
+### 辨析：mtime 与 ctime
 
 `mtime` 是内容变了才动，`ctime` 是 inode 任何变动都动——改内容必然顺带改 inode 里的 size，所以改 mtime 的同时 ctime 一定跟着变，反过来不成立。`touch -d` 能把 atime/mtime 改到任意过去的时间点，但 ctime 永远是当前时刻，普通手段改不了（内核维护的）。排查入侵痕迹看 ctime 的原因就在这：攻击者能伪造 `ls` 看到的时间，伪造不了 ctime。
 
-### 步骤 4：chmod 修改权限（预期输出，CentOS 7）
+### 步骤 4：chmod 修改权限（预期输出，CentOS 7） {: .sec-prac}
 
 本环境（Git Bash on Windows）的 chmod 只能体现执行位差异、无法体现任意权限组合（实测 `chmod 600` 后 `stat -c %a` 仍显示 644），因此给出 CentOS 7 标准演示：
 
@@ -410,13 +412,13 @@ $ chmod 755 /tmp/hw/day13/perm.txt && stat -c "%a %A" /tmp/hw/day13/perm.txt
 
 > **参见**：ls -l 输出十段逐段拆解、文件属性进阶
 
-## 题 4（扩展）：如何产生随机字符信息
+## 题 4（扩展）：如何产生随机字符信息 {: .sec-ext}
 
 **考察点**：Linux 随机数的来源（`/dev/urandom` 内核随机数池），以及用 `tr`、`md5sum`、`openssl` 三种工具把随机字节转成可用随机字符串的方法。
 
 **实现思路**：先讲清 `/dev/urandom` 的原理，再分别真跑三种方法生成随机密码，最后对比各方法的特点与适用场景。
 
-### 原理讲解：/dev/urandom 是什么
+### 原理讲解：/dev/urandom 是什么 {: .sec-know}
 
 `/dev/random` 与 `/dev/urandom` 是内核暴露的随机数设备文件，数据来源是硬件噪声（中断时序、键盘鼠标时序等）熵池：
 
@@ -425,7 +427,7 @@ $ chmod 755 /tmp/hw/day13/perm.txt && stat -c "%a %A" /tmp/hw/day13/perm.txt
 
 设备文件读出的是二进制随机字节，要变成"看得见的字符串"，需要过滤或编码——这正是 `tr`、`md5sum`、`openssl` 的分工。
 
-### 方法 1：/dev/urandom + tr 过滤（已实操）
+### 方法 1：/dev/urandom + tr 过滤（已实操） {: .sec-prac}
 
 ```bash
 tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 16
@@ -440,7 +442,7 @@ Q6Z93v6MiH6IUWb2
 
 `tr -dc 'a-zA-Z0-9'` 用补集删除所有"非字母数字"字节，只保留随机流里的字母和数字；`head -c 16` 截取前 16 个字符。这是 day12 题 2 中 `-dc` 补集用法的实战场景。每次运行结果都不同，可连续跑两次验证。
 
-### 方法 2：/dev/urandom + md5sum 摘要（已实操）
+### 方法 2：/dev/urandom + md5sum 摘要（已实操） {: .sec-prac}
 
 ```bash
 date +%s%N | md5sum | cut -c1-16
@@ -455,7 +457,7 @@ cc88ed6f25437e02
 
 `date +%s%N` 取当前时间戳（秒 + 纳秒）作为种子，`md5sum` 算出 32 位十六进制摘要，`cut -c1-16` 取前 16 位。优点是不依赖 `/dev/urandom` 的读取权限，任何系统都有 `md5sum`；缺点是熵源只是时间，适合生成"够用的随机标识"，高安全场景建议换方法 1。
 
-### 方法 3：openssl rand（已实操）
+### 方法 3：openssl rand（已实操） {: .sec-prac}
 
 ```bash
 openssl rand -base64 12
@@ -493,7 +495,7 @@ $ openssl rand -hex 8
 
 > **参见**：用 /dev/urandom 生成随机密码
 
-## 题 5（扩展）：批量创建 10 个运维账号并设置随机密码
+## 题 5（扩展）：批量创建 10 个运维账号并设置随机密码 {: .sec-ext}
 
 **考察点**：shell 编程三要素的实际运用——如何生成随机信息（题 4 的成果）、变量设置、循环语句，最终落地为批量创建用户的自动化脚本。
 
@@ -531,7 +533,7 @@ ops09 <your-password>
 ops10 <your-password>
 ```
 
-### 验证方法（预期输出，CentOS 7）
+### 验证方法（预期输出，CentOS 7） {: .sec-ver}
 
 ```bash
 id ops01 ops05 ops10                  # 三个账号都存在
@@ -575,7 +577,7 @@ $ wc -l < /tmp/hw/user_pass.txt
 
 > **参见**：阶段回顾：用户信息的批量管理、用户管理
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 这天东西杂，挑主干记：
 
@@ -585,4 +587,6 @@ $ wc -l < /tmp/hw/user_pass.txt
 4. `stat` 一次看全属性，三种时间分工：atime 读时变、mtime 内容变、ctime inode 信息变（改名/改权限），排查入侵动过哪些文件看 ctime。
 5. 随机字符三法：`tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c N`（字符集干净）、`date +%s%N | md5sum | cut`（通用性最好）、`openssl rand -base64 N`（命令最短）；日常一律用 `/dev/urandom`，别用会阻塞的 `/dev/random`。
 6. 批量建账号 = 随机密码 + 变量 + for 循环三要素合体：`for i in {01..10}; do useradd ops$i; pass=$(...); echo "ops$i:$pass" | chpasswd; done`，跑完用 `id`、`grep -c`、行数核对三关验证，密码记录文件用完即删。
+
+
 {% endraw %}

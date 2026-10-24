@@ -8,9 +8,11 @@ slug: "linux-basics-03"
 
 {% raw %}
 
+
+
 装系统是运维的第一个动手环节。这一章完整走一遍 CentOS 7 的安装：引导界面、网卡命名、网络配置、三种分区方案、安全与时区、软件选择、创建用户，装完再做网络检查与远程连接；后面补上安装前规划、Rocky 9 安装差异、Kickstart 批量装机、安装后初始化和救援模式重置密码这些企业里用得上的动作。
 
-## 原理解析：安装前先规划 {: .sec-why}
+## 原理解析：安装前先规划 {: .sec-know}
 
 装系统前的规划决定后续运维的便利性，建议按以下清单逐项确认：
 
@@ -30,8 +32,9 @@ IP 规划表示例（内网用私有地址段，主机名按用途命名）：
 | backup | 10.0.0.15 | 10.0.0.1 | 备份服务器 |
 
 > **注意：** 内网地址使用 10.0.0.0/8、172.16.0.0/12、192.168.0.0/16 三个私有地址段；生产环境网关、DNS 按机房实际规划填写，并同步登记到资产表。
+{: .sec-pit}
 
-## 系统架构：先选对镜像
+## 系统架构：先选对镜像 {: .sec-expl}
 
 不同架构识别内存的能力不同：
 
@@ -41,10 +44,11 @@ IP 规划表示例（内网用私有地址段，主机名按用途命名）：
 | i386 | 32 位 | 2 的 32 次方 == 4G，实际可用约 3.2G ~ 3.5G |
 
 > **注意：** 现代服务器基本都是 x86_64（或 ARM 的 aarch64），32 位系统已淘汰，内存超过 4G 时必须用 64 位系统。
+{: .sec-pit}
 
 ## 系统的安装部署过程
 
-### 第一个历程：进入引导界面进行配置
+### 第一个历程：进入引导界面进行配置 {: .sec-expl}
 
 引导项说明：
 
@@ -56,7 +60,7 @@ IP 规划表示例（内网用私有地址段，主机名按用途命名）：
 
 排错模式里除了救援，还有 memtest 内存检测——服务器频繁莫名重启时先怀疑内存，跑一轮 memtest 比瞎换硬件省事得多。
 
-#### 补充：CentOS 7 网卡名称的调整
+#### 补充：CentOS 7 网卡名称的调整 {: .sec-ext}
 
 - CentOS 6 默认网卡名称：`eth0`、`eth1`
 - CentOS 7 默认网卡名称：`ens33`、`ens34`
@@ -72,21 +76,22 @@ net.ifnames=0 biosdevname=0
 内核参数（kernel parameter）是引导时传给内核的选项，网卡命名只是其中之一。常见的还有 `nomodeset`（装系统花屏时加上）、`rescue`（直接进救援环境）。记住一点：Tab 键编辑的参数只对本次引导生效，想长期保留必须写进 grub 配置。
 
 > **注意：** 从虚拟主机返回到 Windows 系统的方法是按 `Ctrl + Alt`，否则鼠标会被虚拟机"吃掉"。
+{: .sec-pit}
 
 ### 第二个历程：设置安装语言
 
 选择安装过程使用的语言（如简体中文 / English）。
 
-### 第三个历程：对系统安装过程进行配置
+### 第三个历程：对系统安装过程进行配置 {: .sec-expl}
 
-#### 1. 系统网络的配置
+#### 1. 系统网络的配置 {: .sec-expl}
 
 进入 `SYSTEM` → `Network & Hostname`：
 
 - `Configure` → 通用配置：**激活网卡功能**，并设置 IP 地址；
 - 同时设置系统主机名。
 
-#### 2. 系统分区的配置
+#### 2. 系统分区的配置 {: .sec-expl}
 
 进入 `SYSTEM` → `Installation Destination` 进行分区。Linux 常见三种分区方案：
 
@@ -117,16 +122,17 @@ net.ifnames=0 biosdevname=0
 | — | 剩余空间**先不分**，后续按需再分配 |
 
 > **注意：** 灵活分区方案把剩余空间预留下来，后期扩容、新建挂载点时更自由，生产环境中很常见。
+{: .sec-pit}
 
 swap 为什么封顶 8G？内存已经够大时，再多的 swap 只是心理安慰——真用上几十 G 的 swap，机器早就慢成幻灯片了，它是应急垫子，不是内存扩容。`/boot` 分 200M 够不够？这里只放内核镜像和 initramfs，系统升级会同时保留新旧两三个内核，200M 略紧，分 500M 更稳妥。
 
 > **原理解析：** 为什么要单独分 `/boot` 和 `/data`？`/boot` 独立出来，系统重装或内核损坏时不影响其他分区，且老版引导器对分区位置有要求；`/data` 独立出来，重装系统时数据盘可以直接保留，也可配合 LVM 在线扩容，业务数据与系统文件互不干扰。空间紧张的学习环境也可以不分区，直接全部给 `/`。
 
-### 辨析：标准分区与 LVM {: .sec-bianxi}
+### 辨析：标准分区与 LVM {: .sec-best}
 
 上面三种方案说的都是标准分区：容量在装系统时一次分死，后期想扩容只能靠工具折腾。LVM（逻辑卷管理）多加了一层抽象——物理磁盘先组成卷组（VG），再从卷组里切出逻辑卷（LV）给挂载点用。说白了就是把"分区"和"磁盘"解耦：磁盘可以随时加进卷组，分区可以在线扩容，`/` 满了从 VG 里划一块过去，不用停机不用搬数据。Rocky 9 默认就装成 LVM。代价是多一层概念，排障多一步。生产环境容量会涨的机器（数据库、日志机），一开始就用 LVM。
 
-#### 3. 系统安全的配置（本阶段关闭）
+#### 3. 系统安全的配置（本阶段关闭） {: .sec-expl}
 
 | 配置项 | 说明 |
 | --- | --- |
@@ -144,8 +150,10 @@ swap 为什么封顶 8G？内存已经够大时，再多的 swap 只是心理安
 进入 `SOFTWARE` → `Software Selection`，选择**最小化安装**（对应 1、2、3、6 这几个环境包）。
 
 > **注意：** 生产环境同样推荐最小化安装：软件包越少，攻击面越小、补丁维护量越小、系统资源占用越低。需要什么服务再单独装，是运维的基本原则。
+{: .sec-pit}
 
 > **注意：** UEFI 机器装系统时分区方案多一项：引导要用 EFI 系统分区（ESP，通常 500M、FAT 格式），替代传统 BIOS 下 `/boot` 的引导角色；装 2 TB 以上的大系统盘则必须 UEFI + GPT。新手容易栽在这：照着 BIOS 机器的分区方案直接套，装完引导不起来。
+{: .sec-pit}
 
 ### 第四个历程：创建系统用户
 
@@ -154,7 +162,7 @@ swap 为什么封顶 8G？内存已经够大时，再多的 swap 只是心理安
 
 生产里通常还会禁用 root 直接 SSH 登录（`PermitRootLogin no`），所有人用普通用户 + sudo 干活——审计日志里能看出"谁"做了操作，全是 root 就查无可查。
 
-#### 补充：运维工作流程
+#### 补充：运维工作流程 {: .sec-ext}
 
 1. 准备 / 检查好环境；
 2. 进行操作前的备份（给自己留退路）；
@@ -216,10 +224,11 @@ reboot
 ```
 
 > **注意：** Kickstart 文件中写明文密码等于泄露口令，生产环境应使用 `rootpw --iscrypted` 加密码哈希；本示例统一用 `<your-password>` 占位。`inst.ks` 支持 http、https、ftp、nfs 以及本地路径（如 `inst.ks=cdrom:/ks.cfg`）。生成 ks.cfg 还有一个捷径：装完一台机器后，root 家目录下的 `anaconda-ks.cfg` 就是本次安装的应答记录，可改作模板复用。
+{: .sec-pit}
 
 批量装机的完整链路一般三层：DHCP 分地址 → PXE 网络引导 → Kickstart 应答。机器上架插网线通电就能自己装完，机房里不用搬键盘显示器——几十台服务器同时上架时，这是唯一现实的做法。ks.cfg 里还能写 `%post` 段，装完系统自动执行初始化脚本（改 sshd 配置、装基础软件包），装机和初始化一口气完成。
 
-## 网络检查确认工作
+## 网络检查确认工作 {: .sec-ver}
 
 1. 确认网卡配置是否正确；
 2. 确认外网连接正常。
@@ -229,6 +238,7 @@ ping 10.0.0.200    # Linux 下的 ping 会一直持续，需要用 Ctrl + C 停�
 ```
 
 > **注意：** Linux 系统中的 `ping` 是一个长期停不下来的过程，不像 Windows 默认只发 4 个包。
+{: .sec-pit}
 
 ping 不通外网时按顺序查：先 ping 网关，再 ping 公网 IP（如 223.5.5.5），最后 ping 域名。网关不通查 IP 配置，IP 通域名不通查 DNS——分层排查，一次定位一层，别一上来就乱改配置。
 
@@ -262,6 +272,7 @@ systemctl restart network
 ```
 
 > **注意：** Linux 系统执行命令的特点——一个命令执行完，没有消息就是最好的结果（无输出即成功）。
+{: .sec-pit}
 
 > **现代环境补充：** Rocky 9 等新系统默认由 NetworkManager 管理网络，改完配置除了 `systemctl restart NetworkManager`，也可以用 `nmcli con reload` 让配置重新加载。排障时用 `nmcli dev status` 查看网卡连接状态，用 `ip addr`、`ip route` 核对地址与路由。
 
@@ -283,11 +294,11 @@ systemctl restart network
 
 顺带说一句改端口这件事：把 SSH 默认端口 22 改掉属于"防扫描"级别的加固，挡得住脚本小子挡不住定向攻击，真正的安全靠密钥登录 + sudo 审计。端口改不改按公司规范来，别当成主要防线。
 
-## 安装后初始化配置
+## 安装后初始化配置 {: .sec-expl}
 
 装好系统只是开始，下面几项初始化是企业装机的标准动作。
 
-### 网卡配置文件逐行详解
+### 网卡配置文件逐行详解 {: .sec-expl}
 
 CentOS 7 的网卡配置在 `/etc/sysconfig/network-scripts/` 目录下，每个网卡一个 `ifcfg-` 开头的文件，例如 `/etc/sysconfig/network-scripts/ifcfg-ens33`：
 
@@ -335,7 +346,7 @@ NM_CONTROLLED=yes
 10.0.0.11   web01
 ```
 
-### DNS 配置
+### DNS 配置 {: .sec-expl}
 
 Linux 的 DNS 解析配置在 `/etc/resolv.conf`：
 
@@ -349,8 +360,9 @@ search example.com
 - `search`：解析不完整域名时自动补全的域后缀。
 
 > **注意：** 如果使用 NetworkManager（或 DHCP），`/etc/resolv.conf` 可能被自动覆盖，通过修改网卡 ifcfg 文件中的 `DNS1`/`DNS2` 或 `nmcli` 修改连接配置才是长久之计。直接编辑 `/etc/resolv.conf` 可能重启后失效。
+{: .sec-pit}
 
-## VMware 虚拟机安装注意事项
+## VMware 虚拟机安装注意事项 {: .sec-warn}
 
 | 注意事项 | 说明 |
 | --- | --- |
@@ -397,10 +409,11 @@ touch /.autorelabel
 8. 重启后用新密码登录验证。
 
 > **注意：** 整个过程是本地物理操作，从安全设计上就假定"能摸到机器"即拥有最高权限。若服务器托管在机房，需要联系机房人员协助或使用远程管理卡（iDRAC/iLO）重定向完成。RHEL 8 / Rocky 9 的等价做法是在启动菜单按 `e`，找到以 `linux` 开头的行，把 `ro` 改成 `rw init=/bin/bash`，按 `Ctrl + x` 进入单用户 shell，执行 `passwd root` 与 `touch /.autorelabel` 后 `exec /sbin/init` 重启。
+{: .sec-pit}
 
 补一句 `/.autorelabel` 的原理：SELinux 给每个文件都打了安全上下文标签，救援模式改的 `/etc/shadow` 没带正确标签，下次登录就会因为上下文不符被拒。`touch /.autorelabel` 是告诉系统下次开机把全盘标签重打一遍——这就是首次启动明显变慢的原因，属正常流程，别中途断电。
 
-## 知识卡片 {: .sec-card}
+## 知识卡片 {: .sec-know}
 
 | 命令 / 文件 | 用途 |
 | --- | --- |
@@ -413,7 +426,7 @@ touch /.autorelabel
 | `inst.ks=http://xxx/ks.cfg` | Kickstart 无人值守安装参数 |
 | `anaconda-ks.cfg` | 安装后自动生成的应答文件，可作 Kickstart 模板 |
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -423,7 +436,7 @@ touch /.autorelabel
 | 重启后网卡名从 eth0 变回 ens 系 | `net.ifnames=0` 参数未写入 grub，重启丢失 | `ip addr`、`cat /etc/default/grub` | 在 `GRUB_CMDLINE_LINUX` 追加参数并 `grub2-mkconfig -o /boot/grub2/grub.cfg` 重建引导 |
 | 救援模式改完密码仍无法登录 | 未执行 `.autorelabel`，SELinux 文件上下文不匹配 | `ls -Z /etc/shadow`、`getenforce` | chroot 后执行 `touch /.autorelabel` 再重启 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 1. **CentOS 7 已于 2024-06-30 EOL**：新系统安装 Rocky Linux 9 或 AlmaLinux 9，安装流程与本文一致，分区、网络、Kickstart 思路通用。
 2. **网卡命名**：Rocky 9 默认 `enp1s0` 等可预测命名，如运维脚本依赖 `eth0`，同样用 `net.ifnames=0 biosdevname=0` 改回。
@@ -431,7 +444,7 @@ touch /.autorelabel
 4. **防火墙**：CentOS 7 的 `firewalld` 在 Rocky 9 中默认启用，开放端口用 `firewall-cmd --add-service=ssh --permanent` 后 `--reload`；下一代规则引擎为 nftables。
 5. **自动化装机**：Kickstart 之外，云环境还有 Ignition（CoreOS 系）、cloud-init（云主机首次启动配置）等机制，思路都是"用文件描述系统初始状态"。
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 **基础作业**
 
@@ -444,7 +457,7 @@ touch /.autorelabel
 
 1. 如何利用 CentOS 7 的排错模式重置密码？
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. CentOS 7 如何把默认网卡名 `ens33` 改回 `eth0`？
 2. 网卡 ifcfg 文件中 `ONBOOT=yes` 的作用是什么？
@@ -462,7 +475,7 @@ touch /.autorelabel
 - 目录结构与挂载
 - 运维网络基础-上
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 安装镜像要按架构选择：x86_64（64 位）寻址能力远高于 i386（32 位）。
 2. CentOS 7 默认网卡名为 `ens33`，可通过启动参数 `net.ifnames=0 biosdevname=0` 改回 `eth0` 风格。
@@ -475,4 +488,6 @@ touch /.autorelabel
 9. 安装后初始化三件套：网卡 ifcfg 配置、主机名设置、DNS 配置，都要确保重启后依然有效。
 10. 忘记 root 密码不用重装：救援模式 chroot 后 `passwd root`，SELinux 系统记得 `touch /.autorelabel`。
 11. CentOS 7 已 EOL，新系统装 Rocky 9 / AlmaLinux，安装流程与本文通用，工具向 `nmcli`、`ip`、`ss`、`firewalld` 迁移。
+
+
 {% endraw %}

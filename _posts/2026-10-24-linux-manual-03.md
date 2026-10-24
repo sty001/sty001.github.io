@@ -8,7 +8,9 @@ slug: "linux-manual-03"
 
 {% raw %}
 
-## 手册使用说明
+
+
+## 手册使用说明 {: .sec-expl}
 
 本手册是整套笔记的配置文件案头速查：概念手册讲「为什么」，命令手册讲「敲什么」，排错手册讲「改坏了怎么办」，本手册只回答「改哪个文件、怎么改、改完怎么生效」。
 
@@ -40,11 +42,11 @@ slug: "linux-manual-03"
 
 ---
 
-## 一、系统基础配置文件
+## 一、系统基础配置文件 {: .sec-expl}
 
 这一组文件决定「一台机器是谁、怎么上网、开机挂什么、登录看到什么」，装机脚本改的也就是它们。麻烦在于多数文件没有语法检查命令，写错不会当场报错，重启才炸。
 
-### 1.1 核心参数速查表
+### 1.1 核心参数速查表 {: .sec-chk}
 
 | 文件 | 作用 | 关键内容 |
 | --- | --- | --- |
@@ -123,7 +125,7 @@ source /etc/profile.d/alias.sh
 
 用户数据分散在三个数据库文件中，由 `useradd`、`passwd` 等命令统一维护；`sudoers` 是唯一需要手工编辑的，且必须走 `visudo`。
 
-### 2.1 核心参数速查表
+### 2.1 核心参数速查表 {: .sec-chk}
 
 | 文件 | 作用 | 字段说明 |
 | --- | --- | --- |
@@ -182,7 +184,7 @@ chmod 0440 /etc/sudoers.d/ops
 
 用户级任务存放在 `/var/spool/cron/用户名`（用 `crontab -e` 管理，勿直接编辑），系统级任务在 `/etc/crontab` 与 `/etc/cron.d/`（多一个用户列）。访问控制由 `cron.allow` 与 `cron.deny` 决定。
 
-### 3.1 核心参数速查表
+### 3.1 核心参数速查表 {: .sec-chk}
 
 | 文件 | 作用 | 格式差异 |
 | --- | --- | --- |
@@ -235,7 +237,7 @@ MAILTO=""
 
 rsync 有两种工作方式：走 SSH 的远程 shell 模式（不需要配置文件）与独立守护进程模式（需要 `/etc/rsyncd.conf`，端口 873）。备份体系通常用后者，因为支持模块化、虚拟用户与访问控制。
 
-### 4.1 核心参数速查表
+### 4.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -308,7 +310,7 @@ rsync -avz /data/ rsync_backup@172.16.1.31::backup --password-file=/etc/rsync.cl
 
 NFS 通过 `/etc/exports` 把目录共享给指定网段，客户端挂载后当作本地目录使用。核心是理解 `squash` 系列：把客户端身份压缩成什么用户，直接决定读写权限。
 
-### 5.1 核心参数速查表
+### 5.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -360,7 +362,7 @@ mount -a
 
 sshd_config 是远程管理的第一道闸门。加固三板斧：改端口、禁 root 直登、仅密钥登录；性能优化两件套：关 DNS 反解、关 GSSAPI。改完必须 `sshd -t` 验证再重载，且保留当前会话不断开。
 
-### 6.1 核心参数速查表
+### 6.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -418,11 +420,11 @@ ssh -p 52113 user@10.0.0.7
 
 ---
 
-## 七、Ansible 配置与主机清单
+## 七、Ansible 配置与主机清单 {: .sec-chk}
 
 Ansible 的全局配置在 `/etc/ansible/ansible.cfg`，主机清单默认在 `/etc/ansible/hosts`。清单有五种常用写法，覆盖从单机变量到分组嵌套的场景。
 
-### 7.1 核心参数速查表
+### 7.1 核心参数速查表 {: .sec-chk}
 
 | 配置项 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -498,7 +500,7 @@ ansible web --list-hosts
 
 nginx.conf 由 main、events、http 三层骨架与若干 `server` 虚拟主机组成。生产习惯是主配置保持精简，`include` 引入 `conf.d/*.conf`，一个业务一个文件。核心记忆：`server` 定虚拟主机，`location` 定路由，`upstream` 定后端池。
 
-### 8.1 核心参数速查表
+### 8.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 位置 | 作用 |
 | --- | --- | --- |
@@ -602,7 +604,7 @@ curl -I -H "Host: www.example.com" http://10.0.0.7/
 
 php-fpm 用「主进程 + worker 池」处理动态请求，进程池参数全部在 `www.conf`（路径通常为 `/etc/php-fpm.d/www.conf`）。调优核心是 `pm` 系列四件套，直接影响内存占用与并发能力。
 
-### 9.1 核心参数速查表
+### 9.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -666,7 +668,7 @@ ss -lntp | grep 9000
 
 my.cnf 按 `[段名]` 组织：`[mysqld]` 管服务端，`[client]` 管客户端默认值，`[mysqldump]` 管备份行为。基础场景记住数据目录、端口、字符集三件即可，性能参数按内存规格逐步加。
 
-### 10.1 核心参数速查表
+### 10.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -736,7 +738,7 @@ mysql -uroot -p'<your-password>' -e "show variables like 'max_connections';"
 
 keepalived 通过 VRRP 协议在多台机器间漂移 VIP，实现服务高可用。配置分两层：`vrrp_script` 定义健康检查，`vrrp_instance` 定义 VIP 与优先级，二者通过 `track_script` 关联。主备靠 `priority` 差值与 `weight` 联动降级。
 
-### 11.1 核心参数速查表
+### 11.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 说明 |
 | --- | --- | --- |
@@ -825,7 +827,7 @@ journalctl -u keepalived -f        # 观察切换日志
 
 agent 的核心是三个地址类参数与 `UserParameter` 自定义监控。被动模式由服务端来取（`Server`），主动模式由 agent 上报（`ServerActive`），生产建议两种都配。
 
-### 12.1 核心参数速查表
+### 12.1 核心参数速查表 {: .sec-chk}
 
 | 参数 | 作用 | 推荐值 |
 | --- | --- | --- |
@@ -878,4 +880,6 @@ tail -20 /var/log/zabbix/zabbix_agentd.log
 - `UserParameter` 命令中的管道、引号按 shell 解析，特殊字符传参需开 `UnsafeUserParameters=1`。
 - 自定义项推荐放 `zabbix_agentd.d/` 独立文件，主配置保持干净、便于 Ansible 批量下发。主动模式的好处也说一句：数据由 agent 定时上报，服务端轮询压力小，服务端短暂不可达时 agent 还能攒着数据补传。
 - 排障习惯：先看 agent 日志，再比对本机手动执行命令的结果与 `zabbix_get` 结果，差异即线索。手动能跑、zabbix_get 取不到，多半是 cron PATH 那个老问题的翻版——agent 的执行环境同样不带你的登录变量。
+
+
 {% endraw %}

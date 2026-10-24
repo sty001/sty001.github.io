@@ -8,6 +8,8 @@ slug: "linux-fileattr-02"
 
 {% raw %}
 
+
+
 这一篇继续查漏补缺：CentOS 7 网卡命名的修改方式、Vim 编辑原理与非正常退出的排错、查看文件属性与内容的各种命令（`ls` / `cat` / `less` / `more` / `head` / `tail`）、不打开编辑器直接写入文件的两种方法（`echo`、`cat` 配合 here document），以及 grep / sed / awk 三剑客入门和 `sed`、`tr` 的内容替换。重点补齐文件查找体系：`locate` / `whereis` / `which` / `type` 四种快速定位手段的对比，`find` 的参数大全与排错经验，`find` 与 `xargs` 的配合。文件操作这一块，看完这篇就齐了。
 
 ## 文件定位命令对比：locate / whereis / which / type
@@ -35,10 +37,11 @@ cat is hashed (/usr/bin/cat)
 ```
 
 > **注意：** `locate` 依赖数据库，刚创建的文件往往查不到，需要先执行 `updatedb` 刷新数据库；`which` 找不到命令只说明不在 `PATH` 里，不代表磁盘上没有。另外 `which` 查不到 shell 内部命令（如 `cd`、`alias`），这类命令请用 `type` 或 `help`。
+{: .sec-pit}
 
 顺带说下原理：`updatedb` 按 `/etc/updatedb.conf` 的规则全盘扫一遍文件路径写进数据库，`locate` 只查这个库——快在"不碰磁盘元数据"，慢在"数据可能过期"。配置里的 PRUNEPATHS 默认排除了 /proc、/sys 等伪文件系统，这些路径下的文件永远搜不到。CentOS 7 通过 /etc/cron.daily/mlocate 每天自动跑一次更新。
 
-## find 命令参数大全
+## find 命令参数大全 {: .sec-expl}
 
 `find` 是实时遍历目录树的查找工具，语法结构为：
 
@@ -72,7 +75,7 @@ find /etc -type f -name "if*h0"
 find /test -type f -iname "文件名*"
 ```
 
-### 辨析：-name 与 -iname {: .sec-bianxi}
+### 辨析：-name 与 -iname
 
 `-name` 区分大小写，`-iname` 不区分。Linux 习惯小写命名，日常用 `-name` 就够了，但两类场景必须想到 `-iname`：一是处理 Windows 来源的文件（大小写混杂），二是排查时不确定对方怎么命名的，比如 `find / -iname "readme*"` 能同时命中 README、readme、ReadMe。容易忽略的一点：`-name` 匹配的只是文件名本身，不含路径，按路径过滤得换 `-path`。
 
@@ -105,6 +108,7 @@ find /test -type f -ctime +30                # 30 天以前属性改变过的文
 ```
 
 > **注意：** 分钟级的时间查找用 `-mmin` / `-amin` / `-cmin`（单位是分钟），如 `find /data -mmin -60` 查找最近 1 小时内修改过的文件，比按天计算更精确。另有一个常用参数 `-newer 文件`，表示比指定文件的修改时间更新，如 `find /data -newer /tmp/mark.txt`。
+{: .sec-pit}
 
 两个补充。其一，默认按 24 小时制从当前时刻往回算，加上 `-daystart` 则从当天 00:00 起算，做"今天的日志归档"时语义更直观。其二，find 的多个测试条件默认是 AND 关系，显式 OR 用 `-o`，取反用 `-not` 或 `!`；区间查找就是连写两个条件，如 `-size +1M -size -10M`。
 
@@ -129,6 +133,7 @@ find /test -type f -size 0c       # 大小为 0 的空文件
 ```
 
 > **注意：** `+n` 表示大于，`-n` 表示小于，`n` 表示恰好等于。`-size +1M` 匹配的是严格大于 1M（向上取整到块），生产环境清理大文件时建议先用 `-exec ls -lh {} +` 确认再删除。
+{: .sec-pit}
 
 ### 按属主与属组查找
 
@@ -178,10 +183,11 @@ find /test -maxdepth 2 -type f -name "Test*"    # 最多下探 2 层
 > find: warning: you have specified the -maxdepth option after a non-option argument -type, but options are not positional (-maxdepth affects tests specified before it as well as those specified after it).  Please specify options before other arguments.
 > /test/Test.txt
 > ```
+{: .sec-pit}
 
 `-mindepth` 作用相反，表示至少下探几层才开始匹配，两者组合可以精确限定搜索范围。
 
-### 动作参数：-exec / -ok / -delete
+### 动作参数：-exec / -ok / -delete {: .sec-expl}
 
 | 参数 | 作用 | 语义 |
 | --- | --- | --- |
@@ -250,7 +256,7 @@ find /test -name "*.txt" | xargs -t rm -f                      # 先打印将执
 
 `-I{}` 用起来方便，但这里有个坑：指定 `-I` 后 xargs 隐含每次只处理一行输入（等价于 `-L 1`），批量效率下降；参数需要插在命令中间时，`sh -c` 的写法有时更灵活。
 
-### 原理解析：find 与 xargs 的数据流 {: .sec-why}
+### 原理解析：find 与 xargs 的数据流 {: .sec-know}
 
 1. `find` 实时遍历目录树，把符合条件的结果逐行写入标准输出；
 2. 管道把 find 的输出接到 `xargs` 的标准输入；
@@ -258,7 +264,7 @@ find /test -name "*.txt" | xargs -t rm -f                      # 先打印将执
 4. 如果一行都没有，`xargs` 默认仍会执行一次命令（GNU xargs 可用 `-r` 禁止空执行，建议习惯性加上）；
 5. `-print0` 与 `-0` 把分隔符从换行换成空字符，从而免疫文件名中的空格、换行等特殊字符。
 
-## find 排错：Permission denied
+## find 排错：Permission denied {: .sec-ts}
 
 `find /` 全盘查找时最常见的烦恼是刷屏的权限错误：
 
@@ -293,7 +299,7 @@ find / \( -path /proc -o -path /sys -o -path /dev \) -prune -o -name "*.log" -pr
 | `find: paths must precede expression` | 路径写在了表达式后面，或表达式语法错误 | 检查路径与条件顺序、`-exec` 结尾补 `\;` |
 | `find: warning: you have specified the -maxdepth option after a non-option argument` | 全局选项位置太靠后 | 把 `-maxdepth` / `-mindepth` 移到路径之后、其他条件之前 |
 
-### 常见错误与排错
+### 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -304,7 +310,7 @@ find / \( -path /proc -o -path /sys -o -path /dev \) -prune -o -name "*.log" -pr
 | `-exec` 报 `missing argument to -exec` | 漏写转义分号 | 检查命令末尾 | 补上 `\;` 或改成 `+` |
 | `-delete` 提示 `cannot delete` | 对目录无写权限或目录非空策略限制 | `ls -ld` 查看父目录权限 | 确认对父目录有 `w` 权限后重试 |
 
-## 阶段回顾与网卡命名修改
+## 阶段回顾与网卡命名修改 {: .sec-sum}
 
 ### CentOS 7 网卡命名方式
 
@@ -340,12 +346,13 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 ```
 
 > **注意：** 以上四步同样适用于 Rocky Linux / AlmaLinux 9（它们的网卡命名规则与 CentOS 7 一脉相承）。新版系统还可以通过 `nmcli connection modify "ens160" connection.id eth0` 配合 NetworkManager 管理连接名，但内核网卡名（`ip link` 看到的接口名）仍由 `net.ifnames=0` 决定。改完后建议用 `ip link` 确认接口名，`ifconfig` 在最小化安装中默认不存在。
+{: .sec-pit}
 
 网卡名由内核的命名规则决定，装系统时改内核参数最省事；系统装完再改要同时动配置文件、GRUB 和连接名，少一步重启后名字就可能弹回去。所以能赶在装系统那一步改，就别拖到后面。
 
-## Vim 常见错误与编辑原理
+## Vim 常见错误与编辑原理 {: .sec-ts}
 
-### 两类常见错误
+### 两类常见错误 {: .sec-ts}
 
 1. `vim` 命令后面一定要接文件，例如 `vim /etc/hosts`；
 2. `vim` 只能编辑存在的目录中的文件（目录不存在会报错）。
@@ -381,6 +388,7 @@ rm -f /test/.test.txt.swp
 ```
 
 > **注意：** 只要目录中存在 `.文件名.swp` 临时文件，下次编辑该文件就会弹出恢复提示，务必在确认内容后清理掉。如果 vim 界面无响应，多数情况是误按了 `Ctrl + S`（终端流控，屏幕像卡死），按 `Ctrl + Q` 即可恢复。
+{: .sec-pit}
 
 ## 查看文件属性信息
 
@@ -482,6 +490,7 @@ more /etc/services     # 同样是一点点查看文件内容
 | 向前 / 向后翻页 | 字母 `f` / `b` |
 
 > **注意：** `less` 支持上下翻页、向前搜索，功能是 `more` 的超集；`more` 的优点是读完即退出，适合管道结尾。查看大文件务必用 `less`，不要用 `vim`（会把整个文件读进内存）。
+{: .sec-pit}
 
 less 还有个省心特性：打开文件只加载当前屏幕附近的内容，几个 G 的日志也能秒开。`G` 跳到末尾、`F` 进入实时追踪（类似 tail -f，按 Ctrl+C 退回）。排查大日志时先 less"翻"后 grep"搜"，比一上来就全文 grep 更快定位。
 
@@ -588,6 +597,7 @@ test05
 ```
 
 > **注意：** here document 的结束符（如 `EOF`）必须顶格写在行首，前面不能有任何空格，否则会被当作普通内容继续读入。如果内容里含 `$变量`、反引号等会被 shell 展开，把起始定界符写成带引号的 `<<"EOF"` 即可禁止展开。`<<-EOF` 只会去除行首的制表符（不是空格），适合缩进的脚本场景；普通场景直接顶格写结束符即可。
+{: .sec-pit}
 
 ## 过滤筛选文件内容：三剑客
 
@@ -718,6 +728,7 @@ ops02
 ```
 
 > **注意：** sed 默认只把替换结果输出到屏幕，加上 `-i` 才会真正写回文件。批量处理前建议先加 `-i.bak` 生成备份，确认无误再清理备份文件。
+{: .sec-pit}
 
 `-i` 的实现原理是读入文件、处理后写到临时文件、再替换原文件——所以大文件注意内存占用，且替换后文件的 inode 会变（旧文件被新文件顶替），原本指向该 inode 的硬链接关系随之失效。想确认的话，前后各执行一次 `ls -i` 对比。
 
@@ -761,7 +772,7 @@ abc
 123
 ```
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. `find /var/log -name "*.log" -mtime +30` 查找的是什么文件？`+30` 与 `-30` 的区别是什么？
 2. 为什么 `find /data -name "*.txt" | xargs rm -f` 对文件名带空格的文件会出错？正确写法是什么？
@@ -772,12 +783,12 @@ abc
 
 > **答案：** 1. 查找 30 天以前内容被修改过的 `.log` 文件；`+30` 表示"超过 30 天"（更早），`-30` 表示"30 天以内"（更近），不带符号表示恰好第 30 天。2. `xargs` 默认按空白字符分割输入，`my file.txt` 会被拆成 `my` 和 `file.txt` 两个参数；正确写法是 `find /data -name "*.txt" -print0 | xargs -0 rm -f`。3. `\;` 对每个文件执行一次 `rm`，文件多时进程开销大；`+` 把所有文件合并成一条 `rm` 命令执行，效率更高（超出参数长度上限时会自动分批）。4. `locate` 查询的是 `updatedb` 生成的数据库，存在延迟；执行 `updatedb` 刷新后再查。5. `which` 只给 `PATH` 中第一个匹配的可执行文件路径；`whereis` 额外给出 man 页等路径；`type` 判断命令身份（内部命令 / 外部命令 / 别名 / 函数）。6. 前者。xargs 不加 `-0` 时按空白拆分输入，带空格的文件名会被拆成多个参数导致误删；`-delete` 由 find 自己删除匹配结果，天然不受文件名里的空白影响。
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 1. `tail` 命令参数 `-f` 与 `-F` 的区别；
 2. 思考 `tr` 命令替换信息的原理：为什么替换后内容会"乱"。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. CentOS 7 想把 `ensxx` 改回 `eth0`，需要同时改网卡配置文件名、配置文件内的 `NAME`/`DEVICE`、grub 启动参数，并执行 `grub2-mkconfig` 重新生成配置。
 2. Vim 非正常退出会留下 `.文件名.swp` 临时文件，下次打开时可按 `O` 查看、`R` 恢复、`E` 重新编辑、`D` 删除临时文件，也可以直接 `rm -f .xxx.swp`。
@@ -798,4 +809,6 @@ abc
 - 文件属性进阶
 - sed 命令详解
 - awk 命令详解
+
+
 {% endraw %}

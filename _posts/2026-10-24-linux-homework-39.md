@@ -8,9 +8,11 @@ slug: "linux-homework-39"
 
 {% raw %}
 
+
+
 本篇对应课程第 38 天的课后作业，共三题：①说明 301 跳转和 302 跳转的区别；②总结 curl 与 wget 两个下载/请求命令；③提前部署安装好 nginx 服务（yum 安装）。第一题不满足于背概念，本篇用 Python 在本地起一个真实的重定向服务器，用 `curl -I` 抓取 301/302/200 三种响应头逐一对比，并用 `-L`、`-w` 实测跟随跳转的行为；第二题把 curl 的常用参数全部真跑一遍（wget 在本环境不存在，按标准命令给出）；第三题给出 CentOS 7 上 yum 安装 nginx 的完整标准流程与预期输出。
 
-## 实操环境说明
+## 实操环境说明 {: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -19,7 +21,7 @@ slug: "linux-homework-39"
 
 环境实测：curl 8.21.0、Python 3.13（用于起本地重定向服务器，模拟 nginx 的 301/302 行为，HTTP 语义与 nginx 完全一致）。本环境 `which wget` 无结果，wget 部分只能给 B 级标准命令。实操目录统一用 `/tmp/hw/day38`。另注意：本机配有代理环境变量（`http_proxy` 等），curl 访问本机地址时必须加 `--noproxy '*'` 绕过代理，否则请求会被代理拦截返回 502，这也是本篇的一个真实踩坑点。
 
-## 题目总览
+## 题目总览 {: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -38,7 +40,7 @@ slug: "linux-homework-39"
 3. 用 `curl -w '%{http_code} %{num_redirects} %{redirect_url}'` 把跳转状态量化输出；
 4. 最后给出 nginx 层面实现 301/302 的标准配置（B 级）。
 
-### 步骤 1：构造本地重定向服务器（已实操）
+### 步骤 1：构造本地重定向服务器（已实操） {: .sec-prac}
 
 用 Python 标准库起一个极简 HTTP 服务器，模拟 nginx 的重定向行为：
 
@@ -87,7 +89,7 @@ EOF
 python redirect_server.py     # 后台运行，监听 127.0.0.1:8321
 ```
 
-### 步骤 2：curl -I 对比 301/302/200 三种响应头（已实操）
+### 步骤 2：curl -I 对比 301/302/200 三种响应头（已实操） {: .sec-prac}
 
 `-I`（大写 i）表示只取 HTTP 响应头、不要响应体，等效于发 HEAD 请求：
 
@@ -126,7 +128,7 @@ Content-Length: 31
 2. 200 是「正常响应」，没有 `Location` 头，有 `Content-Length`（31 字节响应体）；
 3. 重定向响应**没有响应体**，跳转这件事本身只靠状态码 + `Location` 两个字段完成。
 
-### 步骤 3：301 与 302 的区别总结
+### 步骤 3：301 与 302 的区别总结 {: .sec-prac}
 
 | 维度 | 301 Moved Permanently | 302 Found |
 | --- | --- | --- |
@@ -138,7 +140,7 @@ Content-Length: 31
 
 一句话记忆：**确定永远不回头用 301，临时过渡用 302**。作业里最容易丢分的点是只答「一个永久一个临时」，把「浏览器缓存」和「搜索引擎权重」两点补上才算完整。
 
-### 步骤 4：-L 跟随跳转实测（已实操）
+### 步骤 4：-L 跟随跳转实测（已实操） {: .sec-prac}
 
 curl 默认**不跟随**跳转，收到 3xx 就停；加 `-L`（`--location`）才会拿着 `Location` 里的新地址再发一次请求：
 
@@ -187,7 +189,7 @@ curl --noproxy '*' -s -o /dev/null -w '状态码=%{http_code} 跳转目标=%{red
 > - 验证 301 配置后浏览器看不到效果，多半是**浏览器缓存了 301**，换 curl 测试或清缓存，不要反复改服务端配置干着急；
 > - `curl -L` 遇到互相跳转的死循环会自动停止（默认上限 50 跳），自己写跳转规则时注意别让 A 跳 B、B 又跳 A。
 
-### 步骤 5：跳转验证的通用排查流程（B 级落地）
+### 步骤 5：跳转验证的通用排查流程（B 级落地） {: .sec-ts}
 
 拿到一条「跳转不对」的工单时，按下面的顺序排查，基本五分钟内定位：
 
@@ -197,11 +199,11 @@ curl --noproxy '*' -s -o /dev/null -w '状态码=%{http_code} 跳转目标=%{red
 4. 跳转目标错误——检查 nginx 配置里的 `$request_uri`、`$scheme` 变量是否带全，改完 `nginx -t && systemctl reload nginx` 再用第 1 条复测；
 5. 多级跳转（A→B→C）要逐跳检查，别只看最终落点，SEO 每多一跳就损失一层权重。
 
-## 题 2：总结命令 curl、wget
+## 题 2：总结命令 curl、wget {: .sec-sum}
 
 **考察点**：两个最常用的 HTTP 客户端命令各自的能力边界——curl 是「万能 HTTP 请求工具」，wget 是「专用下载工具」。
 
-### curl 常用参数总结（已实操）
+### curl 常用参数总结（已实操） {: .sec-prac}
 
 | 参数 | 作用 | 本篇实测示例 |
 | --- | --- | --- |
@@ -242,7 +244,7 @@ curl --noproxy '*' -s -o /dev/null -w '状态码=%{http_code}\n' http://127.0.0.
 
 `-w` 里最常用的几个变量：`%{http_code}`（状态码）、`%{time_total}`（总耗时）、`%{size_download}`（下载字节数）、`%{num_redirects}`（跳转次数）、`%{redirect_url}`（下一跳地址）。
 
-### curl 实用组合示例（B 级，CentOS 7 预期）
+### curl 实用组合示例（B 级，CentOS 7 预期） {: .sec-ex}
 
 ```bash
 # 断点续传：从中断处继续下载（-C - 自动计算偏移）
@@ -263,7 +265,7 @@ dns=0.001s connect=0.002s ttfb=0.004s total=0.004s
 
 `ttfb`（Time To First Byte）是排查「接口慢」时最有价值的单一指标：它大而 `total` 接近它，瓶颈在服务端处理；`connect` 大则瓶颈在网络。
 
-### wget 常用参数总结（B 级，本环境无 wget）
+### wget 常用参数总结（B 级，本环境无 wget） {: .sec-sum}
 
 ```bash
 wget http://example.com/file.tar.gz            # 基本下载，文件名取 URL 最后一段
@@ -307,7 +309,7 @@ Remote file exists.
 
 **考察点**：用 yum 完成 nginx 的安装、启动、开机自启与验证，为后续综合架构课程提前备好环境。
 
-### 步骤 1：yum 安装 nginx
+### 步骤 1：yum 安装 nginx {: .sec-prac}
 
 CentOS 7 的 base 源没有 nginx，先装 epel 扩展源再装 nginx：
 
@@ -324,7 +326,7 @@ $ nginx -v
 nginx version: nginx/1.20.1
 ```
 
-### 步骤 2：启动并设置开机自启
+### 步骤 2：启动并设置开机自启 {: .sec-prac}
 
 ```bash
 systemctl start nginx
@@ -341,7 +343,7 @@ $ systemctl status nginx | head -3
    Active: active (running) since Sat 2026-10-24 08:40:12 CST; 5s ago
 ```
 
-### 步骤 3：放行防火墙并验证
+### 步骤 3：放行防火墙并验证 {: .sec-ver}
 
 ```bash
 firewall-cmd --permanent --add-service=http
@@ -363,7 +365,7 @@ Last-Modified: Sat, 24 Oct 2026 08:32:19 GMT
 
 看到 `Server: nginx/1.20.1` 与 `200 OK` 即部署成功。改配置后先 `nginx -t` 语法检查再 `systemctl reload nginx` 平滑加载。
 
-### nginx 常用路径与命令速查
+### nginx 常用路径与命令速查 {: .sec-chk}
 
 | 路径/命令 | 说明 |
 | --- | --- |
@@ -376,7 +378,7 @@ Last-Modified: Sat, 24 Oct 2026 08:32:19 GMT
 | `nginx -s reload` 或 `systemctl reload nginx` | 平滑加载配置 |
 | `systemctl stop nginx` | 停止服务 |
 
-### 步骤 4：301/302 跳转的 nginx 标准配置（题 1 的 B 级落地）
+### 步骤 4：301/302 跳转的 nginx 标准配置（题 1 的 B 级落地） {: .sec-best}
 
 ```nginx
 # /etc/nginx/conf.d/redirect.conf
@@ -412,14 +414,14 @@ curl -I http://example.com/admin           # 预期 302，Location 指向 /login
 
 `return` 与 `rewrite` 的选择：整站/整域跳转用 `return`（写法简单、性能好），只转换部分 URL 路径（如目录改名、正则替换）用 `rewrite`。
 
-## 验证方法
+## 验证方法 {: .sec-ver}
 
 1. `curl -I http://127.0.0.1` 返回 `200 OK` 且 `Server` 头含 nginx 版本，证明服务部署成功；
 2. `curl -I` 老域名返回 `301 Moved Permanently` 且 `Location` 是新域名，返回 `302 Found` 则是临时跳转，据此可反推配置里写的是 `permanent` 还是 `redirect`；
 3. `curl -sIL URL | grep HTTP` 能看到两行状态码（3xx 和 200），证明 `-L` 跟随链路通畅；
 4. `systemctl is-enabled nginx` 返回 `enabled`，证明开机自启已配置。
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 1. 301 与 302 的区别不只是「永久/临时」：301 会被浏览器缓存、搜索引擎转移权重，用于域名迁移与 http→https；302 不缓存、权重留在原地址，用于维护页与登录跳转。一旦误发 301，改回来要先清浏览器缓存。
 2. 重定向的本质是「状态码 + Location 响应头」，响应体为空；curl 默认停在 3xx，加 `-L` 才跟随，`-w '%{http_code} %{num_redirects} %{redirect_url}'` 可把跳转行为量化验证。
@@ -429,4 +431,6 @@ curl -I http://example.com/admin           # 预期 302，Location 指向 /login
 6. 本机带代理环境时，curl 访问 `127.0.0.1` 要加 `--noproxy '*'`，否则 502 会误导排障方向——「先排除环境干扰，再怀疑服务本身」。
 
 > **参见**：Nginx 网站服务部署 · Nginx 网站服务进阶
+
+
 {% endraw %}

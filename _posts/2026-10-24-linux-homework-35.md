@@ -8,9 +8,11 @@ slug: "linux-homework-35"
 
 {% raw %}
 
+
+
 课程第 34 天的作业就两道题：用剧本部署 rsync 服务，再用剧本部署 nfs 服务。原题只给方向，思路得自己补全——下面给出完整可跑的剧本（含变量、模板、handler）：rsync 做成「服务端 + 客户端」一体化剧本，nfs 做成「全体装软件 → 服务端配置 → 客户端挂载」三段式。环境里没有 ansible，A 级用 Python 的 pyyaml 对剧本做 YAML 语法真跑校验，`ansible-playbook` 的执行给标准命令与 CentOS 7 预期输出（B 级）。
 
-## 实操环境说明
+## 实操环境说明 {: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），且未安装 ansible / ansible-playbook，因此采用分级实操：
 
@@ -19,7 +21,7 @@ slug: "linux-homework-35"
 
 环境实测：`python`（3.13，含 pyyaml 6.0.3）可用，`command -v ansible-playbook` 返回 NOT FOUND。示例主机角色沿用课程架构：`172.16.1.41`（rsync 服务端 / backup）、`172.16.1.31`（nfs 服务端 / nfs01）、`172.16.1.7`（客户端 / web01），主机清单分组名为 `rsync_server`、`rsync_clients`、`nfs`、`nfs_server`、`nfs_client`。口令一律用 `<your-password>` 占位，输出中的本地用户名已按脱敏要求替换为 `user`。
 
-## 题目总览
+## 题目总览 {: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -41,7 +43,7 @@ slug: "linux-homework-35"
 | 5. 创建密码文件 | `-m copy -a "content=... dest=/etc/rsync.password mode=0600"` | `copy` + `no_log` |
 | 6. 启动服务 | `-m service -a "name=rsyncd state=started enabled=yes"` | `service` |
 
-### 步骤 1：目录结构与配置模板
+### 步骤 1：目录结构与配置模板 {: .sec-prac}
 
 剧本目录里放一个 `files/` 子目录存模板，结构如下：
 
@@ -72,8 +74,9 @@ secrets file = /etc/rsync.password
 ```
 
 > **注意**：`fake super = yes` 让 rsync 用文件属性模拟 root 权限，免去了「备份文件属主必须是 root」与「守护进程降权运行」的矛盾，配合属主为普通用户的备份目录即可正常读写。
+{: .sec-pit}
 
-### 步骤 2：编写服务端 + 客户端一体化剧本（已实操）
+### 步骤 2：编写服务端 + 客户端一体化剧本（已实操） {: .sec-prac}
 
 ```yaml
 - hosts: rsync_server
@@ -159,7 +162,7 @@ secrets file = /etc/rsync.password
 4. 密码文件任务的 `content` 含口令占位符，配 `no_log: true` 防止内容回显到终端与日志；
 5. `mode: "0644"`、`"0600"` 一律加引号，避免 YAML 把八进制权限解析成数字。
 
-### 步骤 3：YAML 语法校验（已实操）
+### 步骤 3：YAML 语法校验（已实操） {: .sec-prac}
 
 环境无 ansible，用 pyyaml 对剧本做解析级校验，能抓住缩进、冒号、短横线等语法错误：
 
@@ -206,7 +209,7 @@ playbook: rsync_server.yaml
 
 只回显一行 `playbook: 文件名` 即代表语法通过；若 YAML 有错，会给出 `ERROR! Syntax Error while loading YAML` 并指明行号。
 
-### 步骤 4：执行剧本（B 级）
+### 步骤 4：执行剧本（B 级） {: .sec-prac}
 
 按「检查语法 → 模拟执行 → 真正执行」三步走：
 
@@ -244,7 +247,7 @@ PLAY RECAP ********************************************************************
 
 注意 `05-create password file` 一行没有回显任何 content 内容——这就是 `no_log: true` 的作用。第二次执行剧本时，模板未变化则 `04-push config` 显示 ok，handler 不触发，rsyncd 不会被无谓重启。剧本天生适合放 cron 里反复跑，靠的就是这层幂等。
 
-### 步骤 5：验证 rsync 服务（B 级）
+### 步骤 5：验证 rsync 服务（B 级） {: .sec-ver}
 
 ```bash
 # 验证一：服务端 873 端口监听
@@ -279,7 +282,7 @@ total 4
 > - rsync 要求密码文件权限不超过 600，`mode: "0600"` 不能省；
 > - `user` 任务里 `create_home: no` 忘写会多建一个家目录，虽不报错但不规范。
 
-### 辨析：copy 与 template {: .sec-bianxi}
+### 辨析：copy 与 template
 
 都是「把管理端文件推到被管端」，分界线在内容里有没有变量：
 
@@ -300,7 +303,7 @@ total 4
 | play 2 | `nfs_server` | `template` 推 exports、`file` 建共享目录、`loop` 启动 rpcbind 与 nfs |
 | play 3 | `nfs_client` | `mount` 挂载、`register` + `debug` 回显挂载信息 |
 
-### 步骤 1：exports 模板与目录结构
+### 步骤 1：exports 模板与目录结构 {: .sec-prac}
 
 ```text
 /tmp/hw/day34/
@@ -318,7 +321,7 @@ total 4
 {{ Data_dir }} 172.16.1.0/24(rw,sync)
 ```
 
-### 步骤 2：编写三段式剧本（已实操）
+### 步骤 2：编写三段式剧本（已实操） {: .sec-prac}
 
 ```yaml
 - hosts: nfs
@@ -388,7 +391,7 @@ total 4
 
 剧本要点：`yum` 的 `name` 直接接收列表一次装两个包；`loop` 遍历启动 rpcbind 与 nfs 两个服务，`item` 为当前服务名；`mount` 用 `state=mounted` 一步做到「立即挂载 + 写入 fstab」；`changed_when: false` 告诉 ansible 检查类 shell 任务不算变更，避免重复执行时显示 changed；exports 走模板 + handler，共享目录配置变了自动重启 nfs。目录属主用 `nfsnobody` 是有意的：默认 `root_squash` 会把客户端 root 映射成 `nfsnobody`，属主对上才有写入权限。
 
-### 步骤 3：YAML 语法校验（已实操）
+### 步骤 3：YAML 语法校验（已实操） {: .sec-prac}
 
 ```bash
 cd /tmp/hw/day34
@@ -401,7 +404,7 @@ python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1],encoding='utf-8')); 
 YAML OK: nfs.yaml
 ```
 
-### 步骤 4：执行与验证（B 级）
+### 步骤 4：执行与验证（B 级） {: .sec-ver}
 
 ```bash
 ansible-playbook --syntax-check nfs.yaml
@@ -470,7 +473,7 @@ $ ansible nfs_client -m shell -a "touch /mnt/testfile && ls -l /mnt/testfile"
 > - 挂载成功但写不进：共享目录属主不是 `nfsnobody`，或 exports 未配 `rw`；
 > - `mount` 的 `state=present` 只写 fstab 不立即挂载，日常一步到位用 `mounted`。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 剧本部署服务的套路万变不离其宗：把 ad-hoc 部署历程列成表，逐条翻译成 task——装软件 `yum`、建用户 `user`、建目录 `file`、推配置 `copy`/`template`、管服务 `service`。
 2. 配置文件里带变量的场景必须用 `template`（渲染后下发）而不是 `copy`（原样拷贝），变量集中在 play 的 `vars` 里，服务端与客户端引用同一份，改一处全局生效。
@@ -482,4 +485,6 @@ $ ansible nfs_client -m shell -a "touch /mnt/testfile && ls -l /mnt/testfile"
 8. 含口令的任务记得 `no_log: true`，进阶做法是口令走 `ansible-vault` 加密的变量文件，剧本和代码仓库里都不留明文。
 
 > **参见**：批量管理 Ansible（中） · Ansible 剧本实战 · 备份服务 rsync · 存储服务 NFS
+
+
 {% endraw %}

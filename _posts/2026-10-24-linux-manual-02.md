@@ -8,7 +8,9 @@ slug: "linux-manual-02"
 
 {% raw %}
 
-## 使用说明
+
+
+## 使用说明 {: .sec-expl}
 
 这套笔记的「命令字典」：按功能域分章，一章几张「命令卡」表格，配一组可直接复制的示例。日常排障、写脚本、备考复习时当案头工具书翻，不必从头读到尾。
 
@@ -37,7 +39,7 @@ slug: "linux-manual-02"
 - 第十二章 服务专用命令
 - 附录 易混淆命令对比
 
-## 第一章 文件与目录操作
+## 第一章 文件与目录操作 {: .sec-prac}
 
 核心思路：Linux 中一切皆文件，目录也是文件。所有操作都从根 `/` 开始定位，路径分绝对路径（以 `/` 开头）与相对路径（以当前目录为基准）。
 
@@ -59,7 +61,7 @@ slug: "linux-manual-02"
 | `file` | `-b` `-i` `-L` | 判断文件类型（不依赖扩展名）；`-b` 只输出结果不输出文件名，`-i` 显示 MIME 类型，`-L` 跟随软链接。替代 · 无 | `file /bin/ls` |
 | `install` | `-d` `-m` `-o` | 复制文件并同时设定权限属主，常用于脚本与 RPM 打包；`-d` 创建目录。替代 · 无 | `install -m 600 file.txt /etc/file.txt` |
 
-### 1.2 示例
+### 1.2 示例 {: .sec-ex}
 
 ```bash
 # 按时间倒序列出目录内容，最新修改的排在最上面
@@ -134,7 +136,7 @@ find /tmp/olddata -mindepth 1 -delete
 | `whereis` | `-b` `-m` `-s` | 查找命令的二进制、源码与手册页路径；`-b` 只看二进制，`-m` 只看手册。替代 · 无 | `whereis -b nginx` |
 | `type` | `-a` `-t` `-p` | 判断命令是内部命令、外部命令还是别名；`-a` 列出全部来源，`-t` 只输出类型。替代 · 无，用于排查别名干扰 | `type -a rm` |
 
-### 2.2 示例
+### 2.2 示例 {: .sec-ex}
 
 ```bash
 # 显示文件内容并标出行号
@@ -225,7 +227,7 @@ find /etc -type f -mtime -1 -name "*.conf" -ls
 | `xargs` | `-n` `-I` `-0` | 把管道传来的文本转换成后续命令的参数；`-n1` 每次传 1 个参数，`-I{}` 指定替换占位符，`-0` 配合 `find -print0` 处理含空格文件名，`-P` 并行执行。替代 · 无 | `find . -name "*.log" \| xargs rm -f` |
 | `column` | `-t` `-s` | 把文本按列对齐成表格，常配合 `awk` 输出；`-t` 自动对齐，`-s` 指定分隔符。替代 · 无 | `awk '{print $1,$3}' a.txt \| column -t` |
 
-### 3.2 示例
+### 3.2 示例 {: .sec-ex}
 
 ```bash
 # 取第 1 列与第 3 列，指定冒号为分隔符
@@ -316,7 +318,7 @@ zcat /var/log/nginx/access.log-20261020.gz | awk '{print $1}' | sort | uniq -c |
 | `getenforce` | 无常用参数 | 查看 SELinux 运行模式（Enforcing、Permissive、Disabled），排障时「权限看起来没问题却报错」的必查项。替代 · 无 | `getenforce` |
 | `setenforce` | `0` `1` | 临时切换 SELinux 模式；`0` 为宽容模式，`1` 为强制模式，重启失效。永久修改需编辑 `/etc/selinux/config`。替代 · 无 | `setenforce 0` |
 
-### 4.2 示例
+### 4.2 示例 {: .sec-ex}
 
 ```bash
 # 数字法与符号法互转练习
@@ -397,7 +399,7 @@ touch new.txt && mkdir newdir && ls -l new.txt && ls -ld newdir
 | `su` | `-` `-c` | 切换用户；`su - ops` 带 `-` 表示完全切换（加载目标用户的环境变量，推荐），不带 `-` 只切换身份不换环境；`-c` 只执行一条命令。替代 · 日常提权建议用 `sudo` | `su - ops` |
 | `sudo` | `-u` `-l` `-i` | 以其他用户身份执行命令，默认提权到 root；`-l` 查看自己被授予的权限，`-u ops` 以指定用户执行，`-i` 切换到 root 的登录环境。授权配置写在 `/etc/sudoers`，必须用 `visudo` 编辑。替代 · 无，是替代 `su` 的标准做法 | `sudo -u www ls /data/www` |
 
-### 5.2 示例
+### 5.2 示例 {: .sec-ex}
 
 ```bash
 # 创建普通用户与虚拟用户
@@ -491,7 +493,7 @@ for i in $(seq -w 1 20); do useradd -m test$i; echo "test$i:你的密码" | chpa
 | `swapoff` | `-a` 设备 | 关闭 swap；调整 swap 大小时先 `swapoff` 再重建。替代 · 无 | `swapoff -a` |
 | `dd` | `if=` `of=` `bs=` | 按块复制数据，常用于创建测试文件、备份 MBR、测磁盘写入速度；`if` 输入、`of` 输出、`bs` 块大小、`count` 块数量。替代 · 无，但被称为「磁盘粉碎机」，参数写错后果严重 | `dd if=/dev/zero of=/tmp/test.txt bs=10M count=100` |
 
-### 6.2 示例
+### 6.2 示例 {: .sec-ex}
 
 ```bash
 # 查看磁盘挂载与使用情况（block 视角与 inode 视角）
@@ -599,7 +601,7 @@ find /data -type f -exec du -h {} + 2>/dev/null | sort -rh | head -10
 | `ldconfig` | `-p` `-v` | 刷新动态链接库缓存，源码安装后若报「找不到共享库」需执行；`-p` 查看已缓存的库。替代 · 无 | `ldconfig` |
 | `alternatives` | `--config` `--set` | 管理多版本命令的默认指向，如切换 python 或 java 版本。替代 · 无 | `alternatives --config python` |
 
-### 7.2 示例
+### 7.2 示例 {: .sec-ex}
 
 ```bash
 # 查看软件是否安装、包内有哪些文件、某文件属于哪个包
@@ -707,7 +709,7 @@ yum localinstall -y /tmp/pkg/*.rpm
 | `fuser` | `-mv` `-k` | 查看正在使用某文件或挂载点的进程；`-mv` 详细显示，`-k` 直接杀掉占用进程（卸载设备繁忙时用）。来自 `psmisc`。替代 · 无 | `fuser -mv /mount01` |
 | `dstat` | `-cdnm` | 综合性能查看工具，把 CPU、磁盘、网络、内存放在一屏输出。需额外安装。替代 · 无，可视为 `vmstat` 与 `iostat` 的合体 | `dstat -cdnm 1` |
 
-### 8.2 示例
+### 8.2 示例 {: .sec-ex}
 
 ```bash
 # 查看系统负载与运行时长
@@ -814,7 +816,7 @@ mpstat -P ALL 1 3
 | `nmtui` | 无常用参数 | 图形化（字符界面）修改网卡地址信息，交互式配置 IP、网关与 DNS，配置自动持久化。替代 · 无 | `nmtui` |
 | `ethtool` | `eth0` `-i` | 查看与调整网卡参数，如速率、双工模式、驱动版本，排查物理层问题常用。替代 · 无 | `ethtool eth0` |
 
-### 9.2 示例
+### 9.2 示例 {: .sec-ex}
 
 ```bash
 # 查看网卡地址与路由（新方式）
@@ -934,7 +936,7 @@ dig +short www.example.com @119.29.29.29
 | `lscpu` | `-e` `-p` | 查看 CPU 架构、核心数、线程数与缓存信息。替代 · 无 | `lscpu` |
 | `runlevel` | 无常用参数 | 查看当前与上一次的运行级别（CentOS 6 概念）。替代 · **已过时**，CentOS 7 用 `systemctl get-default` 与 `systemctl set-default` | `systemctl get-default` |
 
-### 10.2 示例
+### 10.2 示例 {: .sec-ex}
 
 ```bash
 # 服务启停与开机自启
@@ -1051,7 +1053,7 @@ ss -lntp | grep nginx
 | `zip` | `-r` `-q` `-P` | 创建 zip 压缩包，与 Windows 通用；`-r` 递归目录，`-q` 静默，`-P` 设置密码（不推荐，明文可见）。需 `yum install -y zip`。替代 · Linux 内部传递优先用 `tar` | `zip -r www.zip /data/www` |
 | `unzip` | `-d` `-l` `-o` | 解压 zip 包；`-d` 指定解压目录，`-l` 只看内容不解压，`-o` 不询问直接覆盖。需 `yum install -y unzip`。替代 · 无 | `unzip -d /data www.zip` |
 
-### 11.2 示例
+### 11.2 示例 {: .sec-ex}
 
 ```bash
 # 打包压缩与解包（gzip 方式，最常用）
@@ -1153,7 +1155,7 @@ find /backup -name "etc_*.tar.gz" -mtime +7 -delete
 | `exportfs` | `-rv` `-a` | 重新导出 NFS 共享目录，修改 `/etc/exports` 后不用重启服务就生效；`-rv` 重新导出并显示，`-a` 全部。替代 · 无 | `exportfs -rv` |
 | `inotifywait` | `-mrq` `-e` | 实时监控目录变化，是实时同步方案的基础；`-mrq` 持续递归静默监控，`-e` 指定监听事件（create、delete、modify、close_write）。来自 `inotify-tools`。替代 · 无 | `inotifywait -mrq /data/blog` |
 
-### 12.4 示例
+### 12.4 示例 {: .sec-ex}
 
 ```bash
 # --- Nginx ---
@@ -1498,4 +1500,6 @@ inotifywait -mrq --timefmt '%F %T' --format '%T %w%f %e' -e create,delete,modify
 | 典型写法 | `cat file \| grep a` | `cat list \| xargs rm -f` |
 | 文件名含空格 | 不受影响 | 必须配合 `find -print0` 与 `xargs -0` |
 | 参数个数控制 | 无 | `-n1` 每次传一个，`-P` 并行执行 |
+
+
 {% endraw %}

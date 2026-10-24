@@ -8,9 +8,11 @@ slug: "linux-fileattr-04"
 
 {% raw %}
 
+
+
 这一篇收尾文件属性章节：find 的进阶查找（按大小、层级、权限）、目录结构查看命令 `tree`、tar 的压缩解压与排除、文件权限的数值换算与 `chmod` / `umask` / `chown` 完整用法、SUID/SGID/Sticky 三种特殊权限、`chattr` 属性锁与 ACL 访问控制，以及系统用户的分类与 uid 规则、inode / block 概念和三种时间。把这一篇啃完，文件属性的知识就成体系了。
 
-## 课前回顾
+## 课前回顾 {: .sec-sum}
 
 | 主题 | 要点 |
 | --- | --- |
@@ -20,7 +22,7 @@ slug: "linux-fileattr-04"
 | 其他属性 | 硬链接数、属主、属组、大小信息、修改时间 |
 | 相关命令 | `locate` + `updatedb`、`which`、`whereis`、`find 路径 -type 类型 -name "文件名*"` |
 
-## find 命令查找信息补充
+## find 命令查找信息补充 {: .sec-ext}
 
 ```bash
 # 精确查找
@@ -78,6 +80,7 @@ find /test -type f -size +1M      # 找出大于 1M 的文件
 > find: warning: you have specified the -maxdepth option after a non-option argument -type, but options are not positional (-maxdepth affects tests specified before it as well as those specified after it).  Please specify options before other arguments.
 > /test/Test.txt
 > ```
+{: .sec-pit}
 
 ### 根据权限查找（-perm）
 
@@ -108,6 +111,7 @@ tree -d /test       # 只显示目录结构信息
 ```
 
 > **注意：** `tree` 不在最小化安装的默认软件包中，CentOS 7 用 `yum install -y tree`，Rocky Linux / AlmaLinux 9 用 `dnf install -y tree`。常用参数还有 `-h`（人类可读的大小）、`-f`（显示完整路径）、`-p`（显示权限）。
+{: .sec-pit}
 
 树形输出在写文档、给同事讲结构时很直观；没有 tree 的最小化环境里，`ls -R` 是粗糙替代品，层级一多输出就乱了。
 
@@ -132,7 +136,7 @@ tar: Removing leading `/' from member names
 /test/services
 ```
 
-### 解压与检查
+### 解压与检查 {: .sec-ver}
 
 ```bash
 tar xvf /test/test.tar.gz          # 解压数据包
@@ -146,7 +150,7 @@ tar tf  /test/test.tar.gz          # 不解压的情况下查看压缩包里面�
 
 更严格的做法是校验 md5：打包前 `find . -type f -exec md5sum {} \; > /tmp/md5.before`，解压后同样算一遍，再 diff 两份清单。
 
-### 压缩过程信息说明
+### 压缩过程信息说明 {: .sec-expl}
 
 ```bash
 [root@linux-node1 test]# tar zcvf test.tar.gz /test/services
@@ -164,6 +168,7 @@ tar: Removing leading `/' from member names     # 默认将压缩时绝对路径
 ```
 
 > **注意：** 压缩时默认会把绝对路径最前面的 `/` 去掉，这是为了避免解压时覆盖原文件。想省掉提示就用相对路径压缩。
+{: .sec-pit}
 
 其他常用压缩算法参数（按压缩率与速度权衡选用）：
 
@@ -204,6 +209,7 @@ tar: Removing leading `/' from member names
 ```
 
 > **注意：** 排除时必须把路径写对——压缩命令用的是绝对路径，排除文件里也要用绝对路径；命令用相对路径，排除项也要写成相对路径。
+{: .sec-pit}
 
 排除规则支持通配符，`--exclude="*.log"` 一次排一类文件；多个排除条件就多写几个 `--exclude`，不用合并。排错时 `tar tf 包` 核对结果最直观。
 
@@ -291,6 +297,7 @@ chmod -R u+X /data                         # 大写 X：只给目录和本来就
 ```
 
 > **注意：** 大写 `X` 与 `x` 的区别是高频考点：`x` 无条件给执行位，`X` 只对目录、或已经具有执行位的文件生效。递归授权时用 `chmod -R u+X`，可以避免把一堆普通文件误设为可执行。
+{: .sec-pit}
 
 ### 数字法与字母法互算
 
@@ -331,6 +338,7 @@ chmod 640 /data        # 等价于 chmod u=rw,g=r,o= /data
 | `077` | `666 & ~077` | `600` | `777 & ~077` | `700` |
 
 > **注意：** 千万不能按十进制减法算：`666 - 027` 会算出 `639`，这是错的。正确做法是逐段按位与：umask 第三位 `7` 的二进制是 `111`，与任何默认位相与都清零，所以其他人什么权限都没有，结果是 `640`。同理，可执行文件（如编译产物、脚本）创建时内核按 `777 & ~umask` 计算，umask 022 时得到 `755`。
+{: .sec-pit}
 
 普通文件默认不给执行位是刻意的安全设计：解释器脚本、下载来的数据文件，万一内容有恶意也不至于直接能跑。真需要执行时再 `chmod +x`，这一步等于人工确认过"这个东西我就是要当程序跑"。实际敲一遍就明白：`umask 022` 下 `touch a.txt && mkdir b && ls -l`，一个 644 一个 755，差异全在"目录天生要 x"这一点上。
 
@@ -344,6 +352,7 @@ umask 077             # 设置更严格的值（适合存放敏感数据的目�
 ```
 
 > **注意：** umask 是 shell 进程的属性，只影响该 shell 及其子进程新建的文件。永久生效要写入 `/etc/profile`（全局）或 `~/.bashrc`（单用户），修改后需重新登录或 `source` 才生效。root 默认 umask 通常是 `022`；采用 user private group 机制的发行版，普通用户默认是 `002`，便于同组协作。
+{: .sec-pit}
 
 ### chown 与 chgrp：修改属主与属组
 
@@ -404,7 +413,7 @@ SUID 的典型用例是 `passwd`：`/usr/bin/passwd` 属主是 root 且带 SUID�
 
 SUID 加在目录上没有意义（会被忽略），SGID 要加在目录上才实现继承属组，Sticky 只对目录有效——记不住就看"作用对象"那一列。
 
-### 辨析：SUID 与 sudo {: .sec-bianxi}
+### 辨析：SUID 与 sudo
 
 两者都涉及"以别人身份执行"，机制完全不同。SUID 是文件属性，任何能执行该文件的人都固定以属主身份运行，控制粒度只有"能/不能执行"，程序内部不再做身份判断；sudo 是授权框架，按 `/etc/sudoers` 的规则逐条校验谁可以以谁的身份执行哪些命令，全程留审计日志，还能要求输密码。说白了，SUID 是"文件说了算"，sudo 是"规则说了算"。原则很明确：能用 sudo 解决的场景就不要自制 SUID 程序，SUID 面越少，攻击面越小。审计发现多余的 SUID 文件，先 `rpm -qf 路径` 查归属包，确认不是系统自带再处理。
 
@@ -440,6 +449,7 @@ rm: cannot remove 'important.conf': Operation not permitted
 ```
 
 > **注意：** `chattr +i` 是一把双刃剑：被锁的文件连 root 都无法直接修改，忘记解锁会导致软件升级、密码修改等运维操作失败。生产环境对配置文件加锁前，务必在变更流程里登记解锁步骤。
+{: .sec-pit}
 
 生产上 `+a` 比 `+i` 更常用于日志防篡改：日志服务还能继续追加写入，历史记录又改不掉。注意 Filebeat 这类轮转工具靠重命名文件轮转，会被 `+a` 拦住——上锁前先确认日志的轮转方式。
 
@@ -480,6 +490,7 @@ other::---
 ```
 
 > **注意：** 修改 ACL 后 mask 会被自动重算；而用 `chmod` 修改属组权限时，mask 会被同步改写，可能"意外"削弱已授的 ACL 权限。排查"权限明明给了却访问不了"的问题时，用 `getfacl` 看 effective 权限是标准动作。
+{: .sec-pit}
 
 权限的判定顺序是：先看属主，匹配即生效；不匹配再看 ACL 具名条目；再属组与组条目；最后 other。一旦在属主或具名条目上匹配成功，后面的检查直接跳过——这里有个坑：给某个用户单独授 ACL 后，他不再按属组权限走，"授了 ACL 行为反而变了"多半是这个原因。
 
@@ -502,7 +513,7 @@ uid=0(root) gid=0(root) groups=0(root)
 uid=1000(test) gid=1000(test) groups=1000(test)
 ```
 
-### 用户组的概念
+### 用户组的概念 {: .sec-know}
 
 ```text
 运维组 sa（system admin）：user01 user02 user03     /sa   --rwx
@@ -533,6 +544,7 @@ uid=0(root) gid=0(root) groups=0(root)
 | 普通用户 | 平民 | 1000+ | 管理指定数据、可以管理指定进程、可以登录系统 / 有家目录 |
 
 > **注意：** CentOS 6 的虚拟用户 uid 范围是 1-499，普通用户从 500 开始；CentOS 7 起调整为 1-999 与 1000+。Rocky Linux / AlmaLinux 9 沿用 1-999 / 1000+ 的划分。
+{: .sec-pit}
 
 这套 uid 分段不是拍脑袋定的：0-999 留给系统，保证服务账号永远排在普通用户前面，也不会被 `useradd` 自动分配占用。起始 uid 由 `/etc/login.defs` 的 UID_MIN 控制，改这个文件就能调整普通用户的起始编号。
 
@@ -542,6 +554,7 @@ uid=0(root) gid=0(root) groups=0(root)
 2. 禁止 root 用户远程登录——修改 `/etc/ssh/sshd_config`。
 
 > **注意：** 攻击者拿到 root 的思路通常是：先找系统中有哪些普通用户 → 破解普通用户密码 → `su - root` 再破 root 密码。所以改端口 + 禁止 root 直接远程登录是最 cheap 且有效的两招。
+{: .sec-pit}
 
 现代做法再加一层 fail2ban 或 sshd 的 `MaxAuthTries` 限速，把爆破脚本挡在门外；密钥登录普及后甚至可以直接关掉 PasswordAuthentication，密码爆破这条路就彻底没了。
 
@@ -570,10 +583,11 @@ uid=0(root) gid=0(root) groups=0(root)
 | 改变时间 `ctime`（Change time） | 数据属性信息发生改变的时间 |
 
 > **注意：** 三种时间的详细区别、`stat` 输出逐行解读、`touch` 精确修改时间的参数，已在 文件属性与 inode 中展开，此处不再重复。记住一句口诀：读内容变 atime、改内容变 mtime、改属性（含 chmod、chown、重命名）变 ctime。
+{: .sec-pit}
 
 口诀之外补一句：`cp` 默认会把 mtime 更新为当前时间（复制即新建），想连时间一起搬用 `cp -p` 或 `rsync -a`——比对文件新旧时这个细节经常坑人。
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -585,14 +599,14 @@ uid=0(root) gid=0(root) groups=0(root)
 | ACL 授权了却访问不了 | mask 限制了有效权限 | `getfacl 文件` 看 effective | `setfacl -m m::rwx 文件` 调整 mask |
 | `chown` 报 `invalid user` | 用户不存在 | `id 用户名` | 先建用户再改属主 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 - Rocky Linux / AlmaLinux 9 上安装 tree：`dnf install -y tree`；root 默认 umask 仍为 `022`，普通用户 `002`。
 - tar 的 `--zstd` 需要 GNU tar 1.31+，Rocky/Alma 9 满足；CentOS 7 自带 tar 1.26 不支持，可用 `-I zstd` 指定压缩器。
 - SELinux 在 Rocky/Alma 9 上默认 enforcing，权限正确仍被拒绝时优先怀疑 SELinux（`ls -Z`、`ausearch -m avc`），不要习惯性 `setenforce 0`。
 - 传统 `chattr` 在 xfs 文件系统上同样支持 `+i` / `+a`，行为与 ext4 一致。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. umask 为 `022` 时，新建文件和新建目录的权限分别是多少？请写出推导过程。
 2. 为什么 `666 - 027` 不等于文件的实际权限？`umask 027` 时文件的正确权限是多少？
@@ -603,7 +617,7 @@ uid=0(root) gid=0(root) groups=0(root)
 
 > **答案：** 1. 文件 `666 & ~022 = 644`，目录 `777 & ~022 = 755`。2. umask 是"按位屏蔽"不是十进制减法：027 的二进制各位分别屏蔽属组的 `w` 与其他用户的全部权限，正确结果是 `666 & ~027 = 640`；而 `666-027=639` 中的 `9` 根本不是合法权限段。3. `find /data -type d -exec chmod 755 {} +` 再 `find /data -type f -exec chmod 644 {} +`，属主用 `chown -R www:www /data`。4. SUID 让可执行文件在执行期间以文件属主身份运行（如 `passwd` 以 root 写 `/etc/shadow`）；审计用 `find / -type f -perm -4000`。5. 先 `chattr -i 文件` 去掉不可变属性，确认无其他保护（如 Sticky 目录）后再正常删除。6. SGID 目录里新建文件的属组自动继承目录的属组——这正是 2775 共享目录的设计意图；Sticky 目录里普通用户只能删除属主是自己的文件，root 例外。
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 1. 如何将一个目录中以 `.txt` 结尾的文件统一进行压缩处理？
    - 思路：① 把以 `.txt` 结尾的文件找出来；② 再利用 `tar` 命令打包。
@@ -612,7 +626,7 @@ uid=0(root) gid=0(root) groups=0(root)
 4. CentOS 6 里面如何用 uid 区分不同的用户类型？
 5. 总结 Linux 系统中常用的压缩和解压命令：`tar`、`zip`、`rar`。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. `find` 可以按名称（`-name` / `-iname`）、大小（`-size`，注意 `c` `k` `M` `G` 单位）、层级（`-maxdepth`）查找，且 `-maxdepth` 必须写在其他参数之前。
 2. `find -perm 644` 是恰好等于，`-perm -644` 是包含全部位，`-perm /644` 是包含任意一位；审计 SUID 用 `find / -type f -perm -4000`。
@@ -633,4 +647,6 @@ uid=0(root) gid=0(root) groups=0(root)
 - 文件属性实战
 - 用户管理
 - 用户权限与提权
+
+
 {% endraw %}

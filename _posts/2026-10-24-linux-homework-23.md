@@ -8,9 +8,11 @@ slug: "linux-homework-23"
 
 {% raw %}
 
+
+
 本篇对应课程第 23 天（磁盘管理）的课后作业，共四题：①新增一块磁盘，分区后格式化并挂载到 `/data`，写入 `/etc/fstab` 实现开机自动挂载；②用两种方法扩容 swap；③说明 `df -h` 与 `df -i` 的区别，并解释「磁盘满了但 `du` 统计不出来」的原因；④整理 RAID 0 / 1 / 5 / 10 对比表。第 1、2 题涉及 `fdisk`、`mkfs`、`swapon` 等真实设备与 root 权限操作，定为 B 级（标准命令 + CentOS 7 预期输出）；第 3 题的 `df`、`du` 可在本机真跑，定为 A 级，并附「小文件实验」验证 inode 与 block 是两套独立资源。
 
-## 实操环境说明
+## 实操环境说明 {: .sec-prac}
 
 本环境无法启动真实 Linux（WSL 被安全策略禁用、无 Docker），因此采用分级实操：
 
@@ -19,7 +21,7 @@ slug: "linux-homework-23"
 
 本篇 A 级部分：`df -h`、`df -i`、`du -sh` 对比实验、300 个空文件的 inode 实验。B 级部分：`fdisk` 分区交互、`partprobe`、`mkfs.xfs`、`mount`、`/etc/fstab`、`dd` + `mkswap` + `swapon`——这些命令需要真实块设备与 root 权限，文中给出完整命令序列与 CentOS 7 标准预期输出。`free` 命令在 Windows 宿主机上不可用，swap 相关验证统一按 CentOS 7 预期输出给出。输出中的本地用户名已按脱敏要求替换为 `user`，示例主机名为 `linux-node01`，实操目录统一用 `/tmp/hw/day23`。
 
-## 题目总览
+## 题目总览 {: .sec-prac}
 
 | 题号 | 题目（精简复述） | 分级 |
 | --- | --- | --- |
@@ -41,7 +43,7 @@ slug: "linux-homework-23"
 5. `mount` 临时挂载 + 写入 `/etc/fstab` 永久挂载；
 6. `mount -a` 校验 + `df -h` 确认。
 
-### 步骤 1：确认磁盘被识别（B 级）
+### 步骤 1：确认磁盘被识别（B 级） {: .sec-ver}
 
 ```bash
 lsblk
@@ -63,7 +65,7 @@ brw-rw----. 1 root disk 8, 16 Apr 28 08:54 /dev/sdb
 
 `TYPE` 为 `disk` 且下面没有 `part` 子行，说明这块盘是裸盘，还没分区。
 
-### 步骤 2：fdisk 交互分区（B 级，逐屏预期输出）
+### 步骤 2：fdisk 交互分区（B 级，逐屏预期输出） {: .sec-prac}
 
 ```bash
 fdisk /dev/sdb
@@ -125,7 +127,7 @@ sdb      8:16   0  10G  0 disk
 └─sdb1   8:17   0   5G  0 part
 ```
 
-### 步骤 3：格式化创建文件系统（B 级）
+### 步骤 3：格式化创建文件系统（B 级） {: .sec-prac}
 
 ```bash
 mkfs.xfs /dev/sdb1
@@ -146,7 +148,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
 
 关键行是 `blocks=1310720`（5G ÷ 4K block）——文件系统的 block 总数与 inode 数量都在格式化这一刻确定。
 
-### 步骤 4：挂载并写入 fstab（B 级）
+### 步骤 4：挂载并写入 fstab（B 级） {: .sec-prac}
 
 ```bash
 mkdir -p /data
@@ -176,7 +178,7 @@ $ blkid /dev/sdb1
 
 fstab 六列含义：设备（或 UUID）、挂载点、文件系统类型、挂载参数、是否 dump 备份（统一写 0）、是否 fsck 检查（根分区 1、其他 2、swap 与网络文件系统 0）。
 
-### 步骤 5：校验（B 级，最容易省略也最不该省略的一步）
+### 步骤 5：校验（B 级，最容易省略也最不该省略的一步） {: .sec-prac}
 
 ```bash
 umount /data
@@ -276,7 +278,7 @@ NAME       TYPE      SIZE USED PRIO
 
 **实现思路**：先用真机输出对比 `df -h` 与 `df -i`，再用「300 个空文件」实验证明 inode 与 block 脱节，最后给三种「磁盘满」的判断与处置。
 
-### 3.1 df -h 与 df -i 的区别（已实操）
+### 3.1 df -h 与 df -i 的区别（已实操） {: .sec-prac}
 
 `df -h` 看 **block（数据空间）** 的使用率，`df -i` 看 **inode（文件数量配额）** 的使用率。两者是独立的资源，一个满不代表另一个满。
 
@@ -312,7 +314,7 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 
 CentOS 7 的 inode 数量在格式化时就固定了（格式化输出里的 `isize`/`inodes` 行），每个文件至少占一个 inode。
 
-### 3.2 inode 与 block 脱节实验（已实操）
+### 3.2 inode 与 block 脱节实验（已实操） {: .sec-prac}
 
 造 300 个 0 字节的空文件，看「数据体积」与「资源占用」的脱节：
 
@@ -410,7 +412,7 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 
 **验证方法**：能不查资料说出四个级别的最少盘数、可用容量公式与「坏几块盘会丢数据」；能解释为什么数据库选 RAID 10 而不是 RAID 5（随机写多、校验开销大、重建窗口风险高）。
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 1. 新盘上线五步走：识别（`lsblk`）→ 分区（`fdisk`，<2T 用 MBR、>2T 用 `parted` 建 GPT）→ 重载分区表（`partprobe`）→ 格式化（`mkfs.xfs`）→ 挂载（`mount` 临时、`/etc/fstab` 永久）。
 2. `fdisk` 交互记住五个键：`n` 新建、`p` 查看、`t` 改类型、`w` 保存、`q` 不保存退出；分区表写错 fstab 后必须 `mount -a` 校验，否则可能开机卡死。
@@ -422,4 +424,6 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 8. RAID 0 快但不安全、RAID 1 安全但容量减半、RAID 5 折中（3 块起、坏 1 块）、RAID 10 安全与性能兼顾（4 块起、容量减半）；RAID 不是备份，重要数据必须有独立备份。
 
 > **参见**：磁盘管理基础 · 磁盘管理进阶 · day15 磁盘 block 与存储原理作业实操
+
+
 {% endraw %}

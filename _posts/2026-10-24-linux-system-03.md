@@ -8,6 +8,8 @@ slug: "linux-system-03"
 
 {% raw %}
 
+
+
 先把命令行快捷键补齐，再讲清"挂载"并用光驱完整演示一遍挂载与卸载，然后逐个过根目录下的常见目录，最后拆解网卡配置文件和 DNS 解析配置文件——这两份文件是排网络问题的主战场。
 
 ## 命令行常用快捷键
@@ -25,6 +27,7 @@ slug: "linux-system-03"
 | `Ctrl + q` | 解除锁定状态（quit，退出锁定状态） |
 
 > **注意：** 如果不小心按了 `Ctrl + s`，终端看起来"卡死"、输入无反应，其实是进入了锁定状态，按 `Ctrl + q` 即可恢复。新手容易栽在这——以为终端卡死，直接把窗口关了。
+{: .sec-pit}
 
 > **补充：** 还有几个高频快捷键：`Ctrl + c` 中断当前命令，`Ctrl + d` 发送 EOF（退出登录或结束输入），`Ctrl + l` 清屏（等价于 `clear`），`Ctrl + r` 在历史命令中反向搜索，`Tab` 补全命令与路径。把 `Ctrl + r` 用熟练，可以少敲一半命令。再补一个不常提但极好用的：`Esc + .`（或 `Alt + .`）把上一条命令的最后一个参数直接粘到光标处——刚 `ls` 完一个长路径要 `cd` 进去，按一下就出来了。
 
@@ -39,7 +42,7 @@ slug: "linux-system-03"
 
 为什么 Linux 只有一棵目录树、Windows 却按盘符切？因为 Linux 把"存储"和"路径"解耦了：路径永远从 `/` 出发，磁盘随时挂到任何目录下插拔，上层应用不用改一个字；Windows 把路径绑死在盘符上，加一块盘就要纠结它叫 E 还是 F。这个设计让 Linux 的扩容、迁移、网络存储（NFS）都天然平滑。
 
-## 原理解析：一切皆文件与挂载的本质 {: .sec-why}
+## 原理解析：一切皆文件与挂载的本质 {: .sec-know}
 
 Linux 的设计哲学是"**一切皆文件**"：普通文件是文件，目录是文件，硬盘、键盘、进程信息也都是文件。这一切靠内核的 **VFS（Virtual File System，虚拟文件系统）** 层实现。
 
@@ -50,8 +53,9 @@ Linux 的设计哲学是"**一切皆文件**"：普通文件是文件，目录�
 5. 卸载（umount）则是把这条记录删掉，Y 恢复成普通空目录，设备中的数据从目录树上"消失"。
 
 > **注意：** 因为挂载点只是目录树上的一个"接入点"，所以**挂载点目录里原有的数据会被暂时遮住**——挂载后只能看到新设备的内容，卸载后才能重新看到原数据。因此生产环境严禁把 `/etc`、`/home` 这类有数据的目录当挂载点。另外，设备文件名（如 `/dev/sdb1`）不是固定的，重启或调整硬件顺序后可能变化，所以 `/etc/fstab` 里推荐用 UUID 标识设备。
+{: .sec-pit}
 
-## 实操演示：挂载光驱
+## 实操演示：挂载光驱 {: .sec-ex}
 
 **第一个步骤：拥有一个存储设备（光驱）**，使光驱加载光盘。
 
@@ -63,6 +67,7 @@ lrwxrwxrwx. 1 root root 3 Mar 29 12:02 /dev/cdrom -> sr0
 ```
 
 > **说明：** `/dev/cdrom` 是一个软链接，指向真实设备文件 `/dev/sr0`。设备文件也可以直接使用，两个路径等价。
+{: .sec-note}
 
 **第三个步骤：将存储设备进行挂载**
 
@@ -73,6 +78,7 @@ mount 挂载设备文件信息 挂载点（目录信息）
 ```
 
 > **注意：** 挂载点目录必须存在，否则会报错——mount 故意不帮你自动创建，防止手滑把设备挂到错误的深层路径上遮住原数据。挂载点还应该是空目录，原因见下面的原理解析。
+{: .sec-pit}
 
 ```bash
 [root@linux-node1 /]# mount /dev/cdrom /mnt
@@ -94,10 +100,11 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 ```
 
 > **注意：** 卸载前必须**退出挂载点目录**（示例中先 `cd` 回家目录），否则会报 `target is busy`。如果找不到谁在占用，用 `fuser -m /mnt` 或 `lsof +D /mnt` 定位进程。
+{: .sec-pit}
 
 挂载之后，挂载点目录自身的权限设置就不再起作用了——读写控制权交给文件系统内的目录和挂载选项，想收紧权限从这两处下手。
 
-### `mount` 常用参数详解
+### `mount` 常用参数详解 {: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -129,7 +136,7 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 同一设备重复挂到不同目录不会报错，但会挂出多份视图，卸载要逐个 umount——动手前先 `mount` 不带参数看一眼挂了什么。
 
-### `umount` 常用参数详解
+### `umount` 常用参数详解 {: .sec-expl}
 
 | 参数 | 作用 |
 | --- | --- |
@@ -139,7 +146,7 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 `umount -l` 是懒卸载，目录树里先摘掉、占用清完才真正释放——应急可用，别当常规操作。另外，盘要先用 fdisk/parted 分区、mkfs 格式化出文件系统才能挂载，没格式化直接 mount 会报"you must specify the filesystem type"。
 
-## FHS 目录标准逐个详解
+## FHS 目录标准逐个详解 {: .sec-best}
 
 FHS（Filesystem Hierarchy Standard，文件系统层次结构标准）规定了每个目录该放什么。运维判断"什么文件该放哪、什么目录能清"，都以此为依据。
 
@@ -165,10 +172,11 @@ FHS（Filesystem Hierarchy Standard，文件系统层次结构标准）规定了
 | `/mnt` | 临时挂载点，手工挂载设备时使用 | 卸载后可清 |
 
 > **注意：** 判断目录能不能清的简单口诀：**配置在 `/etc` 不动、日志在 `/var` 轮转、临时 `/tmp` `/run` 自动清、业务数据 `/home` `/srv` 慎动、系统命令 `/usr` `/bin` 绝不碰**。磁盘空间满了优先查 `/var/log` 和大文件，不要手动删 `/usr` 下的东西。
+{: .sec-pit}
 
 > **补充：** `/proc` 下的文件有个怪现象：`ls -l` 显示大小全是 0，`cat` 出来却全是内容——这些文件不在磁盘上，是内核在读取瞬间实时生成的。`/proc/meminfo`、`/proc/cpuinfo` 都是这么来的，往里写值内存里也留不住，没有意义。
 
-## 根目录下的基础目录结构
+## 根目录下的基础目录结构 {: .sec-expl}
 
 ```bash
 [root@linux-node1 /]# ls -l /
@@ -217,6 +225,7 @@ drwxr-xr-x.  19 root root  267 Mar 28 10:48 var
 | `/var` | 经常变化的数据，如日志 |
 
 > **说明：** CentOS 7 把 `/bin`、`/sbin`、`/lib`、`/lib64` 全部做成指向 `/usr` 下对应目录的软链接（usr merge），这是 Fedora 推动的目录合并，目的是简化维护——两套目录合并后，`/usr` 可以在只读挂载下独立运行。`ls -l /` 输出中开头的 `l`（link）就是软链接的标志。
+{: .sec-note}
 
 `mount` 不带参数时列出当前所有挂载（含挂载选项），`df -h` 则是容量视角。看"挂了什么、带什么参数"用 mount，看"还剩多少空间"用 df，两者对照着用。
 
@@ -243,6 +252,7 @@ mount -o iocharset=utf8 /dev/sdb1 /mnt/usb   # 中文文件名显示乱码时指
 ```
 
 > **注意：** 老内核的 vfat 驱动在显示中文文件名时可能需要 `iocharset=utf8,codepage=936` 组合参数；U 盘拔除前务必先 `umount /mnt/usb`，直接热插拔可能丢数据——写缓存还没落盘，一拔就没了。
+{: .sec-pit}
 
 ### 挂载 NTFS 分区（Windows 磁盘）
 
@@ -256,10 +266,11 @@ mount -t ntfs-3g /dev/sdb1 /mnt/ntfs
 较新的内核（5.15+）提供了 `ntfs3` 驱动，可以直接 `mount -t ntfs3 /dev/sdb1 /mnt/ntfs`，性能更好。
 
 > **注意：** 挂载 NTFS 分区时要确认分区号，可以用 `lsblk -f` 或 `blkid` 查看分区的文件系统类型，避免把 ext4 分区当成 NTFS 挂载。
+{: .sec-pit}
 
 ## 开机自动挂载：`/etc/fstab`
 
-### 文件作用与原始示例
+### 文件作用与原始示例 {: .sec-ex}
 
 `/etc/fstab` 用于实现存储设备**开机自动挂载**：
 
@@ -274,7 +285,7 @@ UUID=62100743-6f8a-4f83-a37d-e2088c4830e2 swap    swap    defaults        0 0
 
 列的含义依次是：设备（或 UUID）、挂载点、文件系统类型、挂载参数、dump 备份标志、fsck 检查顺序。
 
-### 六字段逐列详解
+### 六字段逐列详解 {: .sec-expl}
 
 | 字段 | 含义 | 取值说明 |
 | --- | --- | --- |
@@ -286,12 +297,13 @@ UUID=62100743-6f8a-4f83-a37d-e2088c4830e2 swap    swap    defaults        0 0
 | 第 6 列：fsck 检查顺序 | 开机时磁盘检查的次序 | `0` 不检查；`1` 留给根文件系统；其他文件系统用 `2`；多个盘同为 `2` 时并行检查 |
 
 > **注意：** 原文中光驱那行的文件系统类型处是 `？？？`（待填写），正确值是 `iso9660`——光盘的标准文件系统。完整写法为 `/dev/cdrom /mnt iso9660 defaults 0 0`。
+{: .sec-pit}
 
 顺带回答"开机后谁去读 fstab"：启动流程里，内核挂完根分区后，由 systemd 的 local-fs.target 逐条挂载 fstab 里的设备——`mount -a` 做的就是同一件事。fstab 出错的机器会卡进 emergency mode，挂载这一步挡在启动路径上，所以它是"改错就开不了机"的高危文件。
 
 挂载光驱最典型的用途是做本地 yum 源：光盘里的 `Packages` 目录就是仓库本体，`baseurl=file:///mnt` 指过去即可（完整配置见《软件安装与硬件信息查看》）。机房里不能上外网的机器全靠这招。
 
-### 配置开机自动挂载的完整步骤
+### 配置开机自动挂载的完整步骤 {: .sec-prac}
 
 ```bash
 blkid /dev/sdb1                          # 第一步：查出设备的 UUID 与文件系统类型
@@ -309,8 +321,9 @@ df -h                                    # 第五步：确认 /data 已挂载且
 ```
 
 > **注意：** `mount -a` 是配置 fstab 后的标准验证动作——如果 fstab 写错，这里立刻报错，还能进系统修复；如果不经验证直接重启，fstab 错误可能导致系统无法启动（尤其在根分区配置出错时）。修改 fstab 前先 `cp /etc/fstab /etc/fstab.bak`，这里偷懒的后果是开不了机。
+{: .sec-pit}
 
-## 重要文件一：网卡配置文件
+## 重要文件一：网卡配置文件 {: .sec-expl}
 
 ### 文件内容信息
 
@@ -350,10 +363,11 @@ DNS1=223.5.5.5      -- DNS：建立名称和 IP 地址的对应关系，如 14.2
 ifcfg 文件不是每个字段都要写全：TYPE、NAME 等多数有默认值，最小可用的静态配置就 ONBOOT、BOOTPROTO、IPADDR、PREFIX、GATEWAY、DNS1 六项。还有个源头关系要理清：网卡里的 DNS1 最终会被写进 `/etc/resolv.conf`——一个管源头、一个是生成结果，改错位置就会出现"改了不生效"。
 
 > **注意：** 在 CentOS 7 中网卡命名规则与早期版本不同：物理网卡可能叫 `eno1`、`ens33` 这类名字（可预测网络设备名），`eth0` 多见于虚拟机或手动改过 `biosdevname` 的环境。记文件时以 `ip addr` 实际看到的网卡名为准。
+{: .sec-pit}
 
 生产服务器一律 `static`（或 `none`）手动配 IP，不用 DHCP——租约到期一换 IP，依赖这个 IP 的 DNS、监控、防火墙策略全部失效。DHCP 只留给个人练机环境。多网卡机器每块网卡一个 `ifcfg-xxx` 文件，文件名与 `DEVICE` 对应；复制旧配置改新网卡时，`UUID` 和 `DEVICE` 两项必须改，UUID 重复会让网络服务启动异常。
 
-### 配置文件修改后重启网络服务
+### 配置文件修改后重启网络服务 {: .sec-expl}
 
 **方法一：针对所有网卡进行重启**
 
@@ -369,14 +383,16 @@ ifdown eth0 && ifup eth0
 ```
 
 > **注意：** 异常问题——网卡配置文件正确，却无法重启网络服务。此时需要关闭 NetworkManager 网络管理服务：
+{: .sec-pit}
 
 ```bash
 systemctl stop NetworkManager
 ```
 
 > **注意：** NetworkManager 与传统的 `network` 服务会互相覆盖配置，这是"配置改了不生效"的经典原因。两选一：要么停用 NetworkManager 用 `network` 服务（传统运维习惯），要么停用 `network` 服务、改用 NetworkManager 的命令行工具 `nmcli` 管理（现代发行版的默认做法）。远程操作时停网络服务有断开连接的风险，优先用 `ifdown eth0 && ifup eth0` 精准重启单块网卡。
+{: .sec-pit}
 
-## 重要文件二：DNS 解析配置文件（了解）
+## 重要文件二：DNS 解析配置文件（了解） {: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# vi /etc/resolv.conf
@@ -396,16 +412,17 @@ nameserver 10.10.10.10
 把完整解析链串起来：程序发起查询 → `/etc/nsswitch.conf` 决定查找顺序 → 先查 `/etc/hosts` → 查不到再问 `/etc/resolv.conf` 里配置的 nameserver → DNS 服务器逐级向上查。排错时按这条链逐段确认，每一环都有对应的配置文件。
 
 > **注意：** `/etc/resolv.conf` 可能被 NetworkManager、dhclient 或云主机初始化脚本自动覆盖，手动改完重启网络后丢失是正常现象——要么改网卡配置文件里的 `DNS1`，要么给 resolv.conf 加 `chattr +i` 防止被修改。域名解析不通时，先用 `ping 223.5.5.5`（测 IP）和 `ping www.example.com`（测域名）区分是网络问题还是 DNS 问题。
+{: .sec-pit}
 
-### 辨析：/mnt 与 /media {: .sec-bianxi}
+### 辨析：/mnt 与 /media
 
 两个都是挂载点，习惯分工不同：`/media` 交给桌面环境自动挂载可移动设备（U 盘、光盘插上后系统自动挂到这里）；`/mnt` 留给管理员手动临时挂载。服务器上手动挂载一律用 `/mnt` 或自建目录，别跟 `/media` 抢地方。
 
-### 辨析：/etc/hosts 与 /etc/resolv.conf {: .sec-bianxi}
+### 辨析：/etc/hosts 与 /etc/resolv.conf
 
 两者都和域名有关，分工完全不同：`/etc/hosts` 是本地写死的"通讯录"，查询优先级高、改完立即生效，适合内网机器互访和临时测试；`/etc/resolv.conf` 决定"去问哪个 DNS 服务器"，管的是本地查不到的所有域名。排错口诀：解析不对，先看 hosts 是不是有旧记录把域名劫持了，再去查 DNS。
 
-## 知识卡片：目录与挂载速查 {: .sec-card}
+## 知识卡片：目录与挂载速查 {: .sec-know}
 
 | 知识点 | 一句话结论 |
 | --- | --- |
@@ -420,7 +437,7 @@ nameserver 10.10.10.10
 | 根分区 fsck | 根写 `1`，其他写 `2`，swap 写 `0` |
 | 能清的目录 | `/tmp`、`/var/log`（轮转）、`/run` |
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -433,7 +450,7 @@ nameserver 10.10.10.10
 | 改了网卡配置不生效 | NetworkManager 覆盖了配置 | `systemctl status NetworkManager` | 停用其一，二选一管理网络 |
 | DNS 时好时坏 | resolv.conf 被自动覆盖 | `cat /etc/resolv.conf` 看生成注释 | 改 `DNS1` 或 `chattr +i` 锁定文件 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -445,8 +462,9 @@ nameserver 10.10.10.10
 | `network` 服务管网络 | NetworkManager + `nmcli` / `nmtui` | Rocky / AlmaLinux 默认 NetworkManager |
 
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 等系统上本篇的目录标准、挂载机制、fstab 格式完全一致；差异主要在网卡命名（如 `ens160`）与网络管理工具（NetworkManager 为默认）。查询设备用 `lsblk -f` 可以一次性看到分区、UUID、文件系统类型与挂载点，是替代 `blkid` + `fdisk -l` 组合的最佳实践。
+{: .sec-pit}
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 1. 总结命令快捷方式。
 2. 总结存储设备挂载步骤。
@@ -457,7 +475,7 @@ nameserver 10.10.10.10
 1. 预习系统的启动级别。
 2. 预习系统的启动顺序。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 熟练使用 `Ctrl + a/e/u/k/w/y` 等快捷键可以大幅提升命令行效率；`Ctrl + s` 会锁定终端，`Ctrl + q` 解锁。
 2. 挂载的本质是把一个目录作为存储设备的挂载点，进入该目录即可看到设备中的数据；挂载点目录必须事先存在，且不要用有数据的目录。
@@ -468,7 +486,7 @@ nameserver 10.10.10.10
 7. 网卡配置文件 `/etc/sysconfig/network-scripts/ifcfg-eth0` 是重点，`ONBOOT`、`IPADDR`、`PREFIX`、`GATEWAY`、`DNS1` 是最常改的几项。
 8. 改完网卡配置后重启服务：`systemctl restart network` 或 `ifdown eth0 && ifup eth0`；重启失败先关掉 NetworkManager 再试。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. 挂载点目录里原有数据在挂载后会怎样？卸载后呢？
 2. `mount -o loop /data/xx.iso /mnt` 中的 `loop` 参数起什么作用？
@@ -490,4 +508,6 @@ nameserver 10.10.10.10
 - 重要系统文件与运行级别
 - 运维网络基础（上）
 - 附录-命令速查表
+
+
 {% endraw %}

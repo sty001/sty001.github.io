@@ -8,9 +8,11 @@ slug: "linux-system-06"
 
 {% raw %}
 
+
+
 刚装完 CentOS 7 要做的第一批优化：Vim 三种模式与常用快捷操作、查看系统版本与内核、创建与切换普通用户、定制命令提示符（PS1）的内容与颜色、把 yum 基础源与扩展源换成国内镜像，外加 SELinux、防火墙、SSH 加固、资源限制这些安全项。一台新机器照着过一遍就能交付。
 
-## 课前回顾：挂载与目录结构
+## 课前回顾：挂载与目录结构 {: .sec-sum}
 
 | 知识点 | 说明 |
 | --- | --- |
@@ -24,8 +26,9 @@ slug: "linux-system-06"
 > **注意：** 挂载时尽量不要使用已经有数据的目录作为挂载点，原有数据会被"遮住"。
 >
 > **注意：** `/proc` 目录中的数据文件不能随意修改，它反映的是内核运行时的实时状态。
+{: .sec-pit}
 
-## 原理解析：系统优化的整体思路 {: .sec-why}
+## 原理解析：系统优化的整体思路 {: .sec-know}
 
 拿到一台刚装好的系统，该按什么顺序优化？业界公认的三个目标：**安全、性能、规范**，按这个顺序推进：
 
@@ -34,10 +37,11 @@ slug: "linux-system-06"
 3. **规范**：最后让机器可维护——提示符可辨身份、yum 源统一、字符集统一、时间同步、命名规范。规范决定团队协作效率。
 
 > **注意：** 顺序不能反：没做安全就开放端口，等于给攻击者敞开门；没做规范就上线，三个月后没人敢动这台机器。另外，**任何优化都要可回滚**——改配置前 `cp xxx xxx.bak`，改完先用 `systemctl restart` 或 `source` 验证，确认无误再考虑重启。
+{: .sec-pit}
 
 ## Vim 编辑器的基本用法
 
-### 打开与保存的最小流程
+### 打开与保存的最小流程 {: .sec-expl}
 
 ```bash
 [root@linux-node1 ~]# vi test.txt   # 利用 vi 命令打开一个文件
@@ -109,12 +113,13 @@ Vim 有三种模式：**命令模式**、**插入模式（编辑模式）**、**
 | `u`（小写） | 撤销操作（undo） |
 
 > **注意：** Vim 里的删除本质上就是剪切，删除后可以用 `p` 再粘贴回来。
+{: .sec-pit}
 
 快捷键是可组合的：`d2w` 删两个词、`2dd` 删两行、`y$` 复制到行尾——"数字 + 动作 + 对象"三段式，记十来个键能拼出上百种操作。`:wq` 还有不带冒号的等价写法：普通模式直接按 `ZZ` 保存退出。
 
 > **补充：** 几个高频补充操作：`x` 删除光标处单个字符，`dw` 删除一个单词，`v` 进入可视选择模式（移动光标圈选范围后配合 `d` / `y`），`:set nu` 显示行号，`:noh` 取消搜索高亮，`gg=G` 全文自动缩进，`:s/old/new/g` 当前行全局替换、`:%s/old/new/g` 全文替换。
 
-## 了解系统环境
+## 了解系统环境 {: .sec-expl}
 
 两个命令确认系统版本与内核信息：
 
@@ -127,6 +132,7 @@ Linux linux-node1 3.10.0-862.el7.x86_64 #1 SMP Fri Apr 20 16:44:24 UTC 2018 x86_
 ```
 
 > **注意：** 面试或交接时常被问到"以前用的 Linux 系统是什么环境"，标准回答方式是：CentOS 7，具体型号 7.5，内核 3.10，64 位。建议把 CentOS 7 的内核信息记下来。
+{: .sec-pit}
 
 ## 系统用户的创建、切换与查看
 
@@ -174,10 +180,11 @@ testuser
 ```
 
 > **注意：** `su - root` 中间的横杠表示"登录式切换"——连家目录、环境变量一起切成 root 的环境；不加横杠只换身份不换环境，排查环境变量问题时容易误判，新手容易栽在这。日常更推荐 `sudo`（按命令授权、有审计日志），而不是直接把 root 密码告诉所有人。`su`、`sudo` 与用户管理的完整内容见《用户权限与提权》篇。
+{: .sec-pit}
 
-## 命令提示符优化（PS1 环境变量）
+## 命令提示符优化（PS1 环境变量） {: .sec-warn}
 
-### 默认配置与含义
+### 默认配置与含义 {: .sec-expl}
 
 ```bash
 [root@linux-node1 test]# echo $PS1
@@ -190,7 +197,7 @@ testuser
 | `\h` | 显示系统主机名称 |
 | `\W` | 显示当前所在目录信息（目录结构的最后结尾信息） |
 
-### 修改提示符内容
+### 修改提示符内容 {: .sec-warn}
 
 把 `\h` 换成 `\H`（显示完整主机名）、`\W` 换成 `\w`（显示完整路径），写入 `/etc/profile` 永久生效：
 
@@ -199,7 +206,7 @@ testuser
 export PS1='[\u@\H \w]\$ '
 ```
 
-### 修改提示符颜色
+### 修改提示符颜色 {: .sec-warn}
 
 Linux 中给信息加颜色的通用写法：
 
@@ -238,14 +245,17 @@ export PS1='[\[\e[32;1m\]\u@\[\e[33;1m\]\h\[\e[34;1m\] \W\[\e[0m\]]\$ '
 ```
 
 > **注意：** 修改 `/etc/profile` 后需要重新登录，或执行 `source /etc/profile` 才能生效——改完没反应，九成是忘了这一步。
+{: .sec-pit}
 
 > **注意：** 课后练习"用户红色、主机名绿色、目录蓝色"的参考写法如下——每段用 `\[\e[0m\]` 单独收尾，避免颜色互相污染：
+{: .sec-pit}
 
 ```bash
 export PS1='[\[\e[31;1m\]\u\[\e[0m\]@\[\e[32;1m\]\h\[\e[0m\] \[\e[34;1m\]\W\[\e[0m\]]\$ '
 ```
 
 > **提示：** 线上操作最怕认错机器，建议把主机名用醒目颜色标出（生产环境常用红色或黄色），做到"看一眼提示符就知道在哪台机器上"。
+{: .sec-note}
 
 ## yum 下载源优化
 
@@ -254,25 +264,25 @@ yum 软件的优势：
 1. 不需要到官方网站单独下载软件包（yum 仓库）；
 2. 可以自动解决软件的依赖关系。
 
-### 优化基础 yum 源文件
+### 优化基础 yum 源文件 {: .sec-expl}
 
 ```bash
 curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 ```
 
-### 优化扩展 yum 源文件
+### 优化扩展 yum 源文件 {: .sec-ext}
 
 ```bash
 wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 ```
 
-### 检查可用的 yum 源信息
+### 检查可用的 yum 源信息 {: .sec-ver}
 
 ```bash
 yum repolist
 ```
 
-### 实际下载软件验证
+### 实际下载软件验证 {: .sec-ver}
 
 ```bash
 [root@linux-node1 ~]# yum install sl cowsay -y    # 需要提前优化好 epel 扩展源
@@ -284,6 +294,7 @@ yum repolist
 配置完源先 `yum repolist` 看仓库列表和包数量——数量是 0 说明 baseurl 配错或网络不通，别急着 install 排半天。
 
 > **注意：** `sl`、`cowsay` 这类小工具来自 epel 扩展源，如果只配置了基础源会提示找不到软件包。
+{: .sec-pit}
 
 为什么基础源和扩展源都要换国内镜像？默认 mirrorlist 指向国外源站，下载动辄几十 KB/s，装个软件等半天；国内镜像（阿里云、清华、中科大）同步了同样的内容，速度能差出一个数量级。EPEL 同理——它不在 CentOS 官方源里，单独一份 repo 文件。
 
@@ -315,10 +326,11 @@ SELINUXTYPE=targeted
 ```
 
 > **注意：** 很多企业中为了图省事直接设 `SELINUX=disabled`。更规范的做法是保持 `enforcing`，遇到拦截时用 `ausearch -m avc` 查日志、`semanage fcontext` + `restorecon` 修正文件上下文——这样既保住安全又不误事。修改 `/etc/selinux/config` 后必须重启系统才能生效；enforcing 与 permissive 之间可以热切换，disabled 则必须重启。
+{: .sec-pit}
 
 SELinux 的上下文是长这样的：`ls -Z 文件名` 能看到 `unconfined_u:object_r:admin_home_t:s0` 这样的标签。最常踩的坑是"文件挪了家"——把网站文件从 `/home` 挪到 `/www` 后 httpd 读不了，就是上下文没跟着走，`restorecon -Rv /www` 修好。
 
-## firewalld 与 iptables 基本操作
+## firewalld 与 iptables 基本操作 {: .sec-prac}
 
 ### firewalld（CentOS 7 默认防火墙）
 
@@ -349,8 +361,9 @@ firewall-cmd --permanent --remove-port=8080/tcp  # 移除端口
 防火墙管"端口开不开"，SELinux 管"进程能不能动这个文件"，两者管的不是一层事——别以为关了一个，另一个也跟着没事了。排错时逐个放行验证，别一次全关，出了问题分不清是谁的锅。端口转发也是高频需求：`firewall-cmd --permanent --add-forward-port=port=80:proto=tcp:toport=8080` 让 80 进来的流量转到 8080，改完记得 `--reload`。
 
 > **注意：** "改了不生效"是 firewalld 最高频的问题——`--permanent` 只写配置不激活，`--add-xxx` 激活但不持久，正确姿势是两条都执行（或永久改完 `--reload`）。另外远程改防火墙有把自己关在门外的风险，先用 `timeout` 兜底：`timeout 60 firewall-cmd --add-port=22/tcp`，改错了 60 秒后自动恢复。
+{: .sec-pit}
 
-### iptables（底层包过滤，CentOS 6 默认）
+### iptables（底层包过滤，CentOS 6 默认） {: .sec-know}
 
 ```bash
 iptables -L -n                             # 查看规则（-n 不解析域名，速度快）
@@ -365,6 +378,7 @@ service iptables save                      # 等价的保存命令
 ```
 
 > **注意：** CentOS 7 起 firewalld 才是官方推荐前端，iptables 命令实际由 `nftables` 后端兼容提供。两套前端不要同时用，规则会互相覆盖。企业级网络边界（专业防火墙、安全组）承担主要过滤职责，服务器本机的防火墙是第二道防线，规则宜少不宜滥。
+{: .sec-pit}
 
 ## systemd 服务管理
 
@@ -389,8 +403,9 @@ service iptables save                      # 等价的保存命令
 | `systemctl daemon-reload` | 修改 unit 文件后重载配置 |
 
 > **注意：** `disable` 只是取消开机自启，服务还能手动启动；`mask` 是把 unit 文件软链接到 `/dev/null`，任何方式都启动不了——用于防止服务被其他单元依赖意外拉起（如 mask 掉 `avahi-daemon`）。装了新的 unit 文件（如自己写的 `/etc/systemd/system/myapp.service`）后，必须先 `systemctl daemon-reload` 再 `enable --now`，否则 systemd 不认新文件。
+{: .sec-pit}
 
-### 辨析：service 与 systemctl {: .sec-bianxi}
+### 辨析：service 与 systemctl
 
 `service xxx start` 在 CentOS 7 里还能用，但它只是个兼容壳——内部转手就调 `systemctl`。真正的差别在能力面：systemctl 能看状态详情（`status` 带最近日志）、管理开机自启（enable / disable）、屏蔽服务（mask），service 都做不到。新写的文档、脚本一律用 systemctl，service 只在维护 CentOS 6 老脚本时才会出现。
 
@@ -412,6 +427,7 @@ systemctl list-unit-files --state=disabled   # 列出被禁用的服务
 | `NetworkManager` | 动态网络管理 | 传统运维习惯用 network 服务时可 disable |
 
 > **注意：** 关服务的原则是"关掉用不到的，不熟的不碰"——拿不准的服务先 `systemctl status 服务名` 看它是干什么的，再决定。生产变更前把 `list-unit-files` 的输出留档，方便对比与回滚。
+{: .sec-pit}
 
 开机慢先量化再动手：`systemd-analyze` 看总耗时，`systemd-analyze blame | head` 看每个服务的耗时排行，谁拖后腿一目了然，比逐个关服务试错快得多。想给自己的程序做开机自启，也写个最小 unit：`/etc/systemd/system/myapp.service` 三段（`[Unit]` 描述、`[Service]` 的 ExecStart 命令、`[Install]` 的 WantedBy=multi-user.target），然后 daemon-reload + enable——比往 rc.local 堆命令干净得多。
 
@@ -445,6 +461,7 @@ systemctl restart sshd            # 重启 sshd 使配置生效
 换端口选 1024~65535 且避开常用服务端口。云服务器还有第二道门：平台侧的安全组——sshd 配置对了、firewalld 放行了，安全组没放行照样连不上。三层（sshd 配置、系统防火墙、云安全组）都要核对，这是云上机器连不上最常见的原因。
 
 > **注意：** 改 SSH 配置有把自己锁在门外的风险，务必遵守三条军规：① 改 `Port` 和 `PermitRootLogin` 前，先确认普通用户能通过 sudo 提权；② 改 `PasswordAuthentication no` 前，先把公钥装上并测试密钥登录成功；③ 保留一个已登录的终端窗口不断开，改完先测试新连接、确认能进再关旧窗口。企业环境还常配合 fail2ban（自动封禁暴力破解 IP）和安全组白名单使用。fail2ban 值得多看一眼：它盯着 secure 日志里的失败记录，超过阈值自动封 IP，配合密钥认证是防爆破的黄金组合。
+{: .sec-pit}
 
 ## ulimit 与 limits.conf
 
@@ -483,6 +500,7 @@ root            soft    nproc           unlimited
 删用户的命令也一并记住：`userdel -r 用户名`，`-r` 连家目录一起删；不带 `-r` 会留下一堆无主的目录。
 
 > **注意：** `limits.conf` 只对通过 PAM 登录的会话（ssh、su、控制台）生效，**对 systemd 启动的服务不生效**——服务的限制要在 unit 文件里加 `LimitNOFILE=65535`，或用 `systemctl edit` 追加覆盖配置。调完 nproc 后如果太小，可能出现 `fork: retry: Resource temporarily unavailable`，用户连命令都执行不了。
+{: .sec-pit}
 
 验证限制是否真的生效：登录后 `ulimit -n` 直接看当前值；验证某个服务的限制，`cat /proc/服务PID/limits`——它显示该进程真实的限制值，比猜靠谱。
 
@@ -502,8 +520,9 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 3. 需要进单用户维护时，输入 GRUB 密码即可正常操作。
 
 > **注意：** 密码的哈希值保存在 `/boot/grub2/grub.cfg` 和 `/etc/grub.d/40_custom` 中，设置前先确认 `/boot` 分区权限正常。物理安全（机房门禁、锁机柜）始终是第一道防线，GRUB 密码是它的延伸。云服务器（ECS）还应关闭控制台的"救援模式"直通，改走带审计的运维通道。GRUB 密码忘了的恢复路径：物理接触机器用救援盘，或云平台走带审计的控制台重置——最后又绕回物理安全这道题。
+{: .sec-pit}
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -516,7 +535,7 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 | Vim 保存时报 `E45: 'readonly' option is set` | 文件只读或用户无写权限 | `ls -l 文件` | `:w !sudo tee %` 借 sudo 保存 |
 | SELinux 导致服务读不了文件 | 文件安全上下文不对 | `ausearch -m avc`、`ls -Z` | `semanage fcontext` + `restorecon` 修正 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -527,8 +546,9 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 | 密码登录 SSH | 密钥登录 + fail2ban | 暴力破解拦截，安全基线要求 |
 
 > **注意：** CentOS 7 已于 2024 年 6 月停止维护，Rocky Linux、AlmaLinux 上本篇所有命令与配置路径完全一致；firewalld、sshd_config、systemd 的行为也无差异。systemd 的 `systemctl edit --full` 是现代管理 unit 文件的推荐方式（自动生成覆盖配置，不用直接改 `/usr/lib` 下的系统文件）。
+{: .sec-pit}
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 **基础练习**
 
@@ -539,7 +559,7 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 
 1. 如何实现彩色提示符：用户信息显示为红色、主机名信息显示为绿色、目录信息显示为蓝色。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. Vim 有三种模式（命令模式、插入模式、底行模式），掌握 `i/I/o/O/a/A/C/cc` 进入编辑、`G/gg/ngg/$/0` 移动光标、`dd/yy/p/u` 编辑文本就够了。
 2. 查看系统环境用 `cat /etc/redhat-release` 和 `uname -a`，要能说出系统版本、内核版本与位数。
@@ -550,7 +570,7 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 7. 系统优化按"安全 → 性能 → 规范"推进：SELinux 三种模式（enforcing / permissive / disabled）、firewalld 临时与永久规则要成对操作、systemd 服务管理掌握 enable/disable/mask、SSH 加固改端口禁 root 用密钥。
 8. 资源限制用 `ulimit`（临时）与 `/etc/security/limits.conf`（永久，仅 PAM 会话生效）；GRUB 密码守住单用户模式这个后门。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. `systemctl disable nginx` 和 `systemctl mask nginx` 有什么区别？
 2. `firewall-cmd --permanent --add-port=8080/tcp` 执行后端口立刻通了吗？正确的完整操作是什么？
@@ -572,4 +592,6 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 - 远程管理服务 SSH
 - 系统优化实践（下）：字符集与远程连接优化
 - 运维网络基础（下）
+
+
 {% endraw %}

@@ -8,9 +8,11 @@ slug: "linux-system-07"
 
 {% raw %}
 
+
+
 优化的下半场：用 `rpm` 检查软件安装情况、处理防火墙与 SELinux 两个安全服务、搞定字符集（LANG）、把 SSH 连接速度提上来，最后带一份服务器硬件与 Linux 发展史的回顾。前置的 yum 源优化完成后再来。
 
-## 课前回顾与 rpm 软件包检查
+## 课前回顾与 rpm 软件包检查 {: .sec-ver}
 
 上一节完成了 Vim 编辑、系统信息查看、用户管理、命令提示符优化（含彩色提示符）与 yum 源优化：
 
@@ -19,7 +21,7 @@ slug: "linux-system-07"
 export PS1='[\[\e[32;1m\]\u@\[\e[33;1m\]\h\[\e[34;1m\] \W\[\e[0m\]]\$ '
 ```
 
-### 如何确认软件是否已经安装
+### 如何确认软件是否已经安装 {: .sec-ver}
 
 **方法一：重新 yum 安装一遍**，已安装时会提示 `Nothing to do`。
 
@@ -48,6 +50,7 @@ openssh-clients-7.4p1-16.el7.x86_64
 ```
 
 > **注意：** 有些命令名称和软件包的名称并不相同（例如命令 `ssh` 属于 `openssh-clients` 软件包），所以"命令能执行"和"软件包名"不能直接划等号。
+{: .sec-pit}
 
 > **补充：** Windows 的安装程序一般是 `xxx.exe`，Linux（RedHat 系）的安装程序一般是 `xxx.rpm`。
 
@@ -100,6 +103,7 @@ systemctl is-enabled firewalld    # 检查确认服务是否开机自启
 ```
 
 > **注意：** 真实生产环境不建议"一关了之"，正确做法是保留防火墙并精确放行业务端口（`firewall-cmd --permanent --add-port=xxx/tcp && firewall-cmd --reload`），把默认策略设为 drop、按最小化原则开端口。本篇后续会讲 firewalld 的基本操作。
+{: .sec-pit}
 
 关防火墙之前先想清楚这台机器的暴露面：只对内网提供服务，就配合安全组、ACL 限制来源；全开等于把数据库裸奔到公网。关闭只是实验室动作，生产要按端口白名单来。
 
@@ -108,6 +112,7 @@ systemctl is-enabled firewalld    # 检查确认服务是否开机自启
 SELinux 服务用于对 root 用户权限进行更细粒度的控制，很多企业中默认把它关闭。
 
 > **注意：** CentOS 6 与 CentOS 7 的关闭方式一致。
+{: .sec-pit}
 
 ### 临时关闭
 
@@ -142,6 +147,7 @@ SELINUX=disabled
 ```
 
 > **注意：** 修改 `/etc/selinux/config` 之后必须重启系统才能生效。
+{: .sec-pit}
 
 > **补充：** `setenforce 0` 设的是 permissive 模式——只记录不拦截，重启后回到配置文件设定的值。想查看"服务打不开到底是不是 SELinux 在拦"，就临时设 permissive 试试；确认为此原因后，规范做法是用 `ausearch -m avc` 看拦截日志，用 `semanage fcontext` + `restorecon` 修正文件上下文，而不是永久 disabled。
 
@@ -151,7 +157,7 @@ SELINUX=disabled
 
 ## 字符编码优化
 
-### 什么是字符编码
+### 什么是字符编码 {: .sec-know}
 
 字符编码用于实现对非英文字符的支持。计算机操作系统由美国人发明，天然支持英语，要显示中文就需要字符集的支持。
 
@@ -213,7 +219,7 @@ LANG="zh_CN.UTF-8"
 > localectl set-locale LANG=zh_CN.GBK
 > ```
 
-### 原理解析：locale 变量体系 {: .sec-why}
+### 原理解析：locale 变量体系 {: .sec-know}
 
 Linux 的字符集不是由一个变量决定的，而是一整套 `LC_*` 变量：
 
@@ -240,6 +246,7 @@ locale -a | wc -l           # 统计可用 locale 数量
 `locale -a` 里没有想要的 locale（比如 zh_CN.UTF-8）？装齐语言包再生成一个：`yum install -y glibc-common`，然后 `localedef -c -f UTF-8 -i zh_CN zh_CN.UTF-8`，之后 localectl 就能设置它了。精简镜像和容器里最常遇到这种情况。
 
 > **注意：** 想让中文正常显示，系统 locale、SSH 客户端字符集、文件本身的编码三者必须一致。排查顺序：先 `locale` 看系统设置，再看 Xshell 会话属性里的编码（推荐 UTF-8），最后用 `file 文件名` 查看文件本身是什么编码。`localectl set-locale LANG=zh_CN.UTF-8` 会写入 `/etc/locale.conf`，一条命令同时完成内核态配置，无需重启。
+{: .sec-pit}
 
 ## 时区与时间同步
 
@@ -279,12 +286,13 @@ rtcsync                                 # 同步系统时间到硬件时钟
 内网机器多时不建议全部直连公网 NTP：拿一两台机器当内网时间源（chrony.conf 里 `allow 网段`），其余机器同步它——公网压力小，断外网时全场也失联不了。急着对时不用等轮询：`chronyc makestep` 手动触发一次跳变同步，虚机迁移、休眠恢复后时间跳变，这一条立刻拉回。
 
 > **注意：** 旧的 `ntpdate`（一次性对时工具）与 `ntpd` 服务在 CentOS 7 中已分别被废弃和替换——`ntpdate` 会被 chronyd 取代，一次性对时可用 `chronyd -q`。生产服务器必须开启 NTP 同步，容器与虚拟机从宿主机继承时间，不需要各自同步。时间偏差超过 5 分钟，Kerberos 认证、HTTPS 证书会直接失效。
+{: .sec-pit}
 
-### 辨析：chronyd 与 ntpd {: .sec-bianxi}
+### 辨析：chronyd 与 ntpd
 
 ntpd 是老将，逐步调整时钟、追求长期精度，但对"时间严重跑偏"的机器收敛很慢；chronyd 是新一代，偏差大时能快速跳变纠正（`makestep` 控制），间歇性断网（笔记本、虚机迁移）场景下也同步得更稳。CentOS 7 起官方默认就是 chronyd，新部署没有理由再装 ntpd。
 
-## DNS 配置与 `/etc/resolv.conf`
+## DNS 配置与 `/etc/resolv.conf` {: .sec-expl}
 
 DNS 负责把域名解析成 IP。客户端的解析配置在 `/etc/resolv.conf`：
 
@@ -309,10 +317,11 @@ options timeout:2 attempts:3
 排 DNS 还有两个现代工具：`dig www.example.com` 看完整解析过程（问了哪台服务器、耗时多少），`dig @223.5.5.5 域名` 指定服务器测——比 ping 更能定位问题出在哪一层。时区的本质顺带说透：`/etc/localtime` 这个软链接指向 `/usr/share/zoneinfo/` 下的哪个文件，`timedatectl set-timezone` 做的就是换链接。
 
 > **注意：** `/etc/resolv.conf` 常被 NetworkManager、dhclient 或云主机初始化脚本覆盖——改完重启网络丢失是正常现象。永久生效要改网卡配置文件里的 `DNS1=`（见《系统目录结构与挂载》），或用 `chattr +i /etc/resolv.conf` 防篡改。DNS 故障的经典判断法：`ping 223.5.5.5` 通但 `ping www.example.com` 不通，问题就在 DNS。
+{: .sec-pit}
 
 ## 日志系统与 logrotate
 
-### 系统日志概览
+### 系统日志概览 {: .sec-sum}
 
 | 日志文件 | 内容 |
 | --- | --- |
@@ -384,8 +393,9 @@ logrotate -f /etc/logrotate.conf    # 强制执行一轮（测试配置是否生
 ```
 
 > **注意：** 轮转后必须让服务重新打开日志文件（`postrotate` 里的 `kill -USR1` 或 `systemctl reload 服务`），否则服务还往旧文件写，表现为"日志轮转了但新文件一直是空的"。磁盘空间莫名被日志吃掉时，先 `du -sh /var/log/*` 定位，再检查对应服务的 logrotate 配置是否缺失。
+{: .sec-pit}
 
-## `/etc/fstab` 挂载优化参数
+## `/etc/fstab` 挂载优化参数 {: .sec-expl}
 
 `/etc/fstab` 的第四列（挂载参数）不止 `defaults` 一个选择，数据盘常用 `noatime` / `nodiratime` 做性能优化：
 
@@ -403,6 +413,7 @@ UUID=12345678-1234-1234-1234-123456789abc /data xfs defaults,noatime,nodiratime 
 | `nodev` | 忽略设备文件 | 数据分区 |
 
 > **注意：** 开启 `noatime` 后，依赖"访问时间"判断的程序会受影响（如部分邮件投递程序、某些备份工具的增量判断），`mutt` 等软件也曾依赖 atime。**只对数据盘开，根分区保持默认**。细看 `mount` 输出还会发现根分区其实已经带着 `relatime`——内核的折中方案：访问时间只在它比修改时间旧、或超过 24 小时时才更新，兼容与性能兼顾，不必手动干预。效果验证：`mount | grep /data` 输出中应能看到 `noatime`。修改 fstab 后一律 `mount -a` 验证再重启。
+{: .sec-pit}
 
 ## swap 使用与调整
 
@@ -447,6 +458,7 @@ sysctl -w vm.swappiness=10         # 临时调整
 | 桌面 / 通用 | 60（默认） | 平衡响应速度 |
 
 > **注意：** swap 是"救命"不是"提速"——一旦进程大量换入换出，磁盘 IO 打满，系统会肉眼可见地卡顿。生产服务器内存不足时的正确做法是扩容内存或优化程序，而不是堆 swap。RedHat 官方建议：内存小于 2G 时 swap 设为内存 2 倍，2~8G 时与内存相等，大于 8G 时至少 4G。关闭 swap 前先 `swapoff /swapfile`，正在使用中的 swap 需要先把内存中的数据换回来，内存不足时 swapoff 可能失败。
+{: .sec-pit}
 
 内存耗尽的最终结局是 OOM Killer：内核按 badness 评分杀掉占用最大的进程，`dmesg | grep -i "out of memory"` 能找到记录。swap 调得再大也改变不了这个结局，只是延后——扩内存才是治本。
 
@@ -479,10 +491,11 @@ webuser         soft    nofile          100000
 | 第四列 | 数值，`unlimited` 表示不限制 |
 
 > **注意：** 文件名以数字开头决定加载顺序（90- 会覆盖 50- 的内容）。该机制由 PAM 的 `pam_limits.so` 在登录时加载，因此**只对 ssh、su、控制台等 PAM 会话生效，对 systemd 服务不生效**——服务要限制资源，在 unit 文件里用 `LimitNOFILE=65535`。改完后重新登录（不是新开终端子进程）才会生效，新手容易栽在这——改完随手开个新终端测，怎么测都是旧值。
+{: .sec-pit}
 
 还有一处容易漏：系统给了额度，应用还要"领"——nginx.conf 里的 `worker_rlimit_nofile` 也要对齐 nofile 的值，两边一致才真正生效。
 
-## sysctl 内核参数优化
+## sysctl 内核参数优化 {: .sec-expl}
 
 内核参数在系统运行时可以动态调整，用于优化文件描述符、网络协议栈、内存行为。查看与临时修改：
 
@@ -526,6 +539,7 @@ sysctl --system                             # 加载 /etc/sysctl.d 下所有配�
 | `net.ipv4.tcp_max_syn_backlog` | 半连接队列上限 | 抗 SYN 攻击、高并发 |
 
 > **注意：** 内核参数是全局生效的"大招"，改错了影响面极大——改前先记录原值（`sysctl -a > /tmp/sysctl.bak`），一次只改一个并观察。`fs.file-max` 与 `ulimit` 是两个层级：前者是整机天花板，后者是单进程限制，两个都要调，只调一个没用。参数名在不同内核版本间可能有增减，`sysctl -a` 里没有的参数说明当前内核不支持，不要硬写。
+{: .sec-pit}
 
 `sysctl --system` 的加载顺序也值得知道：/run/sysctl.d → /etc/sysctl.d → /usr/lib/sysctl.d，同名的配置后面的赢——把自定义文件放 /etc/sysctl.d 正是为了覆盖发行版默认值。
 
@@ -558,7 +572,7 @@ systemctl restart sshd
 
 服务端优化完还慢，就查客户端一侧：远程工具版本过老导致算法协商耗时、本地 DNS 解析慢、代理软件劫持 22 端口。用 `ssh -v IP` 看卡在哪一步——输出停在哪一行，问题就在哪个环节，这是 SSH 排错最有效的手段。多网卡机器还能进一步收口：sshd_config 里 `ListenAddress 10.0.0.200` 只在内网网卡监听，公网网卡直接扫不到。
 
-## 系统基础优化总结
+## 系统基础优化总结 {: .sec-sum}
 
 | 优化项 | 内容 |
 | --- | --- |
@@ -580,7 +594,7 @@ systemctl restart sshd
 | 资源限制 | `/etc/security/limits.d/` drop-in 文件 |
 | 内核参数 | `/etc/sysctl.d/99-custom.conf` 按需调整 |
 
-## 阶段回顾：服务器硬件与系统发展
+## 阶段回顾：服务器硬件与系统发展 {: .sec-sum}
 
 ### 如何才算把知识掌握了
 
@@ -588,7 +602,7 @@ systemctl restart sshd
 2. 判断掌握的标准：作用清楚、操作熟练、知识原理可以绘图；
 3. 检验的终极标准：能给不清楚的人讲明白。
 
-### 服务器硬件组成
+### 服务器硬件组成 {: .sec-expl}
 
 电源、CPU、内存、磁盘、风扇。
 
@@ -613,7 +627,7 @@ systemctl restart sshd
 
 RAID 级别补一张速记：raid0 两块盘合一块，快但坏一块全丢；raid1 两块盘互为镜像，坏一块照常跑，容量减半。生产常用的是 raid10（先镜像再条带，数据库首选）和 raid5（三块起步，校验占一块的容量，允许坏一块）。
 
-### 操作系统组成与发展过程
+### 操作系统组成与发展过程 {: .sec-prac}
 
 操作系统由**内核、解释器、应用程序**三部分组成。以聊天软件为例：人操作软件（输入"你好"）→ 解释器 → 内核 → 计算机硬件（二进制，最终由网卡发出）。
 
@@ -638,7 +652,7 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 > **现代环境补充：** CentOS 已于 2024 年 6 月对 7.x 停止维护，CentOS Linux 项目转型为 CentOS Stream。当前企业级替代方案：Rocky Linux（CentOS 创始人新立，二进制兼容 RHEL）、AlmaLinux（CloudLinux 支持，二进制兼容 RHEL）、Oracle Linux。选型上，追求长期稳定的生产环境用 Rocky / AlmaLinux 的 LTS 版本。
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -655,7 +669,7 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 改完 swappiness 验证一下：`cat /proc/sys/vm/swappiness` 直接读内核当前值，与 `sysctl vm.swappiness` 等价——数值没变说明加载没成功，回头查配置文件路径。数据库导出文件乱码同理要先查源头：导出时客户端的字符集错了，导入端怎么改都没用。
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 | 旧做法 | 现代做法 | 说明 |
 | --- | --- | --- |
@@ -669,8 +683,9 @@ GNU 项目 + Linux 内核雏形 == Linux
 | `netstat` / `ifconfig` | `ss` / `ip` | net-tools 已停止维护 |
 
 > **注意：** Rocky Linux、AlmaLinux 上本篇所有命令（`timedatectl`、`chronyc`、`journalctl`、`sysctl`、`logrotate`）行为完全一致；firewalld 仍是默认防火墙。区别主要在内核版本（新内核 sysctl 参数名可能有增减）与默认服务集。
+{: .sec-pit}
 
-## 课后练习
+## 课后练习 {: .sec-prac}
 
 **基础练习**
 
@@ -682,7 +697,7 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 1. 如何批量创建多个用户（例如一次创建 50 个用户）。
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. `rpm -qa` 查是否安装、`rpm -ql` 查包内文件、`rpm -qf` 查文件属于哪个包，配合反引号可以一步定位。
 2. CentOS 7 用 `systemctl stop/disable` 关闭防火墙，`is-active` / `is-enabled` 可以快速确认服务状态；生产环境应精确放行而不是一关了之。
@@ -692,7 +707,7 @@ GNU 项目 + Linux 内核雏形 == Linux
 6. 系统基础优化五件事：命令提示符、yum 源、安全服务（防火墙 + SELinux）、字符集、SSH 远程连接；再往上一层还要做时区与 chrony 同步、DNS 优化、日志轮转、fstab 挂载参数、swap 策略、limits.d 资源限制、sysctl 内核参数。
 7. 时间不同步会引发证书与认证故障；日志不轮转会写满磁盘；文件描述符不调高并发服务就起不来——这三项是生产事故的高发区。
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. `LC_ALL` 和 `LANG` 同时设置时，哪个优先生效？临时把某条命令的输出切成英文界面，用什么写法？
 2. CentOS 7 中用什么命令设置时区？用什么命令查看 chrony 的同步源？
@@ -714,4 +729,6 @@ GNU 项目 + Linux 内核雏形 == Linux
 - 运维网络基础（下）
 - 远程管理服务 SSH
 - 附录-命令速查表
+
+
 {% endraw %}

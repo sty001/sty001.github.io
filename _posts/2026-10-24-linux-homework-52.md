@@ -8,7 +8,9 @@ slug: "linux-homework-52"
 
 {% raw %}
 
-## 本篇说明
+
+
+## 本篇说明 {: .sec-expl}
 
 这一篇整理第 03 周测验的 30 道题（原始题头标了 35 题，实际题面只有 30 道），每题配标准答案、考点解析、可复现的实操命令和高频易错点，边讲边验证。
 
@@ -32,7 +34,7 @@ printf '# comment\nname=1\n#note\nname=2\naddress=x\nport=8080\n' > config.txt
 
 ## 一、编辑器与文本处理
 
-### 题 01：vi 编辑器的工作原理，编辑突然中断后如何恢复数据
+### 题 01：vi 编辑器的工作原理，编辑突然中断后如何恢复数据 {: .sec-know}
 
 > **答案：** vi/vim 的工作分三种模式：命令模式（默认）、编辑模式（输入 `i/a/o` 进入）、末行模式（输入 `:` 进入）。编辑流程是：打开文件 → 把文件内容读入内存缓冲区 → 所有修改先写在缓冲区 → 执行 `:w` 时才写回磁盘；同时在同目录生成隐藏的交换文件 `.文件名.swp` 保存编辑状态。
 > 突然中断（断电、SSH 断开、Ctrl+Z 后进程被杀）时，缓冲区内容丢失，但 `.swp` 交换文件保留，可用 `vim -r 文件名` 恢复，或打开后在提示界面按 `R`（Recover）恢复，恢复后用 `:wq` 保存，再**手动删除** `.swp` 文件。
@@ -310,7 +312,7 @@ sed 's#^name=#address=#' config.txt
 
 > **参见**：sed 命令详解
 
-### 题 07：管道符号 `|` 的含义说明
+### 题 07：管道符号 `|` 的含义说明 {: .sec-expl}
 
 > **答案：** 管道把**前一个命令的标准输出（stdout）**作为**后一个命令的标准输入（stdin）**，用于在一条命令行里串联多个命令完成流水线处理。形式：`命令A | 命令B | 命令C`。默认只传递 stdout，不传递 stderr，如需把 stderr 一起传给后续命令，要写成 `命令A 2>&1 | 命令B`。
 
@@ -504,7 +506,7 @@ cat: /tmp/linux_link.txt: No such file or directory
 
 ## 二、系统优化与安全
 
-### 题 12：系统安全优化涉及什么，写出优化的操作步骤与命令
+### 题 12：系统安全优化涉及什么，写出优化的操作步骤与命令 {: .sec-prac}
 
 > **答案：** 系统安全优化主要涉及五个方面：
 > 1. **禁止 root 远程登录**：改 `/etc/ssh/sshd_config` 的 `PermitRootLogin no`，新建普通用户 + sudo 提权。
@@ -566,7 +568,7 @@ success
 
 > **参见**：用户权限与提权
 
-### 题 13：防火墙配置完毕后，如何检查防火墙已关闭且没有开机自启动
+### 题 13：防火墙配置完毕后，如何检查防火墙已关闭且没有开机自启动 {: .sec-ver}
 
 > **答案：** CentOS 7：`systemctl status firewalld` 看 `Active: inactive (dead)`；`systemctl is-enabled firewalld` 返回 `disabled`；两者结合即可证明「当前已关闭 + 不开机自启」。也可用 `systemctl is-active firewalld` 返回 `unknown`/`inactive`。
 
@@ -616,7 +618,7 @@ Disabled
 > 3. `systemctl is-enabled` 对未安装的服务返回 `Failed to get unit file state`，与服务存在但 disabled 要区分。
 > 4. 生产环境「永久关闭防火墙」通常不是最优解，正确做法是放行需要的端口。
 
-### 题 14：rm 命令修改了别名信息的文件 /etc/profile，但还是不能直接删除信息，是什么原因？写出别名相关的文件及路径
+### 题 14：rm 命令修改了别名信息的文件 /etc/profile，但还是不能直接删除信息，是什么原因？写出别名相关的文件及路径 {: .sec-know}
 
 > **答案：** 原因：`/etc/profile` 是**登录式 shell（login shell）**才读取的文件，且修改后必须重新登录或 `source /etc/profile` 才生效；另外 `~/.bashrc` 中的定义加载顺序在 `/etc/profile` 之后会**覆盖**前者，所以在新开的非登录交互式 shell 里看不到新别名。更常见的原因是 CentOS 默认 `~/.bashrc` 里有 `alias rm='rm -i'`，它后加载并覆盖，导致仍是交互确认而非「直接删除」。
 > 别名相关文件及路径：
@@ -732,7 +734,7 @@ zh_CN.gbk
 > 3. CentOS 6 与 CentOS 7 配置文件不同（`/etc/sysconfig/i18n` vs `/etc/locale.conf`）。
 > 4. 文件本身是 GBK 编码时，即使系统 UTF-8 也乱码，需 `iconv -f gbk -t utf-8 file -o newfile` 转换。
 
-### 题 16：说明这些特殊符号的含义：`>` `>>` `2>` `2>>` `#` `.` `..` `$` `|` `&&` `;`
+### 题 16：说明这些特殊符号的含义：`>` `>>` `2>` `2>>` `#` `.` `..` `$` `|` `&&` `;` {: .sec-expl}
 
 > **答案：**
 
@@ -949,7 +951,7 @@ lrwxrwxrwx. 1 root root 13 /etc/rc.local -> rc.d/rc.local
 
 > **参见**：重要系统文件与运行级别
 
-### 题 20：将配置文件中注释信息去除掉显示，有什么办法（至少三种）
+### 题 20：将配置文件中注释信息去除掉显示，有什么办法（至少三种） {: .sec-expl}
 
 > **答案：** 三种主流做法（假设注释行以 `#` 开头）：
 > `grep -v '^#' file`
@@ -1531,7 +1533,7 @@ grep   -> /usr/bin/grep
 
 ---
 
-## 本篇小结
+## 本篇小结 {: .sec-sum}
 
 这一周的题跑完，值得留在脑子里的就这几条：
 
@@ -1543,4 +1545,6 @@ grep   -> /usr/bin/grep
 6. 防火墙「真正关闭」必须同时满足 `systemctl is-active` 为 `inactive`、`systemctl is-enabled` 为 `disabled`，只 stop 不 disable 重启后会复活。
 7. 批量创建用花括号展开 `{01..20}` 会自动补零，`{1..20}` 与 `seq` 不加 `-w` 都不会补零。
 8. 日志实时跟踪生产环境用 `tail -F` 而非 `tail -f`，前者在日志轮转后仍能继续跟踪。
+
+
 {% endraw %}

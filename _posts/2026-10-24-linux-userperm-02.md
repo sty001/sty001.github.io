@@ -8,11 +8,13 @@ slug: "linux-userperm-02"
 
 {% raw %}
 
+
+
 用户相关的四个配置文件（重点是 `/etc/passwd` 七列含义）、用户的增删改查命令（`useradd` / `usermod` / `userdel` / `passwd`）、用户组命令、属主属组修改（`chown`）、用户信息查看（`id` / `w`），以及普通用户获得 root 能力的三种方式。在此基础上深入权限模型的工作原理、特殊权限位（SUID / SGID / Sticky）、umask 细节、`/etc/sudoers` 完整语法、`su` 与 `sudo -i` 的差异、最小权限原则与常见提权风险点。目标：建账号、改属主、给同事配 sudo 权限时，知道每一步的安全边界在哪。
 
-## 一、上节回顾
+## 一、上节回顾 {: .sec-sum}
 
-### 1.1 系统启动流程
+### 1.1 系统启动流程 {: .sec-expl}
 
 ```bash
 1 开机自检 → 2 MBR 引导 → 3 grub 菜单（选择内核 / 进入单用户模式）→ 4 加载内核
@@ -31,6 +33,7 @@ slug: "linux-userperm-02"
 | execute | 执行文件的能力（脚本文件） |
 
 > **注意：** 文件是否可以编辑查看，和上一级或上 n 级目录有关，读取文件数据的过程是 `/ → ops/ → test_dir/ → test.txt` 逐层查找。
+{: .sec-pit}
 
 **目录权限（更多关注：一定要有执行权限）：**
 
@@ -105,9 +108,9 @@ $UID              显示当前登录系统用户的 uid 数值
 # 脚本作用:
 ```
 
-## 二、权限模型原理解析
+## 二、权限模型原理解析 {: .sec-know}
 
-### 2.1 进程身份与权限判定流程
+### 2.1 进程身份与权限判定流程 {: .sec-expl}
 
 Linux 的权限检查对象不是"用户"，而是**进程**。每个进程持有三组身份：real uid / effective uid / saved set uid（组同理），日常访问控制只看 euid 与 egid。当进程访问一个文件时，内核按以下顺序判定：
 
@@ -132,7 +135,7 @@ Linux 的权限检查对象不是"用户"，而是**进程**。每个进程持�
 
 结论：对目录来说，**r 是"看见名字"的能力，x 是"穿过目录"的能力，w+x 才是"增删文件"的能力**。只有 r 没有 x 时，文件名能列出来但读不到 inode，属性就显示为 `???`。
 
-### 2.3 umask 深入
+### 2.3 umask 深入 {: .sec-ext}
 
 umask 是 shell 内置命令，作用于当前 shell 及其子进程。要点：
 
@@ -160,6 +163,7 @@ chmod 4755 文件信息
 **总结：** setuid 权限位设置，将文件属主拥有的能力，分配给所有人。一般赋予二进制的命令文件或一些可执行的脚本文件。
 
 > **注意：** 脚本有两种执行方式：① 借助解释器执行，如 `sh /server/scripts/xxx.sh`、`python /server/scripts/xxx.py`；② 当成命令直接执行，需要给脚本加执行权限（`/server/scripts/xxx.sh`），或把目录加入 `PATH` 后直接敲脚本名。
+{: .sec-pit}
 
 深入一点：属主权限位显示 `s` 时说明该位同时带 x，显示 `S`（大写）则表示只有 suid 没有 x。典型应用是 `passwd`：普通用户改密码本质是写 `/etc/shadow`，而该文件仅 root 可写，于是给 `passwd` 置 suid，让进程以 root 身份运行、只完成改密这一件事。同理 `ping`、`su`、`sudo`、`mount` 都依赖这个机制。
 
@@ -256,6 +260,7 @@ chattr -i /etc/passwd
 ```
 
 > **注意：** 加锁后连 root 都无法修改/删除该文件，排查"文件明明有权限却改不动"时，记得用 `lsattr` 看一眼是否有 `i` 属性。常用属性还有 `+a`（只能追加，适合日志文件）和 `+j`（写入先记 journal，ext3/4 支持）。
+{: .sec-pit}
 
 ## 五、系统中和用户相关的文件
 
@@ -298,7 +303,7 @@ lp      :x  :4  :7  :lp      :/var/spool/lpd :/sbin/nologin
 /usr/sbin/nologin
 ```
 
-### 5.2 /etc/shadow 字段速查
+### 5.2 /etc/shadow 字段速查 {: .sec-chk}
 
 配套的 `/etc/shadow` 每行 9 个字段，记录密码本身与有效期：
 
@@ -408,6 +413,7 @@ uid=3000(Alex02) gid=1068(Alex02) groups=1068(Alex02)
 ```
 
 > **注意：** `usermod -G` 是覆盖式写法，会把用户原有附属组全部替换；只追加一个组必须写 `usermod -aG 组名 用户名`。改 uid / 家目录后，用户已打开会话中的环境变量不会自动更新，需要重新登录。
+{: .sec-pit}
 
 ### 6.3 删除用户：userdel
 
@@ -429,6 +435,7 @@ echo '<your-password>' | passwd --stdin ops
 ```
 
 > **注意：** `passwd --stdin` 会在命令历史中留下明文密码，生产环境谨慎使用；该参数是 RHEL 系特有选项，Debian / Ubuntu 请改用 `chpasswd`。批量设密示例：`echo "ops:<your-password>" | chpasswd`。
+{: .sec-pit}
 
 ### 6.5 企业中密码管理的方式
 
@@ -500,6 +507,7 @@ total 0
 ```
 
 > **注意：** 不加 `-R` 只改目录本身的属主属组，目录里面的文件不变；加 `-R` 才会连同目录内的所有数据一起修改。`chown` 只改属主（`chown 用户 文件`）或属主加属组（`chown 用户.组`）；只改组用 `chgrp`。符号链接默认不被跟随，加 `-h` 可改链接本身。
+{: .sec-pit}
 
 ## 九、用户信息查看：id 与 w
 
@@ -542,6 +550,7 @@ root     pts/0    10.0.0.1         08:55    3.00s  0.20s  0.00s w
 ```
 
 > **注意：** 向 `/dev/pts/N` 写消息要求同一用户或 root，且对方终端未关闭消息接收（`mesg n` 会拒绝）；生产环境更规范的广播方式是 `wall 消息`。配套命令：`who` 看会话明细，`users` 只看登录用户名。
+{: .sec-pit}
 
 ## 十、普通用户如何像 root 一样管理系统
 
@@ -628,7 +637,7 @@ LOGNAME=root
 
 再补一层根因：`su` 与 `su -` 的分水岭是**登录 shell**。`su -` 会以 login shell 启动目标用户的 shell，完整走一遍 `/etc/profile` → `~/.bash_profile` 的加载链，所以 USER、MAIL、PATH、家目录全部换成目标用户的；不带 `-` 的 `su` 是非登录 shell，只读 `~/.bashrc` 一层，大部分继承自当前会话。这也解释了两个高频故障：用 `su` 切过去后 `ifconfig` 找不到命令（sbin 不在继承来的 PATH 里），或者环境变量"改了不生效"（改的是 profile，而当前会话没按 login shell 加载）。排查切换类环境问题，先问自己一句：这个 shell 是不是登录 shell。
 
-### 10.2 sudo 工作原理与 /etc/sudoers 语法详解
+### 10.2 sudo 工作原理与 /etc/sudoers 语法详解 {: .sec-know}
 
 **原理解析：sudo 一次授权背后发生了什么**
 
@@ -730,6 +739,7 @@ NOPASSWD: /usr/sbin/*, !/usr/sbin/visudo , /usr/bin/*
 ```
 
 > **注意：** 授权命令目录时用 `!命令` 排除特权命令（尤其是 `visudo`），否则被授权用户可能反向提权到完整 root。更细粒度的规则建议放到 `/etc/sudoers.d/` 目录下的独立文件管理（文件名不带点，权限 0440），不要直接改主文件，便于版本化管理。
+{: .sec-pit}
 
 NOPASSWD 的风险边界要划清楚。它省掉的只是"输自己密码"这一步，代价是：**拿到该账号 shell 的任何人都直接拥有对应 root 能力**，身份校验环节整个失效。场景分三类看：
 
@@ -766,6 +776,7 @@ useradd: user 'Alex07' already exists
 ```
 
 > **注意：** sudo 只授权明确列出的命令，用 `sudo -l` 可以查看当前用户被授予了哪些命令。
+{: .sec-pit}
 
 sudo 常用子命令与参数：
 
@@ -794,7 +805,7 @@ sudo 常用子命令与参数：
 
 这些原则落到执行层面可以压缩成一句话：sudoers 里每一行都应该能回答"谁、在哪台机器、以什么身份、能跑哪条命令"四个问题——答不全的行就是过宽的授权，迟早要收回来。
 
-### 10.4 常见提权风险点
+### 10.4 常见提权风险点 {: .sec-warn}
 
 | 风险点 | 原理 | 排查命令 | 防护建议 |
 | --- | --- | --- | --- |
@@ -805,7 +816,7 @@ sudo 常用子命令与参数：
 | 家目录与 `.ssh` 权限过松 | 他人可改 `~/.ssh/authorized_keys` 或历史命令文件 | `ls -la ~/.ssh` | 家目录 700，`authorized_keys` 600 |
 | `NOPASSWD: ALL` | 免密全量授权，任何拿到该账号的人直接是 root | `grep -r NOPASSWD /etc/sudoers /etc/sudoers.d/` | 精确到命令，仅自动化场景使用 |
 
-## 常见错误与排错
+## 常见错误与排错 {: .sec-ts}
 
 | 现象 | 可能原因 | 排查命令 | 解决方式 |
 | --- | --- | --- | --- |
@@ -817,7 +828,7 @@ sudo 常用子命令与参数：
 | 文件改不动但权限是 777 | `chattr +i` 加锁或只读挂载 | `lsattr 文件`；`mount | grep ro` | `chattr -i` 解锁；重新挂载为 rw |
 | su 切换后找不到命令 | `su` 未完整切换 PATH | `echo $PATH` | 用 `su -` 完整加载环境变量 |
 
-## 知识卡片 {: .sec-card}
+## 知识卡片 {: .sec-know}
 
 **特殊权限位卡**
 
@@ -846,7 +857,7 @@ sudo 常用子命令与参数：
 | `Cmnd_Alias X = /a, /b` | 命令别名 |
 | `Defaults timestamp_timeout=5` | 免密时间窗 5 分钟 |
 
-## 现代环境补充
+## 现代环境补充 {: .sec-ext}
 
 CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentOS Stream）在用户与权限领域的变化：
 
@@ -859,7 +870,7 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 | `chage` / `passwd -x` 管密码 | 同样有效；配合 `pwquality` 模块加强复杂度 | `pam_pwquality` 强制密码长度与字符种类 |
 | `/etc/shadow` 加密算法 MD5 | SHA-512（`$6$`）或 yescrypt（`$y$`） | `$1$`（MD5）已不安全，新系统不再默认使用 |
 
-## 自测题
+## 自测题 {: .sec-prac}
 
 1. 一个进程访问文件时，内核按什么顺序判定权限？
 
@@ -889,7 +900,7 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 - 定时任务与 crond
 - 附录-命令速查表
 
-## 小结
+## 小结 {: .sec-sum}
 
 1. 用户信息集中在 `/etc/passwd`（七列：用户名、密码占位、uid、gid、注释、家目录、登录 shell）、`/etc/shadow`、`/etc/group`、`/etc/gshadow`。
 2. `useradd` 的 `-M -s /sbin/nologin` 创建虚拟用户，`-u` / `-g` / `-G` / `-c` 分别指定 uid、主要组、附属组与注释；`usermod` 参数与之对应（`-G` 是覆盖式，追加必须加 `-a`），`userdel -r` 连家目录一起删除。
@@ -901,4 +912,6 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 8. 权限判定的本质是进程身份与文件属主属组的匹配：文件重 r（w、x 都需 r 配合），目录重 x（r、w 都需 x 配合）。
 9. 最小权限原则：能不授就不授、授命令不授 shell、绝对路径、排除特权命令、按角色分组、加 `NOEXEC`、定期审计日志。
 10. 常见提权风险点：陌生 SUID 文件、sudo 授权 shell / 编辑器、计划任务与服务配置被低权可写、家目录权限过松，全部有对应排查命令，应纳入日常巡检。
+
+
 {% endraw %}
