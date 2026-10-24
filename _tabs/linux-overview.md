@@ -15,6 +15,8 @@ title: Linux 运维学习笔记总览
 
 > 下方按分区列出全部篇目与一句话内容速览，点击篇目名跳转阅读。
 
+**分区直达**：[00 知识手册](#00-知识手册--知识手册) · [01 基础入门](#01-基础入门--基础入门) · [09 综合架构](#09-综合架构--综合架构) · [10 作业实操](#10-作业实操--作业实操) · [附录](#附录--附录)
+
 ## 00-知识手册 · 知识手册
 
 > 阶段标签：**知识手册** ｜ 共 4 篇
@@ -138,66 +140,66 @@ title: Linux 运维学习笔记总览
 
 ## 10-作业实操 · 作业实操
 
-> 阶段标签：**作业实操** ｜ 共 56 篇
+> 阶段标签：**作业实操** ｜ 共 56 篇，与课程 day01~day45 逐天对齐，另含周测/日测精讲
 
 | 篇目 | 内容速览 |
 | --- | --- |
-| [day01-硬件与存储作业实操](/posts/linux-homework-01/) | day1 讲的是计算机硬件组成。作业一共 3 题，每题都按"题目 + 完整过程 + 可验证结果 + 易错点"的结构亲手过一遍。 |
-| [day02-硬件与系统概念作业实操](/posts/linux-homework-02/) | day2 的主题是 Linux 系统概念。作业分基础 3 题、扩展 1 题，每一题都实际做一遍，过程、结果、易错点一个不少。 |
-| [day03-系统安装作业实操](/posts/linux-homework-03/) | 课程第 3 天讲系统安装部署。基础作业 3 题、扩展 1 题，照旧逐题实做，过程和验证结果都留在本篇里。 |
-| [day04-远程连接与命令作业实操](/posts/linux-homework-04/) | 课程第 4 天讲远程连接与系统管理，作业两道：虚拟机克隆、已学命令总结。下面是在实操环境里的完整过程，每道题都留了可复现的步骤和… |
-| [day05-命令与重定向作业实操](/posts/linux-homework-05/) | 课程第 5 天是系统管理与操作命令，作业两条：总结已学命令及参数、预习系统目录结构。命令部分每条至少配一个真实运行的示例，重定向… |
-| [day06-目录结构作业实操](/posts/linux-homework-06/) | 本篇对应课程第 6 天（操作命令与目录结构）的课后作业：总结命令快捷方式、总结存储设备挂载步骤、总结目录结构作用。三条作业全部完… |
-| [day07-运行级别与别名作业实操](/posts/linux-homework-07/) | 本篇对应课程第 7 天（操作命令与目录结构）的课后作业：光驱开机自动挂载、系统 7 个运行级别作用与 CentOS 7 设置方法… |
-| [day08-命令回顾作业实操](/posts/linux-homework-08/) | 本篇对应课程第 8 天（操作命令与目录结构）的课后作业：将之前的课程进行回顾总结、总结命令与参数、预习并掌握 vim 使用技巧。… |
-| [day09-系统优化作业实操](/posts/linux-homework-09/) | 课程第 9 天（系统优化实践·上）留了三道作业：① 每次登录系统都提示信息；② 总结课程命令、快捷方式、符号；扩展题 ③ 实现彩… |
-| [day10-系统优化与软件安装作业实操](/posts/linux-homework-10/) | 课程第 10 天（系统优化实践·下）的作业有五道：rpm 卸载、第一阶段总结、课程复述，外加批量建户与 yum 安装流程两个扩展… |
-| [day11-网络端口与Vim作业实操](/posts/linux-homework-11/) | 课程第 11 天（基础知识回顾）的作业是三道总结题：网络中的服务端口号、vi/vim 使用方法、vi/vim 使用的异常错误。端… |
-| [day12-tail与tr作业实操](/posts/linux-homework-12/) | 课程第 12 天（基础知识回顾）的作业就两道：tail 参数 -f 与 -F 的区别、tr 替换信息的原理。两道都完整真跑——t… |
-| [day13-文件属性与find作业实操](/posts/linux-homework-13/) | 课程第 13 天（文件属性知识）的作业分三段：作业题目（tail 参数 -f/-F）、基础作业（总结 find 命令、总结文件属… |
-| [day14-文件批量压缩作业实操](/posts/linux-homework-14/) | 课程第 14 天的作业：目录里混着 .jpg、.png 等其它文件，要把其中所有以 .txt 结尾的文件统一压缩处理。作业原文只… |
-| [day15-磁盘block与存储原理作业实操](/posts/linux-homework-15/) | 课程第 15 天的作业三道：① 修改磁盘中 block 大小、查看默认 block 大小；② 总结数据存储与读取原理；③ 磁盘满… |
-| [day16-目录大小统计作业实操](/posts/linux-homework-16/) | 课程第 16 天的作业只考一条命令：利用什么命令真正统计目录的大小（答案 du -xxx）。别小看这一条，背后有三层东西要掰开—… |
-| [day17-三剑客与批量建用户作业实操](/posts/linux-homework-17/) | 对应课程第 17 天（shell 编程入门）的作业有两道：①sed/awk 命令如何进行排除过滤（对照 grep -v）；②批量… |
-| [day18-正则与sed总结作业实操](/posts/linux-homework-18/) | 课程第 18 天的作业三道题全是「总结型」：①总结正则符号；②总结 sed 命令；③总结 find / tar / date。总… |
-| [day19-awk捐款统计作业实操](/posts/linux-homework-19/) | 课程第 19 天的作业原题就一句话：求出测试文件中所有人第一次捐款的总额和第三次捐款总额，显示表头「第一总额 第三次总额」。题目… |
-| [day20-chmod权限总结作业实操](/posts/linux-homework-20/) | 课程第 20 天要求总结 chmod 命令的使用方法，是典型的「总结型」题目，按规范转化为「知识讲解 + 速查表 + 可直接运行… |
-| [day21-用户与权限管理作业实操](/posts/linux-homework-21/) | 本篇对应课程第 21 天（用户与权限管理）的课后作业，共四题：①批量创建用户 stu01..stu10 并给每个用户设置随机密码… |
-| [day22-定时任务作业实操](/posts/linux-homework-22/) | 本篇对应课程第 22 天（定时任务）的课后作业，共四题：①默写 crontab 五段时间语法规则并给出 8 个经典示例；②写一个… |
-| [day23-磁盘管理作业实操](/posts/linux-homework-23/) | 本篇对应课程第 23 天（磁盘管理）的课后作业，共四题：①新增一块磁盘，分区后格式化并挂载到 /data，写入 /etc/fst… |
-| [day24-阶段复习与命令总汇作业实操](/posts/linux-homework-24/) | 本篇对应课程的假期作业（阶段性大复习），共两道大题：① 总结所有命令；② 总结重要章节（文件属性、正则表达式、sed/awk、用… |
-| [day25-网络基础作业实操](/posts/linux-homework-25/) | 课程第 25 天（网络基础）留的作业共四题：①手工给 Linux 配静态 IP；②ip / ping / traceroute … |
-| [day26-DNS解析与命令复制作业实操](/posts/linux-homework-26/) | 课程第 26 天的作业有三道大题：① 用文字表示 DNS 的解析过程（dig）；② 总结命令；③ 复习之前的测验（文件属性、定时… |
-| [day27-综合架构规划与主机克隆作业实操](/posts/linux-homework-27/) | 课程第 27 天（综合架构开篇）的作业任务是：把一套中小规模网站的 3 层架构规划出来，落成「角色 / 主机名 / IP / 用… |
-| [day28-rsync备份服务部署作业实操](/posts/linux-homework-28/) | 课程第 28 天（备份服务 rsync）的作业：完成 rsync 守护进程服务端的完整部署，掌握七大常用参数的差异，并分别用「密… |
-| [day29-全网备份项目作业实操](/posts/linux-homework-29/) | 课程第 29 天（rsync 备份服务）的作业两道题：①自己试着完成全网备份数据项目；②总结每个服务的部署过程。第①题按「需求拆… |
-| [day30-NFS存储服务作业实操](/posts/linux-homework-30/) | 课程第 30 天（NFS 存储服务）的作业三道题：①实现 fstab 文件自动挂载的特殊服务是什么？②研究 user 参数作用；… |
-| [day31-实时同步服务作业实操](/posts/linux-homework-31/) | 课程第 31 天的作业原题只有一句话：「扩展实时同步软件：数据库需要实时同步、Windows 到 Windows 的实时同步」。… |
-| [day32-SSH秘钥连接作业实操](/posts/linux-homework-32/) | 课程第 32 天留了两道作业：①用脚本实现实时同步（while 循环）；②让 Xshell 这类终端工具也走密钥连接，另外要提前… |
-| [day32-secure日志安全分析进阶作业实操](/posts/linux-homework-33/) | 整套课程最经典的一道综合实战题就是它：课程第 32 天的作业给了一份约 51MB、近 50 万行的 SSH 认证日志 secur… |
-| [day33-Ansible模块与剧本预习作业实操](/posts/linux-homework-34/) | 这份预习作业对应课程第 33 天：①把八个新模块——yum、service、cron、mount、user、group、unar… |
-| [day34-Ansible剧本部署rsync-nfs作业实操](/posts/linux-homework-35/) | 课程第 34 天的作业就两道题：用剧本部署 rsync 服务，再用剧本部署 nfs 服务。原题只给方向，思路得自己补全——下面给… |
-| [day35-Ansible扩展与roles作业实操](/posts/linux-homework-36/) | 本篇对应课程第 35 天的课后作业，共三题：① 对 ansible 剧本扩展功能进行总结；②（选做）总结 ansible 剧本 … |
-| [day36-Ansible一键部署作业实操](/posts/linux-homework-37/) | 本篇对应课程第 36 天的课后作业，共三题：① 一键化部署全网备份项目；② 一键化部署 NFS 服务；③ 一键化部署实时同步服务… |
-| [day37-HTTP协议原理预习作业实操](/posts/linux-homework-38/) | 本篇对应课程第 37 天（Nginx 网站服务）的预习作业：在下一次课部署 Nginx 之前，先把 HTTP 协议的核心概念亲手… |
-| [day38-Nginx部署与301-302跳转作业实操](/posts/linux-homework-39/) | 本篇对应课程第 38 天的课后作业，共三题：①说明 301 跳转和 302 跳转的区别；②总结 curl 与 wget 两个下载… |
-| [day39-Nginx上传限制与图片存储作业实操](/posts/linux-homework-40/) | 本篇对应课程第 39 天的课后作业，围绕 LNMP 网站上线后的两个真实痛点展开：①上传主题/图片时浏览器报 413 Reque… |
-| [day40-网站访问统计与压力测试作业实操](/posts/linux-homework-41/) | 课程第 40 天的作业落在两件事上：①熟悉排序和去重命令，对文件里的数值信息做统计分析——找出用户访问最多的前 10 个页面；②… |
-| [day41-LNMP环境搭建作业实操](/posts/linux-homework-42/) | 先把课程第 41 天的两道作业摆出来：①利用命令取出状态页面信息中的数值（curl）；②搭建 LNMP 环境（Linux + N… |
-| [day42-反向代理与负载均衡作业实操](/posts/linux-homework-43/) | 课程第 42 天的作业进入综合架构的核心环节，共三题：①总结 Nginx 反向代理模块 ngxhttpproxymodule；②… |
-| [day43-keepalived实时监控与上游切换进阶作业实操](/posts/linux-homework-44/) | 课程第 43 天的进阶作业围绕两件事展开：基于 keepalived 的高可用负载均衡架构，①如何对主节点做「实时监控」，在 n… |
-| [day43-keepalived高可用作业实操](/posts/linux-homework-45/) | keepalived 这块，课程第 43 天留了两个方向性题目：①如何实现 keepalived 服务的实时监控（用 while… |
-| [day43-nginx-keepalived联动监控作业实操](/posts/linux-homework-46/) | day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「nginx 一停，keepalived 跟着停；nginx 一… |
-| [day44-监控服务Zabbix部署作业实操](/posts/linux-homework-47/) | 课程第 44 天（监控服务 Zabbix 上）的作业共四题：①监控体系与 Zabbix 组件概念辨析；②Zabbix Serve… |
-| [day45-监控服务Zabbix自定义监控作业实操](/posts/linux-homework-48/) | 课程第 45 天（监控服务 Zabbix 下）的作业有四题：①用 UserParameter 自定义监控 key（内存剩余、登录… |
-| [day45-结课总复习与面试题精讲作业实操](/posts/linux-homework-49/) | 本篇是整套课程的收尾篇，对应第 41 天的总复习作业：①用一张大表把「从裸机到高可用」的完整架构链路串一遍，检验每个环节是否真的… |
-| [周测-第01周-测验精讲](/posts/linux-homework-50/) | - 题量：30 题。每题 3 分、满分 90 分，及格分 70 分——按 3 分一题折算，答对 24 题上下才稳 |
-| [周测-第02周-测验精讲](/posts/linux-homework-51/) | - 题量：34 题。原卷共 35 题，第 08 题空缺，按原序号 01–07、09–35 顺延编排；每题 3 分、总分 105 … |
-| [周测-第03周-测验精讲](/posts/linux-homework-52/) | 这一篇整理第 03 周测验的 30 道题（原始题头标了 35 题，实际题面只有 30 道），每题配标准答案、考点解析、可复现的实… |
-| [周测-第04周-测验精讲](/posts/linux-homework-53/) | - 题量：40 题。每题 3 分、总分 120 分，及格分 75 分，约答对 25 题 |
-| [日测-day04-系统管理命令精讲](/posts/linux-homework-54/) | - 覆盖章节：day4 运维基础章节——系统管理命令，从目录/文件的查看、创建、切换，一路到编辑写入、复制备份、目录整体复制、删… |
-| [日测-day05-目录结构知识精讲](/posts/linux-homework-55/) | - 覆盖章节：day5 目录结构相关知识：挂载概念、系统一级目录作用、网卡配置文件详解、常用键盘快捷键，外加光驱挂载和改 IP … |
-| [日测-day06-知识精讲](/posts/linux-homework-56/) | - 覆盖章节：day6 运维基础章节——系统目录结构与核心配置文件。前半是主机名、本地解析、磁盘挂载、运行级别（CentOS 6… |
+| [day01-硬件与存储作业实操](/posts/linux-homework-01/) | 计算机硬件组成，3 题按「题目 + 完整过程 + 可验证结果 + 易错点」逐题真跑 |
+| [day02-硬件与系统概念作业实操](/posts/linux-homework-02/) | Linux 系统概念，基础 3 题 + 扩展 1 题，过程与易错点一个不少 |
+| [day03-系统安装作业实操](/posts/linux-homework-03/) | 系统安装部署，基础 3 题 + 扩展 1 题逐题实做 |
+| [day04-远程连接与命令作业实操](/posts/linux-homework-04/) | 虚拟机克隆、已学命令总结，两道题留可复现步骤与真实结果 |
+| [day05-命令与重定向作业实操](/posts/linux-homework-05/) | 命令参数逐条配真实运行示例，重定向符号全真跑，目录结构整理 FHS 速查表 |
+| [day06-目录结构作业实操](/posts/linux-homework-06/) | 命令快捷方式、挂载步骤、目录结构作用三条总结，Git Bash 真跑对照 |
+| [day07-运行级别与别名作业实操](/posts/linux-homework-07/) | 光驱自动挂载、7 个运行级别、单用户重置密码、rm 别名四题全做 |
+| [day08-命令回顾作业实操](/posts/linux-homework-08/) | 课程回顾做成知识卡片，命令汇成总表，vim 模式体系与命令行替换真跑 |
+| [day09-系统优化作业实操](/posts/linux-homework-09/) | 登录提示信息、命令/快捷方式/符号三张速查表、彩色提示符扩展题 |
+| [day10-系统优化与软件安装作业实操](/posts/linux-homework-10/) | rpm 卸载全命令序列、阶段总结串成链、批量建户与 yum 安装流程 |
+| [day11-网络端口与Vim作业实操](/posts/linux-homework-11/) | 服务端口速查表、vi/vim 模式与命令两张表、6 类高频报错恢复手法 |
+| [day12-tail与tr作业实操](/posts/linux-homework-12/) | tail -f 与 -F 三场景对比真跑，tr 替换乱错复现与四种正确用法 |
+| [day13-文件属性与find作业实操](/posts/linux-homework-13/) | find 按名/类型/时间/大小/-exec 真跑，文件属性总结与批量建号扩展 |
+| [day14-文件批量压缩作业实操](/posts/linux-homework-14/) | 三种做法压缩 .txt：find -exec、find \| xargs、tar --exclude，含边界情况 |
+| [day15-磁盘block与存储原理作业实操](/posts/linux-homework-15/) | block 大小查看修改、数据存储读取原理、磁盘满的三种原因 |
+| [day16-目录大小统计作业实操](/posts/linux-homework-16/) | du 统计目录的三层原理：ls 假象、块占用、du 与 df 为何对不上 |
+| [day17-三剑客与批量建用户作业实操](/posts/linux-homework-17/) | sed/awk 排除过滤对照 grep -v，批量建户设随机密码覆盖三知识点 |
+| [day18-正则与sed总结作业实操](/posts/linux-homework-18/) | 正则符号、sed、find/tar/date 三题总结，A 级示例全部真跑 |
+| [day19-awk捐款统计作业实操](/posts/linux-homework-19/) | awk 累加求和 + BEGIN/END 典型实战，扩展总额/平均值/最大值与数组 |
+| [day20-chmod权限总结作业实操](/posts/linux-homework-20/) | 数字法与字母法语法、八进制换算、递归、755/644/600 场景怎么选 |
+| [day21-用户与权限管理作业实操](/posts/linux-homework-21/) | 批量建户随机密码、passwd/shadow 列义对照、sudo 配置、su 与 su - 区别 |
+| [day22-定时任务作业实操](/posts/linux-homework-22/) | crontab 五段语法 8 个经典示例、凌晨备份任务真跑、排错三板斧 |
+| [day23-磁盘管理作业实操](/posts/linux-homework-23/) | 新盘分区挂载写 fstab、两种扩容 swap、df -h 与 df -i、RAID 0/1/5/10 对比 |
+| [day24-阶段复习与命令总汇作业实操](/posts/linux-homework-24/) | 假期大复习：所有命令总汇 + 文件属性/正则/三剑客/权限/定时任务章节总结 |
+| [day25-网络基础作业实操](/posts/linux-homework-25/) | 手工配静态 IP、ip/ping/traceroute/ss 排查命令、子网划分、OSI/TCP 对照 |
+| [day26-DNS解析与命令复制作业实操](/posts/linux-homework-26/) | dig 文字表示 DNS 解析过程、命令总结、旧测验复习三部分 |
+| [day27-综合架构规划与主机克隆作业实操](/posts/linux-homework-27/) | 3 层架构规划落成对照表、全集群 hosts 映射、模板机克隆改网络配置 |
+| [day28-rsync备份服务部署作业实操](/posts/linux-homework-28/) | 守护进程完整部署、七大参数差异、密码文件与环境变量两种免密推送 |
+| [day29-全网备份项目作业实操](/posts/linux-homework-29/) | 全网备份七步链路：需求→打包→清理→指纹→推送→校验→定时任务 |
+| [day30-NFS存储服务作业实操](/posts/linux-homework-30/) | fstab 自动挂载靠什么服务、user 参数作用、NFS 部署全过程 |
+| [day31-实时同步服务作业实操](/posts/linux-homework-31/) | inotify + rsync 事件驱动真跑，扩展数据库与 Windows 到 Windows 同步 |
+| [day32-SSH密钥连接作业实操](/posts/linux-homework-32/) | while 轮询式同步与 inotify 的差别、ssh-keygen/copy-id 密钥认证真跑 |
+| [day32-secure日志安全分析进阶作业实操](/posts/linux-homework-33/) | 51MB、50 万行 secure 日志，三剑客揪出 SSH 爆破源 IP 与防护建议 |
+| [day33-Ansible模块与剧本预习作业实操](/posts/linux-homework-34/) | yum/service/cron/mount 等八个新模块对比表、playbook 最小化实例 |
+| [day34-Ansible剧本部署rsync-nfs作业实操](/posts/linux-homework-35/) | 两个完整可跑剧本：rsync 一体化、NFS「装软件→配服务端→挂载」三段式 |
+| [day35-Ansible扩展与roles作业实操](/posts/linux-homework-36/) | loop/when/tags/register 扩展功能、roles 规范、HTTP 与 Nginx 预习 |
+| [day36-Ansible一键部署作业实操](/posts/linux-homework-37/) | 全网备份/NFS/实时同步三套服务整合进一个 import_playbook 一键剧本 |
+| [day37-HTTP协议原理预习作业实操](/posts/linux-homework-38/) | 报文四段结构、curl -v 抓完整请求响应、方法状态码与首部字段速查 |
+| [day38-Nginx部署与301-302跳转作业实操](/posts/linux-homework-39/) | 301/302 区别用本地真实重定向服务器抓包验证、curl 与 wget 对比 |
+| [day39-Nginx上传限制与图片存储作业实操](/posts/linux-homework-40/) | 413 报错放行大文件的指令、图片从本地盘集中迁移到 NFS 的方案 |
+| [day40-网站访问统计与压力测试作业实操](/posts/linux-homework-41/) | 构造 nginx 格式 access.log，awk+sort+uniq 统计访问 Top10 与压测 |
+| [day41-LNMP环境搭建作业实操](/posts/linux-homework-42/) | curl 抓 stub_status 状态页取数值、LNMP 四层环境完整搭建 |
+| [day42-反向代理与负载均衡作业实操](/posts/linux-homework-43/) | proxy 与 upstream 模块总结、keepalived 预习、lb02 克隆组高可用集群 |
+| [day43-keepalived实时监控与上游切换进阶作业实操](/posts/linux-homework-44/) | vrrp_script + weight 实现 VIP 自动漂移，upstream 故障剔除仿真 |
+| [day43-keepalived高可用作业实操](/posts/linux-homework-45/) | while 实时监控、nginx 停 keepalived 跟着停的 weight 联动实现 |
+| [day43-nginx-keepalived联动监控作业实操](/posts/linux-homework-46/) | check_nginx.sh 健康检查、nginx 与 keepalived 联动链路写成脚本跑通 |
+| [day44-监控服务Zabbix部署作业实操](/posts/linux-homework-47/) | 监控体系与组件辨析、Server/Agent 部署、中文乱码处理与服务端自测 |
+| [day45-监控服务Zabbix自定义监控作业实操](/posts/linux-homework-48/) | UserParameter 自定义 key、「监控项→触发器→动作」流程、五种告警方式 |
+| [day45-结课总复习与面试题精讲作业实操](/posts/linux-homework-49/) | 「裸机到高可用」架构大表、20 道高频面试题精讲、后续学习路线 |
+| [周测-第01周-测验精讲](/posts/linux-homework-50/) | 30 题精讲：标准答案 + 考点解析 + 可复现实操 + 高频易错点 |
+| [周测-第02周-测验精讲](/posts/linux-homework-51/) | 34 题精讲（原卷第 08 题空缺，按原序号顺延编排），折算答对 24 题左右 |
+| [周测-第03周-测验精讲](/posts/linux-homework-52/) | 30 题精讲，每题配标准答案、考点解析与可复现的实操命令 |
+| [周测-第04周-测验精讲](/posts/linux-homework-53/) | 40 题精讲，满分 120、及格 75，约答对 25 题，覆盖前四周考点 |
+| [日测-day04-系统管理命令精讲](/posts/linux-homework-54/) | 系统管理命令全系列：查看创建切换、编辑写入、复制备份、目录整体复制 |
+| [日测-day05-目录结构知识精讲](/posts/linux-homework-55/) | 挂载概念、一级目录作用、网卡配置文件、快捷键、光驱挂载与改 IP |
+| [日测-day06-知识精讲](/posts/linux-homework-56/) | 系统目录与核心配置：主机名、本地解析、磁盘挂载、运行级别详解 |
 
 ## 附录 · 附录
 

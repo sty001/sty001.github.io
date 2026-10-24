@@ -3,8 +3,17 @@
 - type: github
   icon: "fab fa-github"
 
-- type: twitter
+- type: x
   icon: "fa-brands fa-x-twitter"
+  url: "https://x.com/LcmgSty" # X（原推特）
+
+- type: youtube
+  icon: "fab fa-youtube"
+  url: "https://www.youtube.com/@%E9%99%86%E6%B2%89%E7%9B%B2%E7%9E%BD" # YouTube
+
+- type: linkedin
+  icon: "fab fa-linkedin"
+  url: "https://www.linkedin.com/in/%E9%99%86%E6%B2%89%E7%9B%B2%E7%9E%BD-185a09162/" # 领英
 
 - type: email
   icon: "fas fa-envelope"

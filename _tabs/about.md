@@ -28,6 +28,9 @@ order: 4
 |------|------|
 | 📮 邮箱 | lcmg.sty@gmail.com |
 | 🐙 GitHub | [@sty001](https://github.com/sty001) |
+| 🎬 YouTube | [@陆沉盲瞽](https://www.youtube.com/@%E9%99%86%E6%B2%89%E7%9B%B2%E7%9E%BD) |
+| 𝕏 X（推特） | [LcmgSty](https://x.com/LcmgSty) |
+| 💼 领英 | [陆沉盲瞽](https://www.linkedin.com/in/%E9%99%86%E6%B2%89%E7%9B%B2%E7%9E%BD-185a09162/) |
 | ⛏️ 掘金 | [juejin.cn/user/4125023357905832](https://juejin.cn/user/4125023357905832) |
 | ☁️ 码云 | [gitee.com/s2249858789](https://gitee.com/s2249858789) |
 | 🔴 微博 | [weibo.com/u/6378807392](https://weibo.com/u/6378807392) |

@@ -1,5 +1,5 @@
 ---
-title: "day32-SSH秘钥连接作业实操"
+title: "day32-SSH密钥连接作业实操"
 date: 2026-10-24 09:26:00 +0800
 categories: [软件, Linux, 10-作业实操]
 tags: [Linux, 10-作业实操, 作业实操]

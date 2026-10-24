@@ -14,6 +14,21 @@ title: 友链
 - [吴川斌的博客](https://www.mr-wu.cn/) — 嵌入式 / 硬件开发干货，讲解细致
 - [书籍栈](https://www.bookstack.cn/) — 优秀的在线文档/电子书阅读平台
 - [TruthHun](https://github.com/truthhun) — 书籍栈（BookStack）作者，开源达人
+- [HelloGitHub](https://hellogithub.com/) — 分享 GitHub 上有趣、入门级开源项目的月刊社区
+- [GitHubDaily](https://github.com/GitHubDaily) — GitHub 每日热榜与开源资讯
+- [Datawhale](https://www.datawhale.cn/) — 开源 AI 学习社区，「学用 AI，从此开始」
+- [Datawhale · GitHub](https://github.com/datawhalechina) — Datawhale 开源组织仓库
+- [ops-coffee · 运维咖啡吧](https://blog.ops-coffee.com/) — 运维实战与自动化沉淀，享受技术带来的乐趣
+- [苏洋博客](https://soulteary.com/) — 开源爱好者，热衷容器、自托管与折腾
+- [谢益辉 Yihui Xie](https://yihui.org/) — R Markdown / knitr 作者，统计计算之声
+- [落园](https://loyhome.com/) — 来者皆客，技术与生活随笔
+- [codedump](https://www.codedump.info/) — 网络编程与源码分析好文
+- [pdai.tech](https://pdai.tech/) — Java 全栈知识体系
+- [Jelly Lee](https://github.com/liguodongiot) — 后端 / 大数据方向的开源作者
+
+## 学术检索
+
+- [AMiner](https://old.aminer.cn/) — 学术搜索与科技情报平台（旧版入口）
 
 ## 硬件学习资料中心
 
@@ -43,5 +58,9 @@ title: 友链
 
 - [Hugging Face](https://huggingface.co/) — 模型、数据集与社区
 - [Awesome FPGA](https://github.com/topics/fpga) — FPGA 相关开源合集
+
+## 有趣的小站
+
+- [WindowSwap](https://www.window-swap.com/) — 随机推开世界某一扇窗，互联网上最平静的角落
 
 > 想交换友链？发邮件到 lcmg.sty@gmail.com，或在任意文章下留言即可。
