@@ -425,5 +425,5 @@ LISTEN  0  5  0.0.0.0:873  0.0.0.0:*  users:(("rsyncd",pid=2311,fd=4))
 6. `--delete` 无差异同步务必先 `-n` 演练；`--exclude` 的路径相对于源目录，规则多时用 `--exclude-from` 集中管理。
 7. systemctl 管理三件套：`is-active`、`is-enabled`、`ss -lntp | grep 873`；排错先分「本地通不通、远程通不通」，再查配置与日志。
 
-> **参见**：[备份服务 rsync](../../09-综合架构/02-备份服务rsync.md) · [day29 全网备份项目作业实操](day29-全网备份项目作业实操.md) · [day14 文件批量压缩作业实操](day14-文件批量压缩作业实操.md)
+> **参见**：备份服务 rsync · day29 全网备份项目作业实操 · day14 文件批量压缩作业实操
 {% endraw %}

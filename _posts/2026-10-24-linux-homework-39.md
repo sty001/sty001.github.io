@@ -426,5 +426,5 @@ curl -I http://example.com/admin           # 预期 302，Location 指向 /login
 5. nginx 里 `return 301/302` 适合整站跳转，`rewrite ... permanent/redirect` 适合带正则的路径改造；配置落地后一律用 `curl -I` 复验状态码，不靠浏览器肉眼判断。
 6. 本机带代理环境时，curl 访问 `127.0.0.1` 要加 `--noproxy '*'`，否则 502 会误导排障方向——「先排除环境干扰，再怀疑服务本身」。
 
-> **参见**：[Nginx 网站服务部署](../../09-综合架构/13-Nginx网站服务部署.md) · [Nginx 网站服务进阶](../../09-综合架构/14-Nginx网站服务进阶.md)
+> **参见**：Nginx 网站服务部署 · Nginx 网站服务进阶
 {% endraw %}

@@ -346,7 +346,7 @@ index.html
 
 **考察点**：复用 day34 的三段式 NFS 剧本并纳入一键入口；理解「同一个服务在一键体系里就是一个子剧本」的组织方式。
 
-**实现思路**：NFS 部署在 day34 已写成三段式剧本（全体装软件 → 服务端共享 → 客户端挂载），一键化只是把它改名落位为 `nfs_onekey.yml` 并挂进 `site.yml`，内容不再展开，完整的剧本、模板与逐行讲解见 [day34 题 2](day34-Ansible剧本部署rsync-nfs作业实操.md)。这里只保留两张速查表。
+**实现思路**：NFS 部署在 day34 已写成三段式剧本（全体装软件 → 服务端共享 → 客户端挂载），一键化只是把它改名落位为 `nfs_onekey.yml` 并挂进 `site.yml`，内容不再展开，完整的剧本、模板与逐行讲解见 day34 题 2。这里只保留两张速查表。
 
 关键 task 清单：
 
@@ -525,5 +525,5 @@ $ ansible rsync_server -m shell -a "ls -l /backup/realtime_test.txt"
 6. 口令类任务统一 `<your-password>` 占位 + `no_log: true`，真实环境应接入 ansible-vault，生产清单中不写任何明文口令。
 7. 验证按组件分关：备份看 crontab、远端目录与日志；NFS 看 exportfs、df 与读写测试；实时同步看进程存活与「造文件秒级到达」。
 
-> **参见**：[Ansible 剧本实战](../09-综合架构/11-Ansible剧本实战.md) · [批量管理 Ansible（下）](../09-综合架构/10-批量管理Ansible-下.md) · [day34 剧本部署 rsync/nfs](day34-Ansible剧本部署rsync-nfs作业实操.md) · [备份项目实战](../09-综合架构/03-备份项目实战.md)
+> **参见**：Ansible 剧本实战 · 批量管理 Ansible（下） · day34 剧本部署 rsync/nfs · 备份项目实战
 {% endraw %}

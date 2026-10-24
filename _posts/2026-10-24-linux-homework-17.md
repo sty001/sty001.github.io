@@ -271,7 +271,7 @@ $ grep -c stopped sed_demo.txt.bak
 
 一条流水线里经常三个都出现：grep 粗筛、sed 清洗格式、awk 出报表。经验法则是：要改文件内容找 sed，要按列判断或统计找 awk，单纯看有没有就 grep。
 
-> **参见**：[sed 命令详解](../04-文本处理三剑客/01-sed命令详解.md)、[awk 命令详解](../04-文本处理三剑客/02-awk命令详解.md)、[扩展正则表达式与 grep](../03-文件属性与正则表达式/07-扩展正则表达式与grep.md)
+> **参见**：sed 命令详解、awk 命令详解、扩展正则表达式与 grep
 
 ## 题 2：批量创建用户 user01..user10 并给每个用户设置随机密码
 
@@ -674,7 +674,7 @@ passwd: all authentication tokens updated successfully.
 > - `tr -dc ... < /dev/urandom | head -c 8` 在某些系统上 `head` 提前退出会让 `tr` 收到 SIGPIPE，属正常现象（错误信息 `tr: write error: Broken pipe` 可忽略）；日常用 `/dev/urandom`，别用会阻塞的 `/dev/random`；
 > - 脚本重复执行时 `useradd` 会报「用户已存在」而中断，加 `id "$user" &>/dev/null && continue` 做幂等保护。
 
-> **参见**：[用户管理](../05-用户与权限管理/01-用户管理.md)、[sed 命令详解](../04-文本处理三剑客/01-sed命令详解.md)、[awk 命令详解](../04-文本处理三剑客/02-awk命令详解.md)
+> **参见**：用户管理、sed 命令详解、awk 命令详解
 
 ## 本篇小结
 
