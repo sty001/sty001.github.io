@@ -1,8 +1,9 @@
 ---
-title: "常用文件操作命令"
+title: "02-常用文件操作命令"
 date: 2026-10-24 10:40:00 +0800
-categories: [软件, Linux, 系统操作]
-tags: [Linux, 系统操作]
+categories: [软件, Linux, 02-系统操作]
+tags: [Linux, 02-系统操作]
+slug: "linux-system-02"
 ---
 
 {% raw %}

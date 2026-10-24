@@ -1,8 +1,9 @@
 ---
-title: "day39 作业实操：Nginx 上传限制与图片存储"
+title: "day39-Nginx上传限制与图片存储作业实操"
 date: 2026-10-24 09:18:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-40"
 ---
 
 {% raw %}

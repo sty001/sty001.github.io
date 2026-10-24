@@ -1,8 +1,9 @@
 ---
-title: "day33 作业实操：Ansible 模块预习与剧本编写格式"
+title: "day33-Ansible模块与剧本预习作业实操"
 date: 2026-10-24 09:24:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-34"
 ---
 
 {% raw %}

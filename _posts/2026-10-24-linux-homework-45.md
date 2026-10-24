@@ -1,8 +1,9 @@
 ---
-title: "day43 作业实操：keepalived 高可用进阶"
+title: "day43-keepalived高可用作业实操"
 date: 2026-10-24 09:13:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-45"
 ---
 
 {% raw %}

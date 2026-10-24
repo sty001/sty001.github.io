@@ -1,8 +1,9 @@
 ---
-title: "重要系统文件与运行级别"
+title: "04-重要系统文件与运行级别"
 date: 2026-10-24 10:38:00 +0800
-categories: [软件, Linux, 系统操作]
-tags: [Linux, 系统操作]
+categories: [软件, Linux, 02-系统操作]
+tags: [Linux, 02-系统操作]
+slug: "linux-system-04"
 ---
 
 {% raw %}

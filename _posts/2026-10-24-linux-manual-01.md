@@ -1,8 +1,9 @@
 ---
-title: "Linux 运维核心概念手册"
+title: "01-核心概念手册"
 date: 2026-10-24 10:48:00 +0800
-categories: [软件, Linux, 知识手册]
-tags: [Linux, 知识手册]
+categories: [软件, Linux, 00-知识手册]
+tags: [Linux, 00-知识手册]
+slug: "linux-manual-01"
 ---
 
 {% raw %}

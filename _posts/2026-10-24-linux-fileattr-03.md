@@ -1,8 +1,9 @@
 ---
-title: "文件属性与 inode：属性字段、文件类型与查找命令"
+title: "03-文件属性与inode"
 date: 2026-10-24 10:31:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-03"
 ---
 
 {% raw %}

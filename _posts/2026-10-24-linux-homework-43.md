@@ -1,8 +1,9 @@
 ---
-title: "day42 作业实操：反向代理与负载均衡"
+title: "day42-反向代理与负载均衡作业实操"
 date: 2026-10-24 09:15:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-43"
 ---
 
 {% raw %}

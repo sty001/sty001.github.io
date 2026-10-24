@@ -1,8 +1,9 @@
 ---
-title: "基础知识回顾（下）：文件查看、写入、查找与三剑客入门"
+title: "02-基础知识回顾-下"
 date: 2026-10-24 10:32:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-02"
 ---
 
 {% raw %}

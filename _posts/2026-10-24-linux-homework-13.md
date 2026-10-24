@@ -1,8 +1,9 @@
 ---
-title: "day13 作业实操：文件属性、find 查找与批量账号管理"
+title: "day13-文件属性与find作业实操"
 date: 2026-10-24 09:45:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-13"
 ---
 
 {% raw %}

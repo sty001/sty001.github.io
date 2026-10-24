@@ -1,8 +1,9 @@
 ---
-title: "awk 命令详解：取列、匹配与统计"
+title: "02-awk命令详解"
 date: 2026-10-24 10:25:00 +0800
-categories: [软件, Linux, 文本处理三剑客]
-tags: [Linux, 文本处理三剑客]
+categories: [软件, Linux, 04-文本处理三剑客]
+tags: [Linux, 04-文本处理三剑客]
+slug: "linux-textproc-02"
 ---
 
 {% raw %}

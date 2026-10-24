@@ -1,8 +1,9 @@
 ---
-title: "day22 作业实操：定时任务与打包备份"
+title: "day22-定时任务作业实操"
 date: 2026-10-24 09:36:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-22"
 ---
 
 {% raw %}

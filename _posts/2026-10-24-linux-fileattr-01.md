@@ -1,8 +1,9 @@
 ---
-title: "基础知识回顾（上）：命令基础、系统安装、远程连接与 Vim 进阶"
+title: "01-基础知识回顾-上"
 date: 2026-10-24 10:33:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-01"
 ---
 
 {% raw %}

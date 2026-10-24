@@ -1,8 +1,9 @@
 ---
-title: "day25 作业实操：静态 IP 配置、网络命令实操、子网划分与层次模型"
+title: "day25-网络基础作业实操"
 date: 2026-10-24 09:33:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-25"
 ---
 
 {% raw %}

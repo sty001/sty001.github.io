@@ -1,8 +1,9 @@
 ---
-title: "day31 作业实操：实时同步服务扩展（数据库与跨平台）"
+title: "day31-实时同步服务作业实操"
 date: 2026-10-24 09:27:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-31"
 ---
 
 {% raw %}

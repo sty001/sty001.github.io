@@ -1,8 +1,9 @@
 ---
-title: "day5 命令与重定向作业实操"
+title: "day05-命令与重定向作业实操"
 date: 2026-10-24 09:53:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-05"
 ---
 
 {% raw %}

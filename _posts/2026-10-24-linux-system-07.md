@@ -1,8 +1,9 @@
 ---
-title: "系统优化实践（下）：安全服务、字符集与远程连接优化"
+title: "07-系统优化实践-下"
 date: 2026-10-24 10:35:00 +0800
-categories: [软件, Linux, 系统操作]
-tags: [Linux, 系统操作]
+categories: [软件, Linux, 02-系统操作]
+tags: [Linux, 02-系统操作]
+slug: "linux-system-07"
 ---
 
 {% raw %}

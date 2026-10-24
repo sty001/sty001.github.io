@@ -1,8 +1,9 @@
 ---
-title: "文件属性进阶：find、tar、权限、用户与 inode"
+title: "04-文件属性进阶"
 date: 2026-10-24 10:30:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-04"
 ---
 
 {% raw %}

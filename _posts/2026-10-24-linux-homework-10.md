@@ -1,8 +1,9 @@
 ---
-title: "day10 系统优化与软件安装作业实操：rpm 卸载、阶段总结与批量建户"
+title: "day10-系统优化与软件安装作业实操"
 date: 2026-10-24 09:48:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-10"
 ---
 
 {% raw %}

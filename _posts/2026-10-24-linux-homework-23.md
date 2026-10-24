@@ -1,8 +1,9 @@
 ---
-title: "day23 作业实操：磁盘分区挂载、swap 扩容、磁盘满排查与 RAID 对比"
+title: "day23-磁盘管理作业实操"
 date: 2026-10-24 09:35:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-23"
 ---
 
 {% raw %}

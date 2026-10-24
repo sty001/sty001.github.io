@@ -1,8 +1,9 @@
 ---
-title: "day21 作业实操：批量创建用户与权限管理"
+title: "day21-用户与权限管理作业实操"
 date: 2026-10-24 09:37:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-21"
 ---
 
 {% raw %}

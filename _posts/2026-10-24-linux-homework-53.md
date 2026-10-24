@@ -1,8 +1,9 @@
 ---
 title: "周测-第04周-测验精讲"
 date: 2026-10-24 09:05:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-53"
 ---
 
 {% raw %}

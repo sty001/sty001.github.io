@@ -1,8 +1,9 @@
 ---
-title: "day15 作业实操：磁盘 block 大小、数据存储与读取原理、磁盘满的原因"
+title: "day15-磁盘block与存储原理作业实操"
 date: 2026-10-24 09:43:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-15"
 ---
 
 {% raw %}

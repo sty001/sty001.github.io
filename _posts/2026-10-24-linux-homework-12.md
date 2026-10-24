@@ -1,8 +1,9 @@
 ---
-title: "day12 作业实操：tail 追踪与 tr 替换原理"
+title: "day12-tail与tr作业实操"
 date: 2026-10-24 09:46:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-12"
 ---
 
 {% raw %}

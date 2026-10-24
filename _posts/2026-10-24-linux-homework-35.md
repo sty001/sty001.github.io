@@ -1,8 +1,9 @@
 ---
-title: "day34 作业实操：用剧本部署 rsync 服务与 NFS 服务"
+title: "day34-Ansible剧本部署rsync-nfs作业实操"
 date: 2026-10-24 09:23:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-35"
 ---
 
 {% raw %}

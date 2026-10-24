@@ -1,8 +1,9 @@
 ---
-title: "系统优化实践（上）：Vim 入门、用户管理与 yum 源"
+title: "06-系统优化实践-上"
 date: 2026-10-24 10:36:00 +0800
-categories: [软件, Linux, 系统操作]
-tags: [Linux, 系统操作]
+categories: [软件, Linux, 02-系统操作]
+tags: [Linux, 02-系统操作]
+slug: "linux-system-06"
 ---
 
 {% raw %}

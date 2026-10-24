@@ -1,8 +1,9 @@
 ---
-title: "day14 作业实操：批量筛选 .txt 文件并统一压缩"
+title: "day14-文件批量压缩作业实操"
 date: 2026-10-24 09:44:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-14"
 ---
 
 {% raw %}

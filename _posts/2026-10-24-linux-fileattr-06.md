@@ -1,8 +1,9 @@
 ---
-title: "系统符号、通配符号与基础正则表达式"
+title: "06-基础正则表达式"
 date: 2026-10-24 10:28:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-06"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "day38 作业实操：Nginx 部署与 301/302 跳转"
+title: "day38-Nginx部署与301-302跳转作业实操"
 date: 2026-10-24 09:19:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-39"
 ---
 
 {% raw %}

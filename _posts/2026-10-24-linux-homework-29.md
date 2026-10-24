@@ -1,8 +1,9 @@
 ---
-title: "day29 作业实操：全网备份项目"
+title: "day29-全网备份项目作业实操"
 date: 2026-10-24 09:29:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-29"
 ---
 
 {% raw %}

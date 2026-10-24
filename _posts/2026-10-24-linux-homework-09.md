@@ -1,8 +1,9 @@
 ---
-title: "day9 系统优化作业实操：登录提示信息与命令总结"
+title: "day09-系统优化作业实操"
 date: 2026-10-24 09:49:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-09"
 ---
 
 {% raw %}

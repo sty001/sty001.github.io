@@ -1,8 +1,9 @@
 ---
-title: "day11 作业实操：网络服务端口、vi/vim 用法与排错"
+title: "day11-网络端口与Vim作业实操"
 date: 2026-10-24 09:47:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-11"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "Linux 用户管理：用户分类、账号文件与常用命令"
+title: "01-用户管理"
 date: 2026-10-24 10:24:00 +0800
-categories: [软件, Linux, 用户与权限]
-tags: [Linux, 用户与权限]
+categories: [软件, Linux, 05-用户与权限管理]
+tags: [Linux, 05-用户与权限管理]
+slug: "linux-userperm-01"
 ---
 
 {% raw %}

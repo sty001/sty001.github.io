@@ -1,8 +1,9 @@
 ---
-title: "day26 作业实操：DNS 解析过程、dig 与阶段测验复习"
+title: "day26-DNS解析与命令复制作业实操"
 date: 2026-10-24 09:32:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-26"
 ---
 
 {% raw %}

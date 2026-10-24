@@ -1,8 +1,9 @@
 ---
-title: "day30 作业实操：NFS 存储服务"
+title: "day30-NFS存储服务作业实操"
 date: 2026-10-24 09:28:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-30"
 ---
 
 {% raw %}

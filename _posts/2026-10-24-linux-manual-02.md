@@ -1,8 +1,9 @@
 ---
-title: "Linux 运维命令速查手册"
+title: "02-命令速查手册"
 date: 2026-10-24 10:47:00 +0800
-categories: [软件, Linux, 知识手册]
-tags: [Linux, 知识手册]
+categories: [软件, Linux, 00-知识手册]
+tags: [Linux, 00-知识手册]
+slug: "linux-manual-02"
 ---
 
 {% raw %}

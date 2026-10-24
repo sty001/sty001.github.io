@@ -1,8 +1,9 @@
 ---
-title: "计算机硬件组成"
+title: "01-计算机硬件组成"
 date: 2026-10-24 10:44:00 +0800
-categories: [软件, Linux, 基础入门]
-tags: [Linux, 基础入门]
+categories: [软件, Linux, 01-基础入门]
+tags: [Linux, 01-基础入门]
+slug: "linux-basics-01"
 ---
 
 {% raw %}

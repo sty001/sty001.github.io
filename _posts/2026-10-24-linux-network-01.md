@@ -1,8 +1,9 @@
 ---
-title: "运维网络基础（上）：通信原理、路由配置与网络层次模型"
+title: "01-运维网络基础-上"
 date: 2026-10-24 10:19:00 +0800
-categories: [软件, Linux, 网络基础]
-tags: [Linux, 网络基础]
+categories: [软件, Linux, 08-网络基础]
+tags: [Linux, 08-网络基础]
+slug: "linux-network-01"
 ---
 
 {% raw %}

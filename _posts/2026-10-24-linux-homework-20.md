@@ -1,8 +1,9 @@
 ---
-title: "day20 作业实操：chmod 命令使用方法总结"
+title: "day20-chmod权限总结作业实操"
 date: 2026-10-24 09:38:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-20"
 ---
 
 {% raw %}

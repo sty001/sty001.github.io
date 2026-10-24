@@ -1,8 +1,9 @@
 ---
-title: "日测 day6 目录结构与系统基础 知识精讲"
+title: "日测-day06-知识精讲"
 date: 2026-10-24 09:02:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-56"
 ---
 
 {% raw %}

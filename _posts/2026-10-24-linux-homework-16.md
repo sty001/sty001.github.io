@@ -1,8 +1,9 @@
 ---
-title: "day16 作业实操：真正统计目录大小的 du 命令"
+title: "day16-目录大小统计作业实操"
 date: 2026-10-24 09:42:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-16"
 ---
 
 {% raw %}

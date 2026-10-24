@@ -1,8 +1,9 @@
 ---
-title: "运维网络基础（下）：TCP 状态集、DNS/ARP、IP 子网划分与系统路由"
+title: "02-运维网络基础-下"
 date: 2026-10-24 10:18:00 +0800
-categories: [软件, Linux, 网络基础]
-tags: [Linux, 网络基础]
+categories: [软件, Linux, 08-网络基础]
+tags: [Linux, 08-网络基础]
+slug: "linux-network-02"
 ---
 
 {% raw %}

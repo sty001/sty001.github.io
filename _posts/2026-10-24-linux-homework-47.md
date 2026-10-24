@@ -1,8 +1,9 @@
 ---
-title: "day44 作业实操：监控体系概念辨析与 Zabbix 部署"
+title: "day44-监控服务Zabbix部署作业实操"
 date: 2026-10-24 09:11:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-47"
 ---
 
 {% raw %}

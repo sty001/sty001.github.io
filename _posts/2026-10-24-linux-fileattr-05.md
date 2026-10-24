@@ -1,8 +1,9 @@
 ---
-title: "文件属性实战：inode/block、软硬链接与时间命令"
+title: "05-文件属性实战"
 date: 2026-10-24 10:29:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-05"
 ---
 
 {% raw %}

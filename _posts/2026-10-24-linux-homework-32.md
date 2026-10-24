@@ -1,8 +1,9 @@
 ---
-title: "day32 作业实操：基于密钥的 SSH 连接与脚本化实时同步"
+title: "day32-SSH秘钥连接作业实操"
 date: 2026-10-24 09:26:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-32"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "day41 作业实操：LNMP 环境搭建与状态页数值提取"
+title: "day41-LNMP环境搭建作业实操"
 date: 2026-10-24 09:16:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-42"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "day27 作业实操：综合架构规划与主机克隆"
+title: "day27-综合架构规划与主机克隆作业实操"
 date: 2026-10-24 09:31:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-27"
 ---
 
 {% raw %}

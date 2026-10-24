@@ -1,8 +1,9 @@
 ---
-title: "day35 作业实操：Ansible 扩展功能总结、roles 与 Web 服务预习"
+title: "day35-Ansible扩展与roles作业实操"
 date: 2026-10-24 09:22:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-36"
 ---
 
 {% raw %}

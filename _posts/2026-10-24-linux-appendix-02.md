@@ -1,8 +1,9 @@
 ---
-title: "附录 · Linux 运维常用英文词汇表"
+title: "附录-运维英文词汇表"
 date: 2026-10-24 09:00:00 +0800
 categories: [软件, Linux, 附录]
 tags: [Linux, 附录]
+slug: "linux-appendix-02"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "软件安装与硬件信息查看"
+title: "05-软件安装与硬件信息查看"
 date: 2026-10-24 10:37:00 +0800
-categories: [软件, Linux, 系统操作]
-tags: [Linux, 系统操作]
+categories: [软件, Linux, 02-系统操作]
+tags: [Linux, 02-系统操作]
+slug: "linux-system-05"
 ---
 
 {% raw %}

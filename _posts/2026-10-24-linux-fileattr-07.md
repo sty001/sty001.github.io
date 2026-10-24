@@ -1,8 +1,9 @@
 ---
-title: "扩展正则表达式与 grep"
+title: "07-扩展正则表达式与grep"
 date: 2026-10-24 10:27:00 +0800
-categories: [软件, Linux, 文件属性与正则]
-tags: [Linux, 文件属性与正则]
+categories: [软件, Linux, 03-文件属性与正则表达式]
+tags: [Linux, 03-文件属性与正则表达式]
+slug: "linux-fileattr-07"
 ---
 
 {% raw %}

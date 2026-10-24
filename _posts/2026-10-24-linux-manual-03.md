@@ -1,8 +1,9 @@
 ---
-title: "Linux 运维配置文件手册"
+title: "03-配置文件手册"
 date: 2026-10-24 10:46:00 +0800
-categories: [软件, Linux, 知识手册]
-tags: [Linux, 知识手册]
+categories: [软件, Linux, 00-知识手册]
+tags: [Linux, 00-知识手册]
+slug: "linux-manual-03"
 ---
 
 {% raw %}

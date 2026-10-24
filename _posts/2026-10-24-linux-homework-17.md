@@ -1,8 +1,9 @@
 ---
-title: "day17 作业实操：三剑客排除过滤与批量创建用户"
+title: "day17-三剑客与批量建用户作业实操"
 date: 2026-10-24 09:41:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-17"
 ---
 
 {% raw %}

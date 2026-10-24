@@ -1,8 +1,9 @@
 ---
-title: "系统安装部署"
+title: "03-系统安装部署"
 date: 2026-10-24 10:42:00 +0800
-categories: [软件, Linux, 基础入门]
-tags: [Linux, 基础入门]
+categories: [软件, Linux, 01-基础入门]
+tags: [Linux, 01-基础入门]
+slug: "linux-basics-03"
 ---
 
 {% raw %}

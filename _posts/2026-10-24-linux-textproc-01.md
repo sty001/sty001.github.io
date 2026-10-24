@@ -1,8 +1,9 @@
 ---
-title: "sed 命令详解：文本处理的增、删、改、查"
+title: "01-sed命令详解"
 date: 2026-10-24 10:26:00 +0800
-categories: [软件, Linux, 文本处理三剑客]
-tags: [Linux, 文本处理三剑客]
+categories: [软件, Linux, 04-文本处理三剑客]
+tags: [Linux, 04-文本处理三剑客]
+slug: "linux-textproc-01"
 ---
 
 {% raw %}

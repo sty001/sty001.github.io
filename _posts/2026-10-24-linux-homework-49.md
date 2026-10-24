@@ -1,8 +1,9 @@
 ---
-title: "day45 结课作业实操：综合架构总复习与高频面试题精讲"
+title: "day45-结课总复习与面试题精讲作业实操"
 date: 2026-10-24 09:09:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-49"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "日测 day5 目录结构知识 测验精讲 + 实操验证"
+title: "日测-day05-目录结构知识精讲"
 date: 2026-10-24 09:03:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-55"
 ---
 
 {% raw %}

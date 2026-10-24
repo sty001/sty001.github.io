@@ -1,8 +1,9 @@
 ---
-title: "day45 作业实操：Zabbix 自定义监控项与告警配置"
+title: "day45-监控服务Zabbix自定义监控作业实操"
 date: 2026-10-24 09:10:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-48"
 ---
 
 {% raw %}

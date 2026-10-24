@@ -1,8 +1,9 @@
 ---
-title: "day7 运行级别与别名作业实操"
+title: "day07-运行级别与别名作业实操"
 date: 2026-10-24 09:51:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-07"
 ---
 
 {% raw %}

@@ -1,8 +1,9 @@
 ---
-title: "day36 作业实操：一键化部署全网备份、NFS 与实时同步"
+title: "day36-Ansible一键部署作业实操"
 date: 2026-10-24 09:21:00 +0800
-categories: [软件, Linux, 作业实操]
-tags: [Linux, 作业实操]
+categories: [软件, Linux, 10-作业实操]
+tags: [Linux, 10-作业实操]
+slug: "linux-homework-37"
 ---
 
 {% raw %}
