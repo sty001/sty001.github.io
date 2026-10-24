@@ -30,11 +30,37 @@ title: 友链
 
 - [AMiner](https://old.aminer.cn/) — 学术搜索与科技情报平台（旧版入口）
 
+## 电子书与文献库
+
+- [Project Gutenberg](https://www.gutenberg.org/) — 古腾堡计划，数万册公有领域电子书免费下载
+- [Z-Library](https://z-lib.sk/) — 大型电子书库，技术手册与学术专著检索方便
+- [Library Genesis](https://libgen.vc/) — 学术文献与教材镜像库，查资料的老牌入口
+
 ## 硬件学习资料中心
 
 - [合宙文档中心](https://docs.openluat.com/) — 4G / Cat.1 / GNSS 模组资料最全的社区之一
 - [小梅哥FPGA](https://fpga.cn/) — FPGA 教学与项目实战
 - [嘉立创硬件开源平台](https://oshwhub.com/) — 开源硬件项目聚集地（立创 EDA 生态）
+
+## Verilog / 数字电路 / FPGA
+
+- [HDLBits](https://hdlbits.01xz.net/wiki/Main_Page) — Verilog 在线刷题，从门级一路到状态机
+- [Verilog Guide](https://verilogguide.readthedocs.io/en/latest/) — Verilog 系统教程，语法与可综合设计并重
+- [ASIC World](https://www.asic-world.com/) — 数字 IC 设计权威教材，Verilog / VHDL / SystemVerilog 全覆盖
+- [FPGA4Fun](https://www.fpga4fun.com/) — FPGA 入门项目教程，一个个小实验上手最快
+- [OpenHW 资源索引](https://openhw.org/resource.html) — 开源硬件社区的资料导航
+- [FpgaGuide](https://github.com/openFPGA666/FpgaGuide) — FPGA 学习路线与资料合集
+- [AMD 赛灵思中文社区](https://adaptivesupport.amd.com/s/topic/0TO2E000000YOAVWA4/%E8%B5%9B%E7%81%B5%E6%80%9D%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%E8%AE%BA%E5%9D%9B?language=en_US) — 赛灵思中文官方论坛，工具链问题在这问
+
+## 嵌入式与开发板
+
+- [野火文档中心](https://doc.embedfire.com/products/link/zh/latest/index.html) — 野火 STM32 / MP1 / Linux 开发板全套资料
+- [正点原子文档](https://www.openedv.com/docs/index.html) — 正点原子开发板与例程文档
+- [UISRC](https://www.uisrc.com/) — FPGA / 嵌入式开源社区与资料分享
+- [HARDWARE_BOOK](https://moocstudent.github.io/HARDWARE_BOOK/#/) — 硬件工程师自学电子书
+- [Arduino 官方文档](https://docs.arduino.cc/) — 开发板与库的权威参考
+- [PlatformIO · GitHub](https://github.com/platformio) — PlatformIO 开源组织仓库
+- [PlatformIO 文档](https://docs.platformio.org/en/latest/) — 嵌入式开发环境权威文档
 
 ## 芯片规格书检索平台
 
@@ -53,6 +79,31 @@ title: 友链
 - **聚合比价**：[Octopart](https://octopart.com/) · [Findchips](https://www.findchips.com/) · [Partstack](https://www.partstack.com/)
 - **参数与生命周期**：[SiliconExpert](https://www.siliconexpert.com/) · [Device.report](https://device.report/)
 - **EDA 元件库 / 封装库**：[Ultra Librarian](https://www.ultralibrarian.com/) · [SnapEDA](https://www.snapeda.com/) · [Component Search Engine](https://componentsearchengine.com/) · [SamacSys](https://www.samacsys.com/)
+
+## 在线教程 · 刷题 · 公开课
+
+- [菜鸟教程](https://www.runoob.com/) — 编程语言与工具的基础教程索引
+- [力扣 LeetCode](https://leetcode.cn/problemset/) — 算法题库，面试前刷题主场
+- [牛客网](https://www.nowcoder.com/exam/company?questionJobId=10&subTabName=written_page) — 校招笔面经与真题讨论
+- [Tutorialspoint](https://www.tutorialspoint.com/) — 全学科技术教程与速查表
+- [Electronics Tutorials](https://www.electronics-tutorials.ws/) — 模拟 / 数字电子基础，图示详尽
+- [All About Circuits](https://www.allaboutcircuits.com/) — 电路教材、技术文章与在线工具
+- [Instructables](https://www.instructables.com/projects) — 硬件 DIY 项目集，每步都有图
+- [吾爱破解](https://www.52pojie.cn/index.php) — 软件安全与逆向讨论区
+- [MIT OpenCourseWare](https://ocw.mit.edu/) — MIT 全课程开放资料，EE / CS 硬课居多
+- [Coursera](https://www.coursera.org/browse) — 在线课程平台，电子与计算机方向系统课
+- [edX · 电子学课程](https://www.edx.org/learn/electronics) — edX 平台电子学专题
+
+## 硬件资讯与开源社区
+
+- [Crowd Supply](https://www.crowdsupply.com/) — 开源硬件众筹与新品首发
+- [Semiconductor Engineering](https://semiengineering.com/) — 半导体行业深度技术与洞察
+- [Circuit Cellar](https://circuitcellar.com/) — 嵌入式与电路设计老牌杂志
+- [Embedded.com](https://www.embedded.com/) — 嵌入式开发资讯与专栏
+- [树莓派官网](https://www.raspberrypi.com/) — Raspberry Pi 产品与文档入口
+- [LowPowerLab](https://lowpowerlab.com/) — 低功耗无线硬件与教程
+- [OHWR](https://ohwr.org/) — CERN 主导的开源硬件仓库
+- [Open Source Ecology](https://www.opensourceecology.org/) — 开源生态与开源工业机械计划
 
 ## 开源项目
 

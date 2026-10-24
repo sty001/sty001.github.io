@@ -403,8 +403,6 @@ service iptables save                      # 等价的保存命令
 | `systemctl restart nginx` | 重启服务 |
 | `systemctl reload nginx` | 重载配置（不中断服务，需要服务支持） |
 | `systemctl status nginx` | 查看详细状态（是否运行、最近日志、PID） |
-
-`status` 的输出里三段最有用：Loaded（自启状态）、Active（运行状态）、末尾几行最近日志——`Active: failed` 后面直接跟着失败原因，多数小问题不用去翻日志文件。
 | `systemctl enable nginx` | 设置开机自启 |
 | `systemctl enable --now nginx` | 立即启动并设置开机自启 |
 | `systemctl disable nginx` | 取消开机自启 |
@@ -415,6 +413,8 @@ service iptables save                      # 等价的保存命令
 | `systemctl list-unit-files` | 列出所有 unit 及其自启状态 |
 | `systemctl list-dependencies nginx` | 查看服务的依赖树 |
 | `systemctl daemon-reload` | 修改 unit 文件后重载配置 |
+
+`status` 的输出里三段最有用：Loaded（自启状态）、Active（运行状态）、末尾几行最近日志——`Active: failed` 后面直接跟着失败原因，多数小问题不用去翻日志文件。
 
 > **注意：** `disable` 只是取消开机自启，服务还能手动启动；`mask` 是把 unit 文件软链接到 `/dev/null`，任何方式都启动不了——用于防止服务被其他单元依赖意外拉起（如 mask 掉 `avahi-daemon`）。装了新的 unit 文件（如自己写的 `/etc/systemd/system/myapp.service`）后，必须先 `systemctl daemon-reload` 再 `enable --now`，否则 systemd 不认新文件。
 {: .sec-pit}
