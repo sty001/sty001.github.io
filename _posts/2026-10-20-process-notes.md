@@ -1,7 +1,7 @@
 ---
 title: 制造工艺学习笔记：SMT 与焊接
 date: 2026-10-20 09:00:00 +0800
-categories: [工艺, 学习笔记]
+categories: [工艺]
 tags: [学习笔记, SMT, 焊接]
 ---
 

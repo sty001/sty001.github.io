@@ -1,7 +1,7 @@
 ---
 title: 嵌入式开发学习笔记：从裸机到 RTOS
 date: 2026-10-22 09:00:00 +0800
-categories: [嵌入式, 学习笔记]
+categories: [嵌入式]
 tags: [学习笔记, STM32, RTOS]
 ---
 
