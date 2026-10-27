@@ -1,7 +1,7 @@
 ---
 title: 具身机器人学习笔记：从 VLA 到 Sim2Real
 date: 2026-10-17 09:00:00 +0800
-categories: [具身机器人]
+categories: [具身机器人, 学习笔记]
 tags: [学习笔记, VLA, 强化学习]
 ---
 

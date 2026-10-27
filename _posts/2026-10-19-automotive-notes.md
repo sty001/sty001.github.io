@@ -1,7 +1,7 @@
 ---
 title: 汽车电子学习笔记：CAN 总线基础
 date: 2026-10-19 09:00:00 +0800
-categories: [汽车电子]
+categories: [汽车电子, 学习笔记]
 tags: [学习笔记, CAN, 总线]
 ---
 
