@@ -662,10 +662,11 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   --callout-exam-c:#ff9a76;   --callout-exam-b:rgba(255,154,118,.13);   --callout-exam-i:"🎯 ";
   --callout-explain-c:#b6c2d1;--callout-explain-b:rgba(182,194,209,.10); --callout-explain-i:"📖 ";
   --callout-prac-c:#79c0ff;   --callout-prac-b:rgba(121,192,255,.13);   --callout-prac-i:"🛠 ";
-  --callout-verify-c:#56d3ff; --callout-verify-b:rgba(86,211,255,.13);  --callout-verify-i:"🧪 ";
+  --callout-verify-c:#5eead4; --callout-verify-b:rgba(94,234,212,.13);  --callout-verify-i:"🧪 ";
   --callout-trouble-c:#ff7b72;--callout-trouble-b:rgba(255,123,114,.13); --callout-trouble-i:"🔧 ";
   --callout-key-c:#ffd479;    --callout-key-b:rgba(255,212,121,.12);    --callout-key-i:"🔑 ";
   --callout-ext-c:#56d3ff;    --callout-ext-b:rgba(86,211,255,.12);     --callout-ext-i:"🚀 ";
+  --callout-spread-c:#56d3ff; --callout-spread-b:rgba(86,211,255,.10);  --callout-spread-i:"🔬 ";
   --callout-cmd-c:#e3b98a;    --callout-cmd-b:rgba(227,185,138,.12);    --callout-cmd-i:"💻 ";
   --callout-star-c:#ff9ecb;   --callout-star-b:rgba(255,158,203,.13);   --callout-star-i:"⭐ ";
   --callout-ref-c:#8b98a5;    --callout-ref-b:rgba(139,152,165,.10);    --callout-ref-i:"🔗 ";
@@ -747,6 +748,13 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 .post-content .callout-trouble  { --cc:var(--callout-trouble-c);  --cb:var(--callout-trouble-b);  --ci:var(--callout-trouble-i); }
 .post-content .callout-key      { --cc:var(--callout-key-c);      --cb:var(--callout-key-b);      --ci:var(--callout-key-i); }
 .post-content .callout-ext      { --cc:var(--callout-ext-c);      --cb:var(--callout-ext-b);      --ci:var(--callout-ext-i); }
+.post-content .callout-spread   { --cc:var(--callout-spread-c);   --cb:var(--callout-spread-b);   --ci:var(--callout-spread-i); }
+/* 发散拓展用虚线色条与"延伸"区分，但同属延伸语义色 */
+.post-content p.callout-spread,
+.post-content blockquote.callout-spread {
+  border-left-style: dashed;
+  border-left-width: 3px;
+}
 .post-content .callout-cmd      { --cc:var(--callout-cmd-c);      --cb:var(--callout-cmd-b);      --ci:var(--callout-cmd-i); }
 .post-content .callout-star     { --cc:var(--callout-star-c);     --cb:var(--callout-star-b);     --ci:var(--callout-star-i); }
 .post-content .callout-ref      { --cc:var(--callout-ref-c);      --cb:var(--callout-ref-b);      --ci:var(--callout-ref-i); }
@@ -842,6 +850,7 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   --callout-trouble-c:#cf222e; --callout-trouble-b:rgba(207,34,46,.08);
   --callout-key-c:#7a4d00;     --callout-key-b:rgba(122,77,0,.09);
   --callout-ext-c:#0a78a8;     --callout-ext-b:rgba(10,120,168,.09);
+  --callout-spread-c:#0a78a8;  --callout-spread-b:rgba(10,120,168,.07);
   --callout-cmd-c:#8a5a00;     --callout-cmd-b:rgba(138,90,0,.09);
   --callout-star-c:#b8146e;    --callout-star-b:rgba(184,20,110,.09);
   --callout-ref-c:#57606a;     --callout-ref-b:rgba(87,96,106,.07);
