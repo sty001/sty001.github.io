@@ -688,11 +688,16 @@ uname -r                             # 3.10.0-862.el7.x86_64
 
 ## 相关阅读
 
-- 计算机硬件组成
-- 系统安装部署
-- 重要系统文件与运行级别
-- 系统优化实践（上）：yum 源优化
-- 附录-命令速查表
+- [计算机硬件组成](/posts/linux-basics-01/)
+
+- [系统安装部署](/posts/linux-basics-03/)
+
+- [重要系统文件与运行级别](/posts/linux-system-04/)
+
+- [系统优化实践（上）：yum 源优化](/posts/linux-system-06/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

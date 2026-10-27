@@ -730,10 +730,14 @@ echo $?     # 0=找到了；1=没找到；2=出错了
 
 ## 相关阅读
 
-- 扩展正则表达式与 grep
-- sed 命令详解：文本处理的增、删、改、查
-- awk 命令详解：取列、匹配与统计
-- 附录-命令速查表
+- [扩展正则表达式与 grep](/posts/linux-fileattr-07/)
+
+- [sed 命令详解：文本处理的增、删、改、查](/posts/linux-textproc-01/)
+
+- [awk 命令详解：取列、匹配与统计](/posts/linux-textproc-02/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 ## 小结
 {: .sec-sum}

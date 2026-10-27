@@ -692,11 +692,16 @@ rm command is weixian,not use -rf /data/
 
 ## 相关阅读
 
-- 用户管理
-- 用户权限与提权
-- 系统目录结构与挂载
-- 软件安装与硬件信息查看
-- 附录-命令速查表
+- [用户管理](/posts/linux-userperm-01/)
+
+- [用户权限与提权](/posts/linux-userperm-02/)
+
+- [系统目录结构与挂载](/posts/linux-system-03/)
+
+- [软件安装与硬件信息查看](/posts/linux-system-05/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

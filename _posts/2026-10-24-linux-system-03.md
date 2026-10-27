@@ -521,11 +521,16 @@ nameserver 10.10.10.10
 
 ## 相关阅读
 
-- 磁盘管理基础
-- 磁盘管理进阶
-- 重要系统文件与运行级别
-- 运维网络基础（上）
-- 附录-命令速查表
+- [磁盘管理基础](/posts/linux-disk-01/)
+
+- [磁盘管理进阶](/posts/linux-disk-02/)
+
+- [重要系统文件与运行级别](/posts/linux-system-04/)
+
+- [运维网络基础（上）](/posts/linux-network-01/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

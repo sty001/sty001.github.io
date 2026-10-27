@@ -649,11 +649,16 @@ ls -l /data/test-soft.txt                  # l 开头，即 link 类型
 
 ## 相关阅读
 
-- 文件属性与 inode
-- 系统目录结构与挂载
-- sed 命令详解
-- awk 命令详解
-- 附录-命令速查表
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [系统目录结构与挂载](/posts/linux-system-03/)
+
+- [sed 命令详解](/posts/linux-textproc-01/)
+
+- [awk 命令详解](/posts/linux-textproc-02/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

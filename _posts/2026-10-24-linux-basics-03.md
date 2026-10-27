@@ -489,11 +489,16 @@ touch /.autorelabel
 
 ## 相关阅读
 
-- 计算机硬件组成
-- Linux 系统概念
-- 虚拟软件与远程连接
-- 目录结构与挂载
-- 运维网络基础-上
+- [计算机硬件组成](/posts/linux-basics-01/)
+
+- [Linux 系统概念](/posts/linux-basics-02/)
+
+- [虚拟软件与远程连接](/posts/linux-system-01/)
+
+- [目录结构与挂载](/posts/linux-system-03/)
+
+- [运维网络基础-上](/posts/linux-network-01/)
+
 
 ## 小结
 {: .sec-sum}

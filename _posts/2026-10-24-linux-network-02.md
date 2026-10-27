@@ -678,11 +678,16 @@ CentOS Linux 7 已于 2024 年 6 月结束维护（EOL），Rocky Linux / AlmaLi
 
 ## 相关阅读
 
-- 运维网络基础（上）：通信原理、路由配置与网络层次模型
-- 备份服务 rsync：守护进程部署、参数详解与企业应用
-- 远程管理服务 SSH
-- 附录-命令速查表
-- 附录-运维英文词汇表
+- [运维网络基础（上）：通信原理、路由配置与网络层次模型](/posts/linux-network-01/)
+
+- [备份服务 rsync：守护进程部署、参数详解与企业应用](/posts/linux-arch-02/)
+
+- [远程管理服务 SSH](/posts/linux-arch-06/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
+- [附录-运维英文词汇表](/posts/linux-appendix-02/)
+
 
 
 {% endraw %}

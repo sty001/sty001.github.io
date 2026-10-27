@@ -507,11 +507,16 @@ man mkdir
 
 ## 相关阅读
 
-- 计算机硬件组成
-- 系统安装部署
-- 运维网络基础（上）
-- 远程管理服务 SSH
-- 系统目录结构与挂载
+- [计算机硬件组成](/posts/linux-basics-01/)
+
+- [系统安装部署](/posts/linux-basics-03/)
+
+- [运维网络基础（上）](/posts/linux-network-01/)
+
+- [远程管理服务 SSH](/posts/linux-arch-06/)
+
+- [系统目录结构与挂载](/posts/linux-system-03/)
+
 
 
 {% endraw %}

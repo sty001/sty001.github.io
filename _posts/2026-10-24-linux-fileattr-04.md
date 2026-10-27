@@ -652,11 +652,16 @@ uid=0(root) gid=0(root) groups=0(root)
 
 ## 相关阅读
 
-- 基础知识回顾（下）
-- 文件属性与 inode
-- 文件属性实战
-- 用户管理
-- 用户权限与提权
+- [基础知识回顾（下）](/posts/linux-fileattr-02/)
+
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [文件属性实战](/posts/linux-fileattr-05/)
+
+- [用户管理](/posts/linux-userperm-01/)
+
+- [用户权限与提权](/posts/linux-userperm-02/)
+
 
 
 {% endraw %}

@@ -386,11 +386,16 @@ Dell 机架服务器代际速查：R620 为第 12 代，R720/R730 为第 13 代�
 
 ## 相关阅读
 
-- Linux 系统概念
-- 系统安装部署
-- 虚拟软件与远程连接
-- 磁盘管理基础
-- 运维英文词汇表
+- [Linux 系统概念](/posts/linux-basics-02/)
+
+- [系统安装部署](/posts/linux-basics-03/)
+
+- [虚拟软件与远程连接](/posts/linux-system-01/)
+
+- [磁盘管理基础](/posts/linux-disk-01/)
+
+- [运维英文词汇表](/posts/linux-appendix-02/)
+
 
 ## 小结
 {: .sec-sum}

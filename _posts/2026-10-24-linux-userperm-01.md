@@ -852,11 +852,16 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统请使用 Rocky Linux / AlmaLinux 
 
 ## 相关阅读
 
-- 用户权限与提权（su / sudo 深入）
-- 文件属性与 inode
-- 重要系统文件与运行级别
-- 定时任务与 crond
-- 附录-命令速查表
+- [用户权限与提权（su / sudo 深入）](/posts/linux-userperm-02/)
+
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [重要系统文件与运行级别](/posts/linux-system-04/)
+
+- [定时任务与 crond](/posts/linux-cron-01/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 ## 小结
 {: .sec-sum}

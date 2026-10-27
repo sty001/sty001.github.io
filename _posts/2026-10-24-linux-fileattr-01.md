@@ -563,11 +563,16 @@ vimrc 里两行常用配置值得先记下：`set nu` 默认显示行号、`set 
 
 ## 相关阅读
 
-- 基础知识回顾（下）
-- 虚拟软件与远程连接
-- 常用文件操作命令
-- 系统优化实践（上）
-- 附录-命令速查表
+- [基础知识回顾（下）](/posts/linux-fileattr-02/)
+
+- [虚拟软件与远程连接](/posts/linux-system-01/)
+
+- [常用文件操作命令](/posts/linux-system-02/)
+
+- [系统优化实践（上）](/posts/linux-system-06/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

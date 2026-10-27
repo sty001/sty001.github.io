@@ -606,11 +606,16 @@ grub2-mkconfig -o /boot/grub2/grub.cfg   # 重新生成引导配置使其生效
 
 ## 相关阅读
 
-- 用户管理
-- 用户权限与提权
-- 远程管理服务 SSH
-- 系统优化实践（下）：字符集与远程连接优化
-- 运维网络基础（下）
+- [用户管理](/posts/linux-userperm-01/)
+
+- [用户权限与提权](/posts/linux-userperm-02/)
+
+- [远程管理服务 SSH](/posts/linux-arch-06/)
+
+- [系统优化实践（下）：字符集与远程连接优化](/posts/linux-system-07/)
+
+- [运维网络基础（下）](/posts/linux-network-02/)
+
 
 
 {% endraw %}

@@ -502,11 +502,16 @@ find 找寻的路径范围 -type 类型信息 -name "文件名称"
 
 ## 相关阅读
 
-- 基础知识回顾（上）
-- 基础知识回顾（下）
-- 文件属性进阶
-- 文件属性实战
-- 磁盘管理基础
+- [基础知识回顾（上）](/posts/linux-fileattr-01/)
+
+- [基础知识回顾（下）](/posts/linux-fileattr-02/)
+
+- [文件属性进阶](/posts/linux-fileattr-04/)
+
+- [文件属性实战](/posts/linux-fileattr-05/)
+
+- [磁盘管理基础](/posts/linux-disk-01/)
+
 
 
 {% endraw %}

@@ -815,11 +815,16 @@ abc
 
 ## 相关阅读
 
-- 基础知识回顾（上）
-- 文件属性与 inode
-- 文件属性进阶
-- sed 命令详解
-- awk 命令详解
+- [基础知识回顾（上）](/posts/linux-fileattr-01/)
+
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [文件属性进阶](/posts/linux-fileattr-04/)
+
+- [sed 命令详解](/posts/linux-textproc-01/)
+
+- [awk 命令详解](/posts/linux-textproc-02/)
+
 
 
 {% endraw %}

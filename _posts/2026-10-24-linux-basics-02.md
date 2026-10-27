@@ -372,11 +372,16 @@ uname -r    # 输出示例：3.10.0-1160.el7.x86_64
 
 ## 相关阅读
 
-- 计算机硬件组成
-- 系统安装部署
-- 软件安装与硬件信息查看
-- 磁盘管理基础
-- 运维网络基础-上
+- [计算机硬件组成](/posts/linux-basics-01/)
+
+- [系统安装部署](/posts/linux-basics-03/)
+
+- [软件安装与硬件信息查看](/posts/linux-system-05/)
+
+- [磁盘管理基础](/posts/linux-disk-01/)
+
+- [运维网络基础-上](/posts/linux-network-01/)
+
 
 ## 小结
 {: .sec-sum}

@@ -888,11 +888,16 @@ CentOS Linux 7 已于 2024 年 6 月结束维护（EOL），新部署建议选�
 
 ## 相关阅读
 
-- 运维网络基础（下）：TCP 状态集、DNS/ARP、IP 子网划分与系统路由
-- 综合架构开篇：架构组成、环境规划、模板机优化与 rsync 入门
-- 备份服务 rsync：守护进程部署、参数详解与企业应用
-- 附录-命令速查表
-- 附录-运维英文词汇表
+- [运维网络基础（下）：TCP 状态集、DNS/ARP、IP 子网划分与系统路由](/posts/linux-network-02/)
+
+- [综合架构开篇：架构组成、环境规划、模板机优化与 rsync 入门](/posts/linux-arch-01/)
+
+- [备份服务 rsync：守护进程部署、参数详解与企业应用](/posts/linux-arch-02/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
+- [附录-运维英文词汇表](/posts/linux-appendix-02/)
+
 
 
 {% endraw %}

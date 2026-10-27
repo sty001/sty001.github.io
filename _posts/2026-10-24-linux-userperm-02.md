@@ -906,11 +906,16 @@ CentOS 7 已于 2024 年 6 月 EOL，新系统（Rocky Linux / AlmaLinux / CentO
 
 ## 相关阅读
 
-- 用户管理：分类、账号文件与常用命令
-- 文件属性与 inode
-- 文件属性进阶
-- 定时任务与 crond
-- 附录-命令速查表
+- [用户管理：分类、账号文件与常用命令](/posts/linux-userperm-01/)
+
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [文件属性进阶](/posts/linux-fileattr-04/)
+
+- [定时任务与 crond](/posts/linux-cron-01/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 ## 小结
 {: .sec-sum}

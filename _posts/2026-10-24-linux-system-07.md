@@ -741,11 +741,16 @@ GNU 项目 + Linux 内核雏形 == Linux
 
 ## 相关阅读
 
-- 系统优化实践（上）：Vim 入门与 yum 源
-- 磁盘管理基础
-- 运维网络基础（下）
-- 远程管理服务 SSH
-- 附录-命令速查表
+- [系统优化实践（上）：Vim 入门与 yum 源](/posts/linux-system-06/)
+
+- [磁盘管理基础](/posts/linux-disk-01/)
+
+- [运维网络基础（下）](/posts/linux-network-02/)
+
+- [远程管理服务 SSH](/posts/linux-arch-06/)
+
+- [附录-命令速查表](/posts/linux-appendix-01/)
+
 
 
 {% endraw %}

@@ -523,11 +523,16 @@ chrony 与 ntpdate 的根本区别：ntpdate 是"一次对表"，时间差大就
 
 ## 相关阅读
 
-- 基础知识回顾（下）
-- 文件属性与 inode
-- 文件属性进阶
-- 磁盘管理基础
-- 备份服务 rsync
+- [基础知识回顾（下）](/posts/linux-fileattr-02/)
+
+- [文件属性与 inode](/posts/linux-fileattr-03/)
+
+- [文件属性进阶](/posts/linux-fileattr-04/)
+
+- [磁盘管理基础](/posts/linux-disk-01/)
+
+- [备份服务 rsync](/posts/linux-arch-02/)
+
 
 
 {% endraw %}

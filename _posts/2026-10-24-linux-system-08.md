@@ -482,11 +482,16 @@ vim -c '%s/old/new/g' -c 'wq' file.txt
 
 ## 相关阅读
 
-- [常用文件操作命令
-- 基础正则表达式
-- sed 命令详解
-- 系统安装部署
-- 命令速查表
+- [常用文件操作命令](/posts/linux-system-02/)
+
+- [基础正则表达式](/posts/linux-fileattr-06/)
+
+- [sed 命令详解](/posts/linux-textproc-01/)
+
+- [系统安装部署](/posts/linux-basics-03/)
+
+- [命令速查表](/posts/linux-homework-04/#命令速查表)
+
 
 ## 小结
 {: .sec-sum}
