@@ -36,10 +36,13 @@ slug: "linux-homework-10"
 ## 题 1：一个软件安装好了，如何利用 rpm 命令进行卸载
 
 **题目原文**：一个软件安装好了，如何利用 rpm 命令进行卸载。
+{: .callout-exam}
 
 **考察点**：卸载前的查询确认（`rpm -q`、`rpm -qa`、`rpm -q --whatrequires`）；`rpm -e` 标准卸载；依赖冲突的两种处理方式（`yum remove` 与 `rpm -e --nodeps`）及其风险；卸载后的验证与残留清理。
+{: .callout-exam}
 
 **实现思路**：rpm 只认单个包、不管依赖，所以卸载的正确姿势是先查再卸：查装没装、查包里有什么、查谁依赖它；确认安全再 `rpm -e`。依赖报错优先交给 `yum remove` 自动解决，实在没辙才 `--nodeps`，用之前想清楚后果；卸完 `rpm -q` 验证，顺手清配置残留。
+{: .callout-prac}
 
 ### 步骤 1：卸载前先查询确认（预期输出，CentOS 7）
 {: .sec-ver}
@@ -183,6 +186,7 @@ conf  conf.d  conf.modules.d  logs  modules  run
 ```
 
 **验证方法**：
+{: .callout-verify}
 
 1. `rpm -q 包名` 输出 `package xxx is not installed`，这是卸载成功的直接证据；
 2. `rpm -qa | grep 关键词` 里不再出现该包及其附属包；
@@ -191,17 +195,22 @@ conf  conf.d  conf.modules.d  logs  modules  run
 5. 若用了 `--nodeps`，补一次 `rpm -V 被依赖包名` 检查有没有拖累其他包。
 
 > **易错点**：① 卸载写**包名**不是 rpm 文件名——`rpm -e httpd-2.4.6-97.el7.centos.x86_64.rpm` 是错的，正确写法是 `rpm -e httpd`（包名可省略版本号与架构，rpm 会唯一匹配）；② 看到 `error: Failed dependencies` 不要条件反射加 `--nodeps`，先用 `rpm -q --whatrequires` 看清谁在依赖，再决定用 `yum remove` 还是强制卸；③ `yum remove` 会连带卸掉依赖包，业务机器上先读 `Transaction Summary` 再回车；④ 配置与数据目录 rpm 不管，卸完记得手动检查清理；⑤ 通过 yum 装的包用 `yum remove` 卸、通过 rpm 装的包用 `rpm -e` 卸，混用容易留下"数据库里有记录、文件已删除"的不一致状态。
+{: .callout-pit}
 
 > **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ref}
 
 ## 题 2：总结第一个阶段课程知识
 {: .sec-sum}
 
 **题目原文**：总结第一个阶段课程知识。
+{: .callout-exam}
 
 **考察点**：把第一阶段的知识按"硬件 → 系统安装 → 常用命令 → 目录结构 → 系统优化"串成一条链路，做到每个知识点能说出"是什么、用什么命令、一句话原理"。
+{: .callout-exam}
 
 **实现思路**：先画全链路知识地图搭框架，五个阶段各整理一张表（核心知识点、关键命令、一句话原理），最后用一组链路小实验把分散在各阶段的命令（建目录、写文件、管道统计、打包）真跑一遍，总结落到真实输出上才算数。
+{: .callout-prac}
 
 ### 知识地图
 {: .sec-sum}
@@ -354,22 +363,28 @@ $ sort fruit.txt | uniq -c | sort -rn
 `stat` 一次给出文件的三个时间：`Access`（访问时间，受 `noatime` 挂载参数影响）、`Modify`（内容修改时间）、`Change`（属性/inode 变更时间）——排错时判断"文件到底动没动"就靠它们。`sort | uniq -c | sort -rn` 是经典的统计排名组合，课程后面分析日志（如统计访问最多的页面）用的就是这条链。
 
 **验证方法**：
+{: .callout-verify}
 
 1. 链路小实验的每条输出都与命令语义对应（`cat file*.txt | wc -l` 得 3，三个文件每个 1 行），证明命令链理解正确；
 2. 能合上书画出知识地图的五个阶段，并每个阶段说出至少三个知识点与对应命令；
 3. 对任一命令能回答"它在链路哪一环、解决什么问题"——例如被问 `umask`，能答出"决定新建文件 644、目录 755 的那道减法"。
 
 > **易错点**：① 总结最容易写成"命令清单"——没有链路的清单记忆效率极低，务必用"硬件 → 安装 → 命令 → 目录 → 优化"的因果链串起来；② 缓冲与缓存、物理核与逻辑核、`Modify` 与 `Change` 这三对概念最易混淆，总结时重点标注；③ 命令总结要带参数（`ls -l` 不是 `ls`），只记命令名等于没记。
+{: .callout-pit}
 
 > **参见**：[计算机硬件组成](/posts/linux-basics-01/)、[系统安装部署](/posts/linux-basics-03/)、[常用文件操作命令](/posts/linux-system-02/)、[系统目录结构与挂载](/posts/linux-system-03/)、[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ref}
 
 ## 题 3：进行一天课程内容复述
 
 **题目原文**：进行一天课程内容复述，录音。
+{: .callout-exam}
 
 **考察点**：能否把一天的知识点脱稿讲明白——讲得出才是真学会，这是检验掌握程度的终极标准。
+{: .callout-exam}
 
 **实现思路**：复述是一项"说"的作业，文档里无法执行，转化为可直接照讲的复述提纲：先给复述方法与价值，再给 10 分钟版的讲述流程（时间分配 + 每环节必讲点），最后给卡点预案与自检清单。
+{: .callout-prac}
 
 ### 复述的方法与价值
 
@@ -428,15 +443,19 @@ $ sort fruit.txt | uniq -c | sort -rn
 - 冷场开头：直接从"昨天留的问题——装好的软件怎么卸干净？"切入，带着问题讲。
 
 **验证方法**：录音回放，对照要点清单逐项打勾；标准是——脱稿讲满 10 分钟、五个环节无长时间空白、每个命令都能说清作用、被追问"为什么"时能用一句话原理接住。全部满足，说明这一天真的学会了。
+{: .callout-verify}
 
 ## 扩展题 1：批量创建用户（一次创建 50 个）
 {: .sec-ext}
 
 **题目原文**：如何批量创建多个用户（例如一次创建 50 个用户 user01 到 user50）。
+{: .callout-exam}
 
 **考察点**：`for` 循环与 `seq` 序列生成、`useradd` 建号、`chpasswd` 批量设密、`chage -d 0` 强制首登改密、批量验证与批量清理。
+{: .callout-exam}
 
 **实现思路**：拆成五步——生成用户名序列 → 循环创建 → 批量设密 → 批量验证 → 批量清理。序列生成与随机串在 Git Bash 真跑（A 级）；涉及系统账号的命令给出 CentOS 7 标准脚本与预期输出（B 级）；验证用"创建前后 `/etc/passwd` 行数差 = 50"这个可靠标准。
+{: .callout-prac}
 
 ### 步骤 1：生成用户名序列（已实操）
 {: .sec-prac}
@@ -600,8 +619,10 @@ grep -c '^user' /etc/passwd              # 验证：应回到 0
 `-r` 表示连同家目录一起删除；不加 `-r` 只删账号、家目录留在 `/home` 下。
 
 > **生产注意**：批量建户脚本上线前先在测试机跑一遍，`seq` 序列与已有账号对过号再执行。批量操作没有逐条确认的机会，出问题回退成本很高。
+{: .callout-pit}
 
 **验证方法**：
+{: .callout-verify}
 
 1. `id user01` 能正确输出 uid / gid / groups，证明账号创建成功；
 2. `grep -c '^user' /etc/passwd` 等于 50，且 `wc -l /etc/passwd` 前后差值等于 50，数量验证通过；
@@ -610,17 +631,22 @@ grep -c '^user' /etc/passwd              # 验证：应回到 0
 5. 清理后 `grep -c '^user' /etc/passwd` 回到 0，证明批量删除也成功。
 
 > **易错点**：① 整个过程需要 root 权限，普通用户执行会报 `Permission denied`；② `useradd` 建完不设密码，账号是锁的，登不进去——`useradd` 与 `chpasswd` 必须成对出现；③ `chpasswd` 的输入格式是 `用户名:密码`，中间不能有空格，密码里若有 `:` 会被截断；④ 脚本重复执行会因用户已存在报错，重跑前先清理，或给 `useradd` 加存在性判断；⑤ 建的是"能登录的普通用户"；若要建不能登录的虚拟用户，参数是 `useradd -M -s /sbin/nologin`；⑥ `-w` 别忘——不补零的 user1 到 user50 长短不齐，排序和观感都差。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)
+{: .callout-ref}
 
 ## 扩展题 2：yum 安装软件的标准流程
 {: .sec-best}
 
 **题目原文**：yum 安装软件的流程（预习内容的实操整理）。
+{: .callout-exam}
 
 **考察点**：yum 安装六步标准流程、EPEL 扩展源的作用、安装失败的排查思路。
+{: .callout-exam}
 
 **实现思路**：给一张六步流程表，每步配命令与预期输出；补充 EPEL 扩展源与本地源两种场景；最后给一棵排错决策树，把"装不上"的常见原因一次理清。
+{: .callout-prac}
 
 ### 标准六步流程（预期输出，CentOS 7）
 {: .sec-best}
@@ -772,6 +798,7 @@ root      12400  12398  0 10:31 pts/1    00:00:00 grep --color=auto yum
 ```
 
 **验证方法**：
+{: .callout-verify}
 
 1. `rpm -q 包名` 有版本号输出、`which 命令` 能找到可执行文件，证明安装成功；
 2. 直接运行安装的命令（如 `cowsay hello`）能看到预期行为；
@@ -779,8 +806,10 @@ root      12400  12398  0 10:31 pts/1    00:00:00 grep --color=auto yum
 4. 卸载后 `rpm -q 包名` 提示 `is not installed`，证明移除干净。
 
 > **易错点**：① `yum search` 搜不到不等于软件不存在，很可能在 EPEL 源；② `yum install` 不加 `-y` 会在安装前停下来交互确认，脚本里必须加 `-y`；③ yum 有锁机制，同时跑两个 yum 会报 `Another app is currently holding the yum lock`，不要强制删锁了事，先确认真没有 yum 在跑；④ 改完源文件不生效，先 `yum clean all && yum makecache` 清缓存重建元数据，再怀疑别的；⑤ 生产服务器卸载软件前同样先用 `rpm -q --whatrequires` 确认没有业务依赖。
+{: .callout-pit}
 
 > **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ref}
 
 ## 自测
 {: .sec-prac}

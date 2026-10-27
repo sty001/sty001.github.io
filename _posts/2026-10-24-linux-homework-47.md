@@ -36,6 +36,7 @@ slug: "linux-homework-47"
 {: .sec-know}
 
 **考察点**：能否说清 Zabbix 各组件的部署位置、职责与通信端口，这是面试与排错的基础。监控系统由「采集、存储、可视化、告警」四个环节构成，Zabbix 的组件正是按这四个环节分工的。
+{: .callout-exam}
 
 **组件职责对照表**：
 
@@ -55,6 +56,7 @@ slug: "linux-homework-47"
 | 10050 | zabbix-agent | 被动模式下 server 连 agent 拉取数据 |
 
 > **易错点**：10051 与 10050 极易记混。记忆方法：被动模式是「server 来拉」，目标端口是 agent 的 10050；主动模式是「agent 去推」，目标端口是 server 的 10051。被动是默认模式，所以 agent 端口 10050 见得最多。
+{: .callout-pit}
 
 ### 辨析：主动模式与被动模式
 
@@ -71,8 +73,10 @@ slug: "linux-homework-47"
 ## 题 2：Zabbix Server 服务端完整部署（B 级）
 
 **考察点**：LAMP 架构下的监控平台部署七步法，以及数据库初始化的两个关键参数（utf8 字符集、口令授权）。
+{: .callout-exam}
 
 **实现思路**：服务端 Web 环境是 LAMP（apache + php 模块 + mariadb），流程与部署 wordpress 类似。按「装源 → 装包 → 改配置 → 初始化数据库 → 启动服务 → Web 向导 → 登录」七步走。数据库那两步（utf8 字符集、口令一致）是整个部署里最容易翻车的地方，后面自测篇专门为它们做了前置校验。
+{: .callout-prac}
 
 ### 步骤 1：安装 Zabbix yum 源（预期输出，CentOS 7）
 {: .sec-prac}
@@ -190,8 +194,10 @@ systemctl status zabbix-server.service
 ## 题 3：Zabbix Agent 客户端部署（B 级）
 
 **考察点**：被监控主机的纳管四步，重点是 `Server=` 白名单参数的含义。
+{: .callout-exam}
 
 **实现思路**：agent 装在 linux-node02 上，只需装包、写 Server 地址、启动、验证 10050 监听。
+{: .callout-prac}
 
 ### 步骤 1 与步骤 2：装源与安装（预期输出，CentOS 7）
 {: .sec-prac}
@@ -236,6 +242,7 @@ tcp   LISTEN 0  128  0.0.0.0:10050   0.0.0.0:*   users:(("zabbix_agentd",pid=450
 {: .sec-prac}
 
 **考察点**：部署完成后必须做参数自测。zabbix_get、systemctl 依赖真实 Zabbix 环境，属 B 级；「把配置片段写成文件、用 grep 校验关键参数」可以在本机真跑，属 A 级，用来在真实部署前先确认配置文件该写哪些行。
+{: .callout-exam}
 
 ### 步骤 1：服务端配置片段与参数校验（已实操）
 {: .sec-prac}
@@ -389,6 +396,7 @@ grep -c '1005[01]' ports.txt
 6. zabbix_get 是服务端侧自测 agent 的第一工具，agent.ping 返回 1 即存活；不通时按「Server 白名单 → 10050 监听 → 网络连通」三步排查。历史数据保留策略上线前定好，别等磁盘满了再补课。
 
 > **参见**：[监控服务Zabbix（上）](/posts/linux-arch-19/)、[监控服务Zabbix（下）](/posts/linux-arch-20/)、[day45 自定义监控作业实操](/posts/linux-homework-48/)
+{: .callout-ref}
 
 
 {% endraw %}

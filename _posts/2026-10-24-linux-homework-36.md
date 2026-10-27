@@ -35,6 +35,7 @@ slug: "linux-homework-36"
 {: .sec-ext}
 
 **考察点**：把课堂讲的扩展功能从「概念」变成「可运行示例」——变量集中管理、`loop` 批量执行、`when` 按 facts 条件执行、`register` 接住任务结果、`ignore_errors` 容错、`block/rescue/always` 错误处理、`tags` 按需挑选任务。每种扩展功能的一句话总结见下表：
+{: .callout-exam}
 
 | 扩展功能 | 关键字 | 一句话记忆 |
 | --- | --- | --- |
@@ -50,6 +51,7 @@ slug: "linux-homework-36"
 | 拆分复用 | `import_tasks` / `include_tasks` | 静态导入与动态包含两种任务拆分方式 |
 
 **实现思路**：写一个综合示例剧本 `ext_demo.yml`，把上面除 handlers 之外的核心功能各安排一个任务：`loop` 批量装包、`when` 按 facts 建文件、`register` 回显端口检查、`ignore_errors` 容错、`block/rescue/always` 演示回滚，每个任务打上 `tags`。
+{: .callout-prac}
 
 ### 步骤 1：编写扩展示例剧本（已实操）
 {: .sec-ext}
@@ -187,13 +189,16 @@ changed: [172.16.1.7]
 > - `ignore_errors` 是一刀切的放行，生产上更推荐 `failed_when` 精确声明失败条件；
 > - block / rescue / always 必须同级缩进，层级写错 rescue 不会生效；
 > - `register` 的变量名不能带空格，取输出用 `变量.stdout_lines`，判断返回码用 `变量.rc == 0`。
+{: .callout-pit}
 
 ## 题 2（选做）：总结 Ansible 剧本 roles
 {: .sec-sum}
 
 **考察点**：roles 的标准化目录结构、各子目录职责、角色内文件的自动查找规则、主剧本 site.yml 与角色的配合方式。
+{: .callout-exam}
 
 **实现思路**：roles 解决单文件剧本的五个痛点——目录结构不规范、任务无法复用、配置改动后关联参数不联动、汇总剧本看不出主机角色、单个剧本过长难读。roles 的本质是一个「按约定命名的文件夹」：playbook 用 `roles:` 引用角色名后，ansible 自动加载角色内固定位置的文件，`copy` 的 src 只写文件名也能在角色 `files/` 里找到。
+{: .callout-prac}
 
 ### 步骤 1：真实创建角色目录骨架（已实操）
 {: .sec-prac}
@@ -371,13 +376,16 @@ $ ansible web -m shell -a "curl -s http://127.0.0.1:8080/"
 > - `copy` 的 src 找不到文件：静态文件要放进角色的 `files/` 子目录；
 > - 角色内 handler 不触发：handler 必须写在角色自己的 `handlers/main.yml` 里，名称与 notify 一致；
 > - 变量改了不生效：检查是不是放在了优先级更高的 `vars/main.yml` 里把 defaults 盖住了。
+{: .callout-pit}
 
 ## 题 3：预习 Web 服务——HTTP 协议原理与 Nginx
 {: .sec-know}
 
 **考察点**：一次完整 HTTP 请求的全流程；请求 / 响应报文的四段结构；用 `curl -v` 观察真实报文；Nginx 的安装与最小配置。
+{: .callout-exam}
 
 **实现思路**：HTTP 是协议（报文格式与方法的规范），Nginx 是协议的具体实现（监听端口、解析报文、返回数据的软件）。预习抓两条线：一是访问流程——DNS 解析 → TCP 三次握手 → 发送请求 → 返回响应 → 浏览器渲染 → 四次挥手；二是报文结构——请求由「请求行、请求头、空行、（POST 才有的）请求主体」四部分组成，响应由「起始行、响应头、空行、响应主体」四部分组成。空行是头部结束的标志，必须存在。
+{: .callout-prac}
 
 ### 步骤 1：curl -v 真跑一次完整请求（已实操）
 {: .sec-prac}
@@ -475,6 +483,7 @@ $ curl -s http://127.0.0.1/ | head -3
 > - 走了代理的环境里，状态码可能来自代理本身而不是目标服务器，先用 `env | grep -i proxy` 确认；
 > - 403 与 404 都「打不开页面」，但 403 查权限与 SELinux，404 查路径与文件，排查方向完全不同；
 > - Nginx 配置里每条指令以分号结尾，漏分号是新手报错第一名，改完必须 `nginx -t`。
+{: .callout-pit}
 
 ## 小结
 {: .sec-sum}
@@ -487,6 +496,7 @@ $ curl -s http://127.0.0.1/ | head -3
 6. 环境无 ansible / nginx 时，扩展示例与角色文件用 pyyaml 做语法真跑校验、Nginx 行为用标准命令 + 预期输出描述，既保证内容可执行，又不伪造真实输出。
 
 > **参见**：[Ansible剧本扩展功能](/posts/linux-arch-09/)、[批量管理Ansible（下）](/posts/linux-arch-10/)、[HTTP协议原理](/posts/linux-arch-12/)、[Nginx网站服务部署](/posts/linux-arch-13/)
+{: .callout-ref}
 
 
 {% endraw %}

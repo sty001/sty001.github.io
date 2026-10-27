@@ -37,8 +37,10 @@ slug: "linux-homework-13"
 {: .sec-prac}
 
 **考察点**：`tail -f` 与 `tail -F` 的跟随对象差异，以及日志场景的选择。
+{: .callout-exam}
 
 **实现思路**：作业原文的结论是——`tail -f` 追踪时文件被删除或移动走，需要重新追踪；`tail -F` 不需要重新追踪，文件恢复回来会继续追踪；日志数据会不断增加、历史悠久的日志会被清空，所以追日志用 `tail -F`。该题的完整原理讲解与真跑演示（后台追加、mv、rm 三场景对比）已在 day12 同题中完成，此处给出结论表备查。
+{: .callout-prac}
 
 | 参数 | 跟随对象 | 文件被 mv/rm 后 | 是否需重新追踪 |
 | --- | --- | --- | --- |
@@ -46,15 +48,19 @@ slug: "linux-homework-13"
 | `tail -F` | 文件名（按名重试） | 自动跟随替换/重建后的新文件 | 不需要 |
 
 **验证方法**：完整复现步骤见 day12 题 1，按其中脚本真跑后对比 `-f` 输出 4 行、`-F` 输出 6 行及 `has been replaced; following new file` 提示即可。
+{: .callout-verify}
 
 > **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail--f-与-tail--f-的区别)
+{: .callout-ref}
 
 ## 题 2：总结 find 命令
 {: .sec-sum}
 
 **考察点**：find 的查找条件（按名、按类型、按时间、按大小）与动作（`-exec`）的组合用法，以及"查找条件之间默认是与关系"这一核心模型。
+{: .callout-exam}
 
 **实现思路**：先给参数速查表建立全貌，再在 `/tmp/hw/day13/data` 下构造一棵包含不同后缀、不同类型、不同修改时间、不同大小的目录树，逐组真跑验证，最后用 `-exec` 演示对查找结果的批量处理。
+{: .callout-prac}
 
 ### 步骤 1：构造测试目录树（已实操）
 {: .sec-ver}
@@ -254,8 +260,10 @@ old.log
 | `-delete` | 直接删除查找结果 | `find . -name "*.swp" -delete` |
 
 **验证方法**：在 `/tmp/hw/day13/data` 下重跑步骤 2~6，各步骤输出应与本文一致（`-name "*.log"` 命中 3 个、`-type d` 命中 4 个、`-mtime +2` 只命中 `old.log`、`-size +1M` 只命中 `big2.bin`、`-exec wc -l` 汇总 3 行）。
+{: .callout-verify}
 
 > **生产注意**：find 的删除动作先去掉 `-delete` 或换 `-ok` 空跑一遍看清单，确认后再真删；在 `/` 这类大目录上找东西先加 `-maxdepth` 控制范围，全盘递归又慢又占 IO。
+{: .callout-pit}
 
 > **易错点**：
 >
@@ -264,15 +272,19 @@ old.log
 > - `-exec` 结尾必须写 `{} \;` 或 `{} +`，漏掉分号会被 shell 当作两条命令而报语法错；
 > - `\;` 是每个结果执行一次，`+` 是聚合一次执行，结果一致但效率不同；删除类操作先用 `-ok` 演练更稳；
 > - find 默认递归整个子树，在大目录上先加 `-maxdepth` 限制范围。
+{: .callout-pit}
 
 > **参见**：[文件相关扩展命令find](/posts/linux-fileattr-04/)、[文件属性实战](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 ## 题 3：总结文件属性信息
 {: .sec-sum}
 
 **考察点**：`ls -l` 输出每一列的含义、权限位对文件与目录的不同语义、`stat` 查看完整属性与三种时间（atime/mtime/ctime）。
+{: .callout-exam}
 
 **实现思路**：先 `ls -li` 真跑一行输出，按十段结构逐段拆，`stat` 验证各字段，最后用一次读操作真跑看 atime 变化。
+{: .callout-prac}
 
 ### 步骤 1：ls -li 真跑一行输出（已实操）
 {: .sec-prac}
@@ -414,6 +426,7 @@ $ chmod 755 /tmp/hw/day13/perm.txt && stat -c "%a %A" /tmp/hw/day13/perm.txt
 八进制记法：`r=4`、`w=2`、`x=1`，三组相加即属主、属组、其他的权限。`600 = rw-------`，`755 = rwxr-xr-x`，`644 = rw-r--r--` 是生产最常用的三档。
 
 **验证方法**：
+{: .callout-verify}
 
 1. 十段拆解：把步骤 1 的 `ls -li` 输出与拆解表逐段对照，`-rw-r--r--` 第 1 位是类型，后 9 位是权限，第 5 段硬链接数为 1；
 2. `stat -c %a` 显示 644，与 `ls -l` 的 `rw-r--r--` 互相印证；
@@ -425,15 +438,19 @@ $ chmod 755 /tmp/hw/day13/perm.txt && stat -c "%a %A" /tmp/hw/day13/perm.txt
 > - 目录的 `x` 是"能否进入/穿越"，砍掉目录的 `x` 会让里面的文件全部访问不到，即使文件本身是 777；
 > - `ls -l` 默认显示 mtime，`stat` 的 ctime 改名改权限都会动，排查"文件被动过"要看 ctime；
 > - 文件名不在自己的 inode 里，删掉文件名（硬链接减到 0）inode 才真正释放，这是"删了文件空间却不释放"（进程还占着 fd）的知识源头。
+{: .callout-pit}
 
 > **参见**：[ls-l输出十段逐段拆解](/posts/linux-fileattr-04/)、[文件属性进阶](/posts/linux-fileattr-04/)
+{: .callout-ref}
 
 ## 题 4（扩展）：如何产生随机字符信息
 {: .sec-ext}
 
 **考察点**：Linux 随机数的来源（`/dev/urandom` 内核随机数池），以及用 `tr`、`md5sum`、`openssl` 三种工具把随机字节转成可用随机字符串的方法。
+{: .callout-exam}
 
 **实现思路**：先讲清 `/dev/urandom` 的原理，再分别真跑三种方法生成随机密码，最后对比各方法的特点与适用场景。
+{: .callout-prac}
 
 ### 原理讲解：/dev/urandom 是什么
 {: .sec-know}
@@ -506,6 +523,7 @@ $ openssl rand -hex 8
 | openssl | `openssl rand -base64 12` | Base64/十六进制 | 命令最短，含 `+`/`/` 等符号需注意转义 |
 
 **验证方法**：三条命令各连续执行两次，输出应与本文示例不同且每次互不相同；用 `echo -n "生成的字符串" | wc -c` 核对长度确为 16（或预期长度）。
+{: .callout-verify}
 
 > **易错点**：
 >
@@ -513,15 +531,19 @@ $ openssl rand -hex 8
 > - Base64 输出可能含 `+`、`/`、`=`，写进配置文件或 URL 前要转义或换十六进制；
 > - 密码复杂度有策略要求时（必须含大写、小写、数字、符号），先把字符集写全再过滤，如 `tr -dc 'A-Za-z0-9!@#%^*' < /dev/urandom | head -c 12`；
 > - `/dev/random` 会阻塞，脚本里生成密码别用它，用 `/dev/urandom`。
+{: .callout-pit}
 
 > **参见**：[用/dev/urandom生成随机密码](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 ## 题 5（扩展）：批量创建 10 个运维账号并设置随机密码
 {: .sec-ext}
 
 **考察点**：shell 编程三要素的实际运用——如何生成随机信息（题 4 的成果）、变量设置、循环语句，最终落地为批量创建用户的自动化脚本。
+{: .callout-exam}
 
 **实现思路**：新来 10 个运维（原题为 10 个同类账号，名称按脱敏要求用 `ops01`~`ops10`），要求账号建好且每人一个随机密码。用 for 循环遍历账号名，循环体内完成"建用户 → 生成随机密码 → 免交互设置密码 → 记录密码"四步。涉及 `useradd` 等系统命令，本环境无法执行，为 B 级。
+{: .callout-prac}
 
 ### 批量创建脚本（预期输出，CentOS 7）
 
@@ -597,8 +619,10 @@ $ wc -l < /tmp/hw/user_pass.txt
 > - 密码记录文件含明文口令，交给对应运维后应立即删除，不要留在服务器上；
 > - `useradd` 默认不建家目录行为因发行版而异，CentOS 7 默认创建家目录；要显式控制就加 `-m`/`-M` 参数；
 > - 生产环境建议给这类临时账号加有效期（`useradd -e 日期`）并纳入统一密码管理。
+{: .callout-pit}
 
 > **参见**：[阶段回顾：用户信息的批量管理](/posts/linux-homework-24/)、[用户管理](/posts/linux-userperm-01/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

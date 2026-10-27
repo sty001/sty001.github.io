@@ -36,8 +36,10 @@ slug: "linux-homework-38"
 ## 题 1：HTTP 请求/响应报文结构解析
 
 **考察点**：记住「起始行、首部、空行、主体」四段结构，并能在一串真实报文里逐行指出每行的归属；理解空行是首部结束的标志。
+{: .callout-exam}
 
 **实现思路**：请求与响应的报文骨架完全对称，都是「起始行 + 首部 + 空行 + 主体」：
+{: .callout-prac}
 
 | 段 | 请求报文 | 响应报文 |
 | --- | --- | --- |
@@ -55,6 +57,7 @@ slug: "linux-homework-38"
 ## 题 2：curl -v 抓取完整请求响应过程
 
 **考察点**：curl 的 `-v` 会把「TCP 连接、发出的请求报文（`>` 开头）、收到的响应报文（`<` 开头）、连接关闭」全部打印出来，是学习 HTTP 报文结构最直观的工具；配合本地服务可控地复现 200/404/501 等状态码。
+{: .callout-exam}
 
 ### 步骤 1：构造本地站点并启动服务（已实操）
 {: .sec-prac}
@@ -217,6 +220,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 {: .sec-chk}
 
 **考察点**：GET/POST/PUT/DELETE 的语义与「安全性、幂等性」，以及 200/301/302/403/404/500/502 的准确含义与典型场景。
+{: .callout-exam}
 
 ### 常用请求方法
 
@@ -249,6 +253,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 {: .sec-chk}
 
 **考察点**：分清首部的方向（请求头由客户端发出、响应头由服务器返回）与作用；这几个字段正是 Nginx 日志格式的常客。
+{: .callout-exam}
 
 | 首部 | 方向 | 作用 | 典型值示例 |
 | --- | --- | --- | --- |
@@ -266,6 +271,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 {: .sec-know}
 
 **考察点**：理解「无状态」的含义与代价，以及 Cookie 与 Session 如何配合维持登录态。
+{: .callout-exam}
 
 **无状态**：HTTP 协议规定服务器不记录「这个请求是谁之前发来的」，每个请求都被独立处理。好处是服务器实现简单、易于水平扩展（任何一个后端都能处理任何一个请求）；代价是「登录态」这类上下文必须靠额外机制维持——这就是 Cookie/Session 存在的原因。注意区分：无状态说的是「不记上下文」，与 HTTP/1.1 的长连接（keep-alive，复用 TCP 连接省握手开销）是两回事。
 
@@ -289,6 +295,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 | 过期方式 | 可设 Max-Age/Expires | 服务端超时销毁 |
 
 > **易错点**：Session ID 是通过 Cookie 传递的，所以「关掉 Cookie 就等于关掉 Session」——客户端禁用 Cookie 后，纯 Session 方案失效，需要改用 URL 重写或 token 方案。生产加固三件套：`HttpOnly`（禁止 JS 读取，防 XSS 窃取）、`Secure`（仅 HTTPS 传输）、`SameSite`（限制跨站发送，防 CSRF）。
+{: .callout-pit}
 
 ## 验证方法
 {: .sec-ver}
@@ -310,6 +317,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 7. HTTP 无状态，Cookie 存客户端、Session 存服务端，靠 Set-Cookie 下发的 Session ID 关联；禁用 Cookie 即禁用 Session，加固用 HttpOnly/Secure/SameSite 三件套。
 
 > **参见**：[HTTP协议原理](/posts/linux-arch-12/)、[Nginx网站服务部署](/posts/linux-arch-13/)、[day14 文件批量压缩作业实操](/posts/linux-homework-14/)
+{: .callout-ref}
 
 
 {% endraw %}

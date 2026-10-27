@@ -58,6 +58,7 @@ chmod 返回码: 0
 {: .sec-expl}
 
 **考察点**：9 个权限位分成属主（u）、属组（g）、其他（o）三组，每组 r/w/x 三位；以及同一个权限字母作用在**文件**和**目录**上含义完全不同。
+{: .callout-exam}
 
 ### 步骤 1：解析真实的 ls -l 输出（已实操）
 {: .sec-prac}
@@ -121,10 +122,12 @@ demo/sub  755  drwxr-xr-x
 - 访问 `/a/b/c.txt` 要经过 `/a`、`/a/b` 两级目录，每一级都需要 `x`。
 
 > **参见**：[文件属性与inode](/posts/linux-fileattr-03/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ## 2. 数字法（八进制）与换算表
 
 **考察点**：`chmod 755 file` 这类三位八进制写法，每位是 r(4) + w(2) + x(1) 的和。
+{: .callout-exam}
 
 ### 步骤 3：生成八进制换算表（已实操）
 {: .sec-prac}
@@ -179,10 +182,12 @@ done
 | `000` | --------- | 完全锁死（仅 root 可改） |
 
 **验证方法**：`stat -c %a 文件` 读回八进制、`stat -c %A 文件` 读回 rwx 串，两者与你的换算结果对照；心里算一遍 `755` = 属主 rwx + 属组 r-x + 其他 r-x，再与 `ls -l` 显示的 9 位逐位核对。
+{: .callout-verify}
 
 ## 3. 字母法：u/g/o/a 与 + - =
 
 **考察点**：字母法的三段结构 `给谁(who) 怎么做(op) 什么权限(perm)`，以及 `+`（追加）、`-`（移除）、`=`（精确赋值）三种运算符的区别。
+{: .callout-exam}
 
 ### 语法速查
 {: .sec-chk}
@@ -344,6 +349,7 @@ $ chmod u=rwx,g=rx,o= f2.txt && ls -l f2.txt
 ```
 
 **验证方法**：真机上每次 `chmod` 后立刻 `ls -l 文件` 或 `stat -c %a 文件` 读回权限，与预期值比对；本环境则用 `bash /tmp/hw/day20/chmod_sim.sh` 模拟器核验算法结果。
+{: .callout-verify}
 
 > **易错点**：
 >
@@ -352,6 +358,7 @@ $ chmod u=rwx,g=rx,o= f2.txt && ls -l f2.txt
 > - 省略 who 时默认是 `a`（`chmod +x file` = `chmod a+x file`），不是只给属主；
 > - `chmod -R 777` 会把目录下所有文件都变成可执行，非常危险——递归改目录权限通常用 `X`（大写）或配合 `find` 分别处理；
 > - 改权限只对**文件属主或 root** 生效，普通用户改别人的文件会报 `Operation not permitted`。
+{: .callout-pit}
 
 ## 4. 递归 -R 与参考 --reference（B 级）
 
@@ -423,6 +430,7 @@ $ find demo -exec stat -c '%a %n' {} \; | sort -k2
 {: .sec-ex}
 
 **考察点**：不是背数字，而是理解「最小权限原则」——给完成工作所必需的最小权限。
+{: .callout-exam}
 
 | 场景 | 推荐权限 | 命令 | 理由 |
 | --- | --- | --- | --- |
@@ -457,6 +465,7 @@ $ ssh -i ~/.ssh/id_rsa user@10.0.0.1    # 修复后正常连接
 {: .sec-prac}
 
 **考察点**：新建文件/目录的默认权限 = 基准权限减去 umask。目录基准 `777`，文件基准 `666`（文件默认不给执行位，这是安全设计）。
+{: .callout-exam}
 
 ### 步骤 6：真跑 umask 对照实验
 {: .sec-prac}
@@ -519,8 +528,10 @@ $ umask
 永久生效要写进 shell 配置文件（B 级）：`/etc/profile`（全局）或 `~/.bashrc`（单用户）里加一行 `umask 027`，重新登录或 `source` 后生效。
 
 **验证方法**：`umask` 查看当前值 → `touch` 新建文件 → `stat -c %a` 看实际权限 → 用 `666-umask`（文件）、`777-umask`（目录）手工核对；改 umask 后重做一遍，结果应同步变化。
+{: .callout-verify}
 
 > **易错点**：umask 是「掩码」不是「默认权限」，做的是**减法**（实际是按位与非运算），umask 越大权限越小；文件的基准是 `666` 不是 `777`，所以新建文件永远不会自带执行位。
+{: .callout-pit}
 
 ## 7. 特殊权限位简述（B 级）
 

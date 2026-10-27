@@ -101,13 +101,16 @@ $ wc -l data/regtest.txt data/score.txt data/nginx_access.log
 ```
 
 **验证方法**：`wc -l` 三个文件都应为 5 行；若某行为 0，说明 `printf` 那一步的重定向写错了文件，重跑对应行即可。
+{: .callout-verify}
 
 ## 题 1：总结所有命令
 {: .sec-sum}
 
 **考察点**：把第一阶段学到的命令按功能归类，形成「查得到、记得住、用得上」的知识网络，而不是零散记忆。
+{: .callout-exam}
 
 **实现思路**：按运维实际使用场景切分为 12 类，每类先给速查表（命令 + 常用参数 + 一句话说明），再挑 2-4 条在本环境能跑的命令做真跑演示；最后用一条贯穿多个类别的综合流水线收尾，并配 5 道自测题。
+{: .callout-prac}
 
 ### 1.0 先记住这些通用零件
 
@@ -163,8 +166,10 @@ $ ls /notexist 2>/dev/null && echo "这条不会打印" || echo "错误已被丢
 ```
 
 **验证方法**：`out/redir.txt` 有 2 行说明追加生效；`out/err.txt` 只有错误信息；`out/all.txt` 既有 `ok-line` 又有报错说明 `&>` 收两边；最后一条没打印报错却走了 `||` 分支，说明 stderr 确实进了黑洞。
+{: .callout-verify}
 
 > **易错点**：`>` 是覆盖不是追加，二次执行会把上次内容清空——写日志必须用 `>>`；`2>` 和 `>` 是两个不同的文件描述符，`... > a.log 2> a.log` 会因为两个指针各自从头写而互相覆盖，正确写法是 `... > a.log 2>&1` 或 `... &> a.log`。
+{: .callout-pit}
 
 ### 1.1 文件与目录类
 
@@ -214,8 +219,10 @@ total 2
 ```
 
 **验证方法**：`file1_pa.txt` 时间是 `Oct 20 08:00` 而 `file1_plain.txt` 是当前时间，证明 `-a` 保留了时间戳；`file1.txt` 与 `file1_hard.txt` 的 inode 号完全相同（`1407374883711829`）、硬链接计数为 2，且写 hard 的内容在 `file1.txt` 中能看到，证明二者是同一份数据块的两个名字。
+{: .callout-verify}
 
 > **易错点**：`rm -rf /tmp/hw/day24/demo/` 末尾多写一个 `/` 在老版本 GNU coreutils 上会一路删到源目录内容，写成不带斜杠的形式最安全；`cp /data/* /bak/` 遇到子目录会漏拷（缺 `-r`），且 `rm -rf` 前务必先 `ls` 确认目标——生产环境建议写成 `rm -rf "${DIR:?未定义}"` 这种带默认值保护的写法。
+{: .callout-pit}
 
 ### 1.2 查看与搜索类
 
@@ -288,6 +295,7 @@ $ grep -n -C1 "500"     data/nginx_access.log
 ```
 
 **验证方法**：`grep -c "200"` 得 3，与上面 `状态码统计`小节 `awk '{print $9}'` 的结果一致（3 个 200）；`-C1` 输出中匹配行用 `:` 分隔、上下文行用 `-` 分隔，这是辨认上下文的标准记号。
+{: .callout-verify}
 
 真跑 `find` 五类条件（已实操）：
 
@@ -343,8 +351,10 @@ $ find data -name "*.log" -exec wc -l {} \;
 ```
 
 **验证方法**：`-size +1000c` 只命中 3000 字节的 `testfile`，与 `stat -c %s data/testfile` 得到 3000 吻合；`-exec` 一行一个文件，符合预期。
+{: .callout-verify}
 
 > **易错点**：`-size` 不带单位默认是**块数**不是字节，`-size +100` 约等于 50KB 以上，想按字节必须写 `-size +100c`；`-mtime +7` 表示「修改时间在 7*24 小时之前」，`-mtime 7` 表示「恰好第 7 天」，二者差一个 `+` 就完全不同；`-name` 用的是 shell 通配符而非正则，`-regex` 才是正则，混用会静默查不到。
+{: .callout-pit}
 
 ### 1.3 权限与属性类
 
@@ -396,6 +406,7 @@ demo/newdir 755
 ```
 
 **验证方法**：`umask` 为 `0022` 时，新建文件 = 666-022 = `644`、新建目录 = 777-022 = `755`，与 `stat -c %a` 的两行结果完全对应，这就是 umask 的算术验证法。
+{: .callout-verify}
 
 `chmod` 的数字法与符号法（B 级，本环境 chmod 不生效，给出 CentOS 7 标准序列）：
 
@@ -421,8 +432,10 @@ $ ls -l /tmp/hw/day24/demo/perm.txt
 ```
 
 **验证方法**：每改一次立刻 `ls -l` 比对第一列权限串；用 `stat -c %a` 得到的三位数应分别是 `600`、`755`。
+{: .callout-verify}
 
 > **易错点**：目录没有 `x` 权限时，`ls -l` 能列名字却 `cd` 不进去，且看不到里面文件的属性；删除文件看的是**父目录**的 `w`，与文件自身权限无关；`chmod -R 777` 是运维红线，等于把服务器数据开放给所有人。
+{: .callout-pit}
 
 ### 1.4 用户与组类（B 级）
 
@@ -473,8 +486,10 @@ $ grep '^ops01' /etc/passwd /etc/shadow /etc/group
 ```
 
 **验证方法**：`id 用户名` 能解析出 uid/gid/groups 说明用户已建立；`grep '^用户名' /etc/passwd` 有结果且第 7 列是 `/bin/bash`（而非 `/sbin/nologin`）说明可交互登录；`ls -ld /home/用户名` 存在且属主正确说明家目录已生成。
+{: .callout-verify}
 
 > **易错点**：`usermod -G` 是**覆盖**附加组列表，不带 `-a` 会清空用户原有的所有附加组，这是导致 `sudo` 突然失效的经典事故；`/sbin/nologin` 的账号无法用 `su -` 切换；删除用户优先 `userdel -r`，否则残留的家目录会让下次同名建用户时出现「UID 已存在 / 家目录不为空」告警。
+{: .callout-pit}
 
 ### 1.5 磁盘与文件系统类
 
@@ -520,6 +535,7 @@ total 18K
 ```
 
 **验证方法**：`du -sh` 的汇总值与 `ls -lh` 的**表观大小**不必相等——`ls -l` 显示的是文件实际字节数，`du` 显示的是磁盘占用块数，本环境小文件按 1.0K 计（`ls` 看 185 字节、`du` 看 1.0K），这正是「文件大小」与「磁盘占用」两个概念的区别。
+{: .callout-verify}
 
 `df` 对照（本机真实输出 + CentOS 7 预期）：
 
@@ -551,8 +567,10 @@ tmpfs           487M  7.7M  479M   2% /run
 ```
 
 **验证方法**：`df -h` 看 `Use%` 是否逼近 100% 判断磁盘满；`df -i` 看 `IUse%` 判断 inode 是否耗尽——二者任一满了都会导致「无法写入」，但表现不同：容量满时报错 `No space left on device`，inode 满时创建文件也会报同样的错却删哪个文件都「看着还有空间」。
+{: .callout-verify}
 
 > **易错点**：`du -sh /data/*` 统计的是**每个子项**的占用，想看 `/data` 总占用要用 `du -sh /data`；`df` 显示剩余空间但 `du` 统计不到被删除却仍被进程占用的文件（`rm` 后空间不释放），此时用 `lsof | grep deleted` 找出句柄持有者并重启该进程。
+{: .callout-pit}
 
 ### 1.6 软件包类（B 级）
 
@@ -592,8 +610,10 @@ Filename    : /sbin/ifconfig
 ```
 
 **验证方法**：装完用 `rpm -qa | grep 包名` 复查、`which 命令` 确认可执行文件路径、`systemctl is-enabled 服务名` 确认是否开机自启。
+{: .callout-verify}
 
 > **易错点**：`yum remove` 会连依赖一起卸，卸 `nginx` 前先在灰度机验证；`rpm -e --nodeps` 强卸包会留下孤儿文件，下一轮 `yum` 会因为依赖断裂而失败；装不完整包时 `yum provides` 比百度快。
+{: .callout-pit}
 
 ### 1.7 进程与性能类（B 级）
 
@@ -646,8 +666,10 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
 ```
 
 **验证方法**：`ps -ef` 的 PPID 列能还原父子关系（nginx master 的 PPID 是 1，worker 的 PPID 是 master 的 PID）；`kill -15` 后用 `ps -p PID` 复查进程是否消失，仍存在再 `-9`。
+{: .callout-verify}
 
 > **易错点**：`ps aux | grep nginx` 一定会在结果里带上 grep 自己，标准写法是 `ps -ef | grep -v grep | grep nginx` 或直接 `pgrep -f nginx`；`kill -9` 会让进程来不及关闭连接与刷盘，数据库类服务严禁上来就 `-9`；看内存够不够要盯 `available` 而不是 `free`——Linux 会用空闲内存做缓存，`free` 小不代表不够用。
+{: .callout-pit}
 
 ### 1.8 网络类（B 级）
 
@@ -702,8 +724,10 @@ HTTP=200 总耗时=0.003s
 ```
 
 **验证方法**：`ip addr` 里网卡是否带 `UP`、`inet` 行 IP 是否与规划一致；`ip route` 有 `default via` 说明网关配了，没有则只能同网段通信；`curl -w` 拿到 `HTTP=200` 说明应用层正常。
+{: .callout-verify}
 
 > **易错点**：服务起来了却连不上，九成是防火墙/security group/监听地址只绑了 `127.0.0.1` 三者之一；`ss -tulnp` 的 `p` 需要 root 才能看见进程名；`rsync` 源目录结尾带 `/` 表示拷目录**内容**，不带 `/` 表示连目录本身一起拷，差一个斜杠结果完全不同。
+{: .callout-pit}
 
 ### 1.9 压缩打包类
 
@@ -759,8 +783,10 @@ $ ls -l out/gz.txt
 ```
 
 **验证方法**：打包前 `ls -l data/score.txt` 是 185 字节，压缩再解压后 `out/gz.txt` 仍是 185 字节，说明无损；`zcat` 能在不产生解包文件的前提下读到首行内容；`--exclude` 版包内条目数 14 < 全量包的条目数，说明排除生效。
+{: .callout-verify}
 
 > **易错点**：`f` 参数必须放在最后且紧跟文件名（`tar zcfv out.tar.gz data` 会把 `v` 当成文件名）；`tar czf x.tar.gz /data` 用绝对路径打包会在解包时覆盖真实 `/data`，标准做法是 `cd /data/.. && tar czf x.tar.gz data` 或用 `-C / 加相对路径`；解压路径一层 Shell Quote 都不能少。
+{: .callout-pit}
 
 ### 1.10 文本处理类
 
@@ -844,6 +870,7 @@ c
 ```
 
 **验证方法**：同一个文件，`sort | uniq -c` 得到 `3 apple`（正确），直接 `uniq -c` 得到 6 行全 1（错误）——这一组对照就是「uniq 必须先 sort」的铁证；`awk '!a[$0]++'` 输出 `b a c` 保持原始出现顺序，而 `sort -u` 输出 `a b c` 已重排，据此判断该用哪个。
+{: .callout-verify}
 
 真跑字符处理与列提取（已实操）：
 
@@ -906,6 +933,7 @@ $ diff -u data/f1.txt data/f2.txt
 ```
 
 **验证方法**：`comm` 输出三列——第 1 列（无缩进）是仅存在于 s1 的 `a`，第 2 列（一个 Tab）仅 s2 的 `d`，第 3 列（两个 Tab）是共有的 `b`、`c`；用 `comm -12 f1 f2` 即可只取交集。`diff -u` 中 `-` 开头是被删行、`+` 开头是新增行，`@@ -1,3 +1,3 @@` 标明改动位置。
+{: .callout-verify}
 
 真跑 `split` / `xargs` / `tee` / `seq` / `expr`（已实操）：
 
@@ -965,8 +993,10 @@ $ expr 10 + 20; expr 100 / 7
 ```
 
 **验证方法**：5 行文件按 `-l 2` 切出 3 片，前两片各 74 字节、末尾 37 字节，行数正确；`xargs -n 2` 把 5 个输入切成 3 批（2+2+1）；`expr 100 / 7` 得 14 而非 14.28，证明它是**整数**运算，需要小数请改用 `awk 'BEGIN{printf "%.2f\n", 100/7}'` 或 `echo "scale=2; 100/7" | bc`。
+{: .callout-verify}
 
 > **易错点**：`tr` 是**字符级**一对一替换，不是字符串替换——这是 day12 那道 tr 替换题「越换越乱」的根因；`cut` 只能处理**单一分隔符**且连续分隔符会产生空字段，多空格分隔的文本应交给 `awk`；`xargs` 遇到文件名含空格会拆错，正确写法是 `find ... -print0 | xargs -0`；`split` 默认后缀是 `aa/ab/ac`，加 `-d` 才是数字。
+{: .callout-pit}
 
 ### 1.11 系统管理类
 
@@ -1040,8 +1070,10 @@ alias ll='ls -l'
 ```
 
 **验证方法**：`date -d "-1 day"` 得到的是前一天日期，`+%u` 返回 1-7 的星期序号（可直接用于 crontab 第 5 字段的比对）；别名演示中「定义后可用、取消后报 command not found」两段对照成立，证明别名生效/失效都可验证。
+{: .callout-verify}
 
 > **易错点**：写脚本时**不要依赖别名**（非交互 shell 默认关闭展开，需要先 `shopt -s expand_aliases`），生产脚本一律写全命令别名对应的原始命令；`date +%M` 是分钟、`date +%m` 是月份，写反会让备份文件名天天一样导致互相覆盖；`history` 默认不记时间，安全审计前先配 `export HISTTIMEFORMAT="%F %T "`。
+{: .callout-pit}
 
 ### 1.12 时间与任务类
 
@@ -1078,8 +1110,10 @@ crontab 五个时间字段：
 ```
 
 **验证方法**：新加任务后用 `crontab -l | tail -1` 确认写法落盘；再 `tail -f /var/log/cron` 观察是否在预期分钟触发。
+{: .callout-verify}
 
 > **易错点**：crontab 里 `%` 是特殊字符（表示换行），命令中用到必须转义成 `\%`；cron 的 PATH 极简（通常只有 `/usr/bin:/bin`），因此脚本里**所有命令都要写绝对路径**，或在脚本头部 `source /etc/profile`；任务执行的输出不会上屏，必须重定向到日志文件否则会生成大量邮件堆积在 `/var/spool/mail/`。
+{: .callout-pit}
 
 ### 1.13 综合流水线：把多类命令串起来
 
@@ -1119,6 +1153,7 @@ $ awk -F'"' '{print $2}' data/nginx_access.log | awk '{print $2}' | sort | uniq 
 ```
 
 **验证方法**：四条路径得到的 IP 计数互相印证（`192.168.1.10` 与 `.11` 各 2 次、`.12` 一次），状态码 3+1+1=5 与 `wc -l` 的 5 行总数吻合。
+{: .callout-verify}
 
 ### 1.14 题 1 自测（答案附后）
 {: .sec-prac}
@@ -1147,8 +1182,10 @@ $ awk -F'"' '{print $2}' data/nginx_access.log | awk '{print $2}' | sort | uniq 
 ### 卡片 1：文件属性章节
 
 **考察点**：看懂 `ls -l` 的每一行、理解 inode 与 block 的分工、区分三种时间戳在实际排查中的作用。
+{: .callout-exam}
 
 **核心概念**：文件 = 「inode 元信息（属性）+ block 数据块」。文件名存在父目录的 block 里，指向某个 inode；inode 里记录权限、属主属组、大小、时间戳、block 位置，但**不含文件名**。因此改名只改父目录的一条记录，移动同分区文件只改目录项位置都不动数据。硬链接 = 同一 inode 的第二个文件名；软链接 = 独立文件，内容存的是指向路径。
+{: .callout-card}
 
 `ls -l` 一行十段拆解：
 
@@ -1214,16 +1251,21 @@ atime=2026-10-24 04:59:01.618004600 +0800 mtime=2026-10-24 04:58:59.997185100 +0
 ```
 
 **验证方法**：`file.txt` 与 `hard.txt` 的 inode 号完全相同且硬链接数为 2，证明硬链接共享数据；三时间实验中「写内容」让 mtime 与 ctime 同时跳变、「读内容」只让 atime 跳变而 mtime/ctime 不变，这就是区分三种时间的实证。
+{: .callout-verify}
 
 > **易错点**：目录的 `w` 决定能否删除/新建文件，`x` 决定能否进入和访问文件属性——二者常一起给，但语义不同；ctime **不是**创建时间（创建时间是 stat 里的 `Birth` 字段），ctime 记录的是 inode 信息的变动；跨分区不能建硬链接，软链接可以，所以跨目录管理配置优先软链接。
+{: .callout-pit}
 
 > **参见**：[文件属性与inode](/posts/linux-fileattr-03/)、[文件属性进阶](/posts/linux-fileattr-04/)
+{: .callout-ref}
 
 ### 卡片 2：正则表达式章节
 
 **考察点**：基础正则（BRE）与扩展正则（ERE）符号的区别、grep -E 的用法、锚定符的意义。
+{: .callout-exam}
 
 **核心概念**：正则描述的是「一行文本里的一段模式」。分两派：
+{: .callout-card}
 
 | 符号 | BRE（grep 默认） | ERE（grep -E / egrep / sed -r） | 说明 |
 | --- | --- | --- | --- |
@@ -1295,16 +1337,21 @@ $ grep -nE '^[a-z]+ +[0-9]+:(fe)?male$' data/regtest.txt
 ```
 
 **验证方法**：关键对照组是 `a\{2,3\}$` 与 `^a\{2,3\}$`——前者把 `aaaa`、`aaaaa` 也匹配进来了（因为 `aaa$` 是它们的尾部子串），加上 `^` 后只剩 `aa`、`aaa` 两行，这就是锚定的价值；`.` 的个数与字符数必须严格相等，4 字符用 `^....$` 命中、5 个点结果为 0。
+{: .callout-verify}
 
 > **易错点**：`*` 表示「前一个字符重复任意次」而不是「任意字符」，想要通配必须写 `.*`；`[]` 内的 `.`、`*`、`|` 都是普通字符，不需要转义；写 IP 匹配别直接用 `.`——`192.168.1.1` 里的点要写成 `\.`，或用 `-F` 交给 awk 处理。
+{: .callout-pit}
 
 > **参见**：[基础正则表达式](/posts/linux-fileattr-06/)、[扩展正则表达式与grep](/posts/linux-fileattr-07/)
+{: .callout-ref}
 
 ### 卡片 3：sed 命令
 
 **考察点**：流编辑器的「行选择 + 动作」模型、替换命令的分隔符与 `g` 标志、后向引用、`-n` 与 `p` 的配合、`-i` 的危险性。
+{: .callout-exam}
 
 **核心概念**：sed 按行读入处理再输出，**默认输出所有行**（加 `-n` 才关闭）。语法：`sed [选项] '地址 动作' 文件`。地址可以是行号（`2`、`1,3`、`$` 最后一行、`1~2` 奇数行）或正则（`/模式/`）。四大动作：`p` 打印、`d` 删除、`s` 替换、`a`/`i`/`c` 增行/插行/整行替换。
+{: .callout-card}
 
 真跑 sed 增删改查（已实操）：
 
@@ -1410,16 +1457,21 @@ SQ       1005:male
 ```
 
 **验证方法**：`-i.bak` 之后同时存在改动后的 `edit2.txt` 与原始内容的 `edit2.txt.bak`，回滚只需 `mv`。`sed -i 's/male/M/g'` 把 `female` 也换成了 `feM`——这是一次教科书式的「未加词边界」事故现场，恰好可以当反例记住。
+{: .callout-verify}
 
 > **易错点**：`s/旧/新/` 默认只替换**每行第一个**匹配，全部替换必须加 `g`；`-i` 无备份，改配置前一律先 `cp x.conf x.conf.bak`；替换串里的 `/` 需转义或改用其它分隔符（`s#/a/b#/c/d#g`）；`sed -n 's/a/b/p'` 是「先关默认输出再只打印替换成功的行」，比 `grep + sed` 两步快。
+{: .callout-pit}
 
 > **参见**：[sed命令详解](/posts/linux-textproc-01/)
+{: .callout-ref}
 
 ### 卡片 4：awk 命令
 
 **考察点**：按列处理文本的模式：`BEGIN{}` 前处理、主处理按行执行、`END{}` 后汇总，以及 `-F` 分隔符、内置变量、数组统计。
+{: .callout-exam}
 
 **核心概念**：awk 是「按行读、按列处理」的编程语言。默认分隔符是任意空白。内置变量：
+{: .callout-card}
 
 | 变量 | 含义 |
 | --- | --- |
@@ -1502,17 +1554,22 @@ $ awk '$9==500 {print $1, $7}' data/nginx_access.log
 ```
 
 **验证方法**：三科均值 81.6/79.0/77.6 可以用 `(95+88+75+92+58)/5 = 81.6` 手工核对；IPv4 计数结果与前面 1.13 节 `sort | uniq -c`、以及状态码统计里 500 只出现 1 次完全一致，`$9==500` 正好捞出那一行。
+{: .callout-verify}
 
 > **易错点**：`$NF` 是最后一列而 `NF` 是列数，多写一个 `$` 结果完全不同；awk 的比较运算符里字符串和数字会自动转换但优先级容易踩坑，比较数字建议显式 `+$9==500`；`for(k in s)` 遍历数组时顺序是不确定的，要有序展示得接 `| sort`；awk 里的变量不需要 `$` 前缀，`print NR, $0` 才是行号加整行。
+{: .callout-pit}
 
 > **参见**：[awk命令详解](/posts/linux-textproc-02/)
+{: .callout-ref}
 
 ### 卡片 5：用户管理与权限概念
 {: .sec-know}
 
 **考察点**：UID/GID 分段规则、四个配置文件的字段、权限位的数字与符号两种写法、sudo 提权的授权粒度。
+{: .callout-exam}
 
 **核心概念**：Linux 用数字识别身份，CentOS 7 的 UID 分段：0 = root、1-999 = 系统账号（服务专用，不能登录）、1000+ = 普通用户。权限三段分别针对属主 u / 属组 g / 其它 o；`r=4 w=2 x=1` 相加得权限值。对**文件**而言 r 可读内容、w 可改内容、x 可执行；对**目录**而言 r 可列文件名、w 可增删文件、**x 可进入**（没 x 就打不开任何子项）。
+{: .callout-card}
 
 真跑四个配置文件拆解（已实操，口令位已占位脱敏）：
 
@@ -1553,6 +1610,7 @@ $ id -u
 ```
 
 **验证方法**：对照 passwd 第 3 列 UID：`root=0`、`bin=1`（系统账号）、`user01=1000`（普通用户）、`nginx=997`（服务账号），完全落在 CentOS 7 的 UID 分段规则里；`nginx` 的第 7 列是 `/sbin/nologin`，意味着无法交互登录——这正是服务账号的标准形态；shadow 第 2 列 `!!` 表示未设置口令（锁定状态）。
+{: .callout-verify}
 
 提权与精细授权（B 级，需 root）：
 
@@ -1574,16 +1632,21 @@ User ops01 may run the following commands on this host:
 ```
 
 **验证方法**：切到该用户后 `sudo systemctl status crond` 能执行、`sudo useradd test` 被拒，说明授权粒度生效。
+{: .callout-verify}
 
 > **易错点**：授权命令用**绝对路径**且不要给 `ALL`（等同于把 root 交出去）；给编辑器类命令（`vim`、`less`、`awk` 可执行版本）等于给了 root shell，因为里面可以 `:!bash`；`/etc/passwd` 中 shell 为 `/sbin/nologin` 的账号用 `su -` 切不过去，需要改成 `/bin/bash` 或用 `su -s /bin/bash 用户名`。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ### 卡片 6：定时任务
 
 **考察点**：五个时间字段的写法、脚本为什么要绝对路径与重定向、如何验证任务真的跑了。
+{: .callout-exam}
 
 **核心概念**：crond 每分钟醒来一次，扫描任务表，匹配当前时间的任务 fork 出来执行。执行环境是**极简 shell**（PATH 只有 `/usr/bin:/bin`、没有终端、不加载 `.bashrc`），所以脚本必须符合三条军规：① 命令写绝对路径；② 输出重定向到日志；③ 在脚本内 `source /etc/profile` 或显式设置 PATH。
+{: .callout-card}
 
 写一个会被 cron 调用的备份脚本并真跑（已实操）：
 
@@ -1663,6 +1726,7 @@ data_2026-10-24-050145.tar.gz
 ```
 
 **验证方法**：被改成 10 天前的 `data_2026-10-24-044357.tar.gz` 在第三次执行后从备份目录消失，而当时新生成的 `044400` 与 `044404` 保留下来，证明 `-mtime +7 -delete` 的滚动清理逻辑正确。
+{: .callout-verify}
 
 配置真正的计划任务（B 级，需 root）：
 
@@ -1691,10 +1755,13 @@ Oct 24 02:00:01 localhost CROND[23456]: (root) CMD (/bin/bash /tmp/hw/day24/back
 ```
 
 **验证方法**：三步缺一不可——① `crontab -l` 确认任务已落盘；② `/var/log/cron` 里出现对应分钟的 `CMD (...)` 记录；③ 业务日志/备份目录里真的产出了新文件。只看前两步容易漏掉「任务跑了但脚本内部失败」的情况。
+{: .callout-verify}
 
 > **易错点**：任务不执行的 Top3 原因：crond 没启动、脚本里命令没写绝对路径、% 没转义。另外「日和周」同时指定时是**或**关系（任一个匹配就执行），写 `0 0 1 * 1` 不等于「每月第一个周一」。
+{: .callout-pit}
 
 > **参见**：[定时任务与crond](/posts/linux-cron-01/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

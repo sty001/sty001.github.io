@@ -35,8 +35,10 @@ slug: "linux-homework-06"
 {: .sec-sum}
 
 **考察点**：命令行效率工具——`Tab` 补全、`history` 历史命令、`Ctrl + r` 反向搜索、`!!` 重复上一条、`!$` 引用上一条最后一个参数，以及常用 `Ctrl` 系列编辑快捷键。
+{: .callout-exam}
 
 **实现思路**：先给速查表建立全貌；`Tab` 补全用 `compgen` 真跑其底层机制，`history` 在交互式 bash 中真跑；依赖真实终端的功能（`!!`、`!$`、`Ctrl + r`）给出 CentOS 7 预期输出并说明限制原因。
+{: .callout-prac}
 
 ### 快捷方式速查表
 {: .sec-chk}
@@ -126,6 +128,7 @@ export HISTCONTROL=ignoreboth            # 忽略连续重复与空格开头的�
 ```
 
 **验证方法**：`history 5` 只列出最近 5 条且编号连续递增，与刚才输入的命令一一对应，证明历史缓冲区按执行顺序记录。
+{: .callout-verify}
 
 ### `!!`、`!$`、`!n` 与 `Ctrl + r`（预期输出，CentOS 7）
 
@@ -160,15 +163,19 @@ systemctl restart sshd
 ```
 
 > **易错点**：`!!` 适合重复上一条，但**危险操作千万别用 `!!` 复用**——上一条如果是 `rm -rf`，`!!` 会再执行一遍。`Ctrl + r` 搜索到的命令同样要先看清再回车。另外 `~/.bash_history` 里会明文留下所有敲过的命令（包括密码），生产规范中用 `HISTCONTROL=ignorespace` 加前置空格屏蔽敏感命令。
+{: .callout-pit}
 
 > **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)、[系统目录结构与挂载](/posts/linux-system-03/)
+{: .callout-ref}
 
 ## 题 2：总结存储设备挂载步骤
 {: .sec-prac}
 
 **考察点**：挂载的本质（把一个目录作为存储设备的挂载点）、`mount`/`umount` 标准流程、`/etc/fstab` 开机自动挂载的配置方法。
+{: .callout-exam}
 
 **实现思路**：挂载需要真实块设备与 root 权限，本环境无法真跑，给出 CentOS 7 标准命令序列（B 级）：手工挂载四步、ISO/U 盘/NTFS 三类设备挂载法、fstab 六列配置与 `mount -a` 不重启验证法。
+{: .callout-prac}
 
 ### 挂载四步标准流程（预期输出，CentOS 7）
 {: .sec-best}
@@ -281,17 +288,22 @@ df -h                                    # 第六步：确认 /data 已挂载且
 {: .sec-pit}
 
 **验证方法**：`df -h` 输出中能看到新设备挂在指定目录且容量正确；重启后再次 `df -h` 仍在，证明开机自动挂载生效。
+{: .callout-verify}
 
 > **易错点**：一是挂载点目录不存在，`mount` 直接报 `mount point does not exist`；二是把有数据的目录当挂载点，挂载后原数据被遮住，卸载才恢复；三是卸载时还 `cd` 在挂载点里，报 `target is busy`；四是 fstab 写错不 `mount -a` 验证直接重启，系统起不来。
+{: .callout-pit}
 
 > **参见**：[系统目录结构与挂载](/posts/linux-system-03/)
+{: .callout-ref}
 
 ## 题 3：总结目录结构作用
 {: .sec-sum}
 
 **考察点**：FHS 标准下每个目录的用途，做到"看到路径就知道该不该动"。
+{: .callout-exam}
 
 **实现思路**：给出逐目录作用表，并在 Git Bash 中用 `ls` 对照真实路径——存在的看内容印证作用，不存在的明确说明，让抽象表格落到真实输出上。
+{: .callout-prac}
 
 ### 目录作用对照表
 {: .sec-chk}
@@ -351,10 +363,13 @@ $ ls /etc/fstab
 ```
 
 **验证方法**：三条真实输出分别印证——根目录下直接就是各系统目录（目录树从 `/` 开始，这是挂载技术的前提）；`/etc`、`/proc`、`/tmp` 存在且内容符合各自职责（`/proc` 里是 PID 数字，印证数据在内存中）；`/var`、`/home` 等在 MSYS 环境不存在，以真机 CentOS 7 为准。注意 Git Bash 的 `/etc` 是 MSYS 模拟目录，真实系统的 `/etc` 内容（如 `sysconfig/network-scripts/`）以真机为准。
+{: .callout-verify}
 
 > **易错点**：判断目录能不能清的口诀——**配置在 `/etc` 不动、日志在 `/var` 轮转、临时 `/tmp` `/run` 自动清、业务数据 `/home` `/srv` 慎动、系统命令 `/usr` `/bin` 绝不碰**。磁盘满优先查 `/var/log` 和大文件，不要手动删 `/usr` 下的东西。
+{: .callout-pit}
 
 > **参见**：[系统目录结构与挂载](/posts/linux-system-03/)、[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ref}
 
 ## 自测
 {: .sec-prac}

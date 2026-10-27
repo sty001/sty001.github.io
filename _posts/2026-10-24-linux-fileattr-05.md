@@ -295,6 +295,7 @@ df -i
 ## 硬链接
 
 **概念说明**：在一个分区中，inode 号码相同的文件互为硬链接，相当于超市的多个门（读取数据的多个入口）。
+{: .callout-card}
 
 ```bash
 [root@linux-node1 test]# ln /test/test.txt /test/test_hard_link.txt
@@ -329,6 +330,7 @@ total 8
 ## 软链接
 
 **概念说明**：文件的快捷方式。
+{: .callout-card}
 
 ```bash
 [root@linux-node1 test]# ln -s /test/test.txt /test/test_soft_link.txt

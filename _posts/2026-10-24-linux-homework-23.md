@@ -35,8 +35,10 @@ slug: "linux-homework-23"
 ## 题 1：新磁盘分区并挂载到 /data
 
 **考察点**：磁盘从「插上」到「能用」的完整五步流程——识别、分区、重载分区表、格式化、挂载；`fdisk` 交互指令；`/etc/fstab` 六列含义与校验方法。
+{: .callout-exam}
 
 **实现思路**：小于 2T 的磁盘用 MBR 分区表 + `fdisk`（大于 2T 必须用 `parted` 建 GPT）。整体分六个里程：
+{: .callout-prac}
 
 1. 确认系统识别到新盘（`lsblk` / `ll /dev/sdb`）；
 2. `fdisk /dev/sdb` 交互分区（本题只需 1 个主分区）；
@@ -197,14 +199,18 @@ findmnt /dev/sdb1
 `mount -a` 按 fstab 挂载所有未挂载项——fstab 写错了它会当场报错，而不是等重启后卡在开机流程。非系统盘建议在 fstab 参数列加 `nofail`，设备缺失时开机不会卡住。
 
 > **易错点**：① `mkfs` 会清空整个分区，执行前必须 `lsblk` 核对设备名；② fstab 直接改完不校验就重启，写错一行可能导致系统无法开机，进救援模式才能修；③ 逻辑分区编号从 5 开始（sda5），一块盘最多 4 个主分区，想更多分区用「3 主 + 1 扩展」。
+{: .callout-pit}
 
 **验证方法**：`df -h /data` 能看到 `/dev/sdb1` 挂在 `/data`；`mount -a` 无报错；重启后 `df -h` 挂载仍在。
+{: .callout-verify}
 
 ## 题 2：swap 扩容的两种方法
 
 **考察点**：swap 的作用（物理内存吃紧时把不活跃页换出，避免 OOM 杀进程）、`mkswap` / `swapon` / `swapoff` 三件套、独立 swap 分区的做法。
+{: .callout-exam}
 
 **实现思路**：方法一用大文件做 swap（`dd` 造文件 → `mkswap` 格式化 → `swapon` 启用），最快最灵活，适合临时救急（比如 Java 程序临时吃内存）；方法二划独立分区做 swap（`fdisk` 建分区 → 类型改 82 → `mkswap` → `swapon`），更正规、性能略好。
+{: .callout-prac}
 
 ### 方法一：用文件扩容 swap（B 级）
 
@@ -276,14 +282,18 @@ NAME       TYPE      SIZE USED PRIO
 ```
 
 > **易错点**：① swap 文件权限必须是 600，否则 `swapon` 拒绝或告警；② `swapoff` 之前确认 swap 里没有活跃数据（`free -h` 的 used 列），内存充足时再关；③ swap 只是缓冲不是扩容，数据库等延迟敏感服务应把 `vm.swappiness` 调低（如 10），靠加内存解决问题。
+{: .callout-pit}
 
 **验证方法**：`free -h` 的 Swap 行总量变大；`swapon --show` 能看到新设备；`swapoff` 后总量还原。
+{: .callout-verify}
 
 ## 题 3：df -h 与 df -i 的区别、磁盘满但 du 统计不出来的原因
 
 **考察点**：block 与 inode 是两套独立的资源；「磁盘满」有三种原因且报错完全相同；`df` 与 `du` 统计口径不同导致数值对不上。
+{: .callout-exam}
 
 **实现思路**：先用真机输出对比 `df -h` 与 `df -i`，再用「300 个空文件」实验证明 inode 与 block 脱节，最后给三种「磁盘满」的判断与处置。
+{: .callout-prac}
 
 ### 3.1 df -h 与 df -i 的区别（已实操）
 {: .sec-prac}
@@ -401,14 +411,18 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 | 句柄未释放 | 已用很高 | 低 | 对不上 | `lsof +L1` | 重启进程或截断文件 |
 
 > **易错点**：三种情况的报错**完全相同**（`No space left on device`），光看报错无法区分，必须 `df -h` 与 `df -i` 一起跑；`df` 与 `du` 对不上时才轮到 `lsof +L1`。
+{: .callout-pit}
 
 **验证方法**：① 能说清 `df -h` 看 block、`df -i` 看 inode；② 本机 300 空文件实验能复述「内容 0 字节却占 300 inode + 64K block」（已实操）；③ 能解释 `du` 统计不到的两类文件分别是什么、怎么定位。
+{: .callout-verify}
 
 ## 题 4：RAID 0 / 1 / 5 / 10 对比
 
 **考察点**：RAID 用冗余换安全或用条带换性能的思想；各级别的最少盘数、可用容量、容错能力与适用场景。
+{: .callout-exam}
 
 **实现思路**：RAID 的三个目的是提高存储效率、安全与容量。0 是纯条带（快但不安全），1 是纯镜像（安全但容量减半），5 是条带 + 分布式校验（折中），10 是先镜像再条带（安全与性能兼顾）。RAID 可由硬件 RAID 卡实现（推荐，带缓存保护），也可用 `mdadm` 做软 RAID；对上层都表现为一块普通磁盘，分区与格式化步骤与题 1 完全相同。
+{: .callout-prac}
 
 | 级别 | 最少磁盘 | 可用容量（以 n 块 c 盘为例） | 容错能力 | 读性能 | 写性能 | 适用场景 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -420,6 +434,7 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 以 300G × 3 块盘为例：RAID 5 可用约 600G，最多坏 1 块盘；若换成 4 块 300G 做 RAID 10，可用约 600G，安全与性能兼顾。RAID 5 重建（rebuild）期间再坏一块就全丢，大容量盘重建时间长，所以重要数据仍需独立备份——**RAID 不是备份**。RAID 01（先条带再镜像）可靠性不如 RAID 10，已少用。
 
 **验证方法**：能不查资料说出四个级别的最少盘数、可用容量公式与「坏几块盘会丢数据」；能解释为什么数据库选 RAID 10 而不是 RAID 5（随机写多、校验开销大、重建窗口风险高）。
+{: .callout-verify}
 
 ## 本篇小结
 {: .sec-sum}
@@ -434,6 +449,7 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 8. RAID 0 快但不安全、RAID 1 安全但容量减半、RAID 5 折中（3 块起、坏 1 块）、RAID 10 安全与性能兼顾（4 块起、容量减半）；RAID 不是备份，重要数据必须有独立备份。
 
 > **参见**：[磁盘管理基础](/posts/linux-disk-01/)、[磁盘管理进阶](/posts/linux-disk-02/)、[day15 磁盘 block 与存储原理作业实操](/posts/linux-homework-15/)
+{: .callout-ref}
 
 
 {% endraw %}

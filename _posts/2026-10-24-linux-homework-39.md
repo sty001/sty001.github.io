@@ -34,8 +34,10 @@ slug: "linux-homework-39"
 ## 题 1：301 跳转和 302 跳转的区别
 
 **考察点**：HTTP 重定向的状态码语义——301（Moved Permanently，永久跳转）与 302（Found，临时跳转）的差异；以及 curl 在重定向场景下的关键参数 `-I`（只看响应头）、`-L`（跟随跳转）、`-w`（自定义输出格式）。
+{: .callout-exam}
 
 **实现思路**：概念层面的区别一句话就能背下来，但运维要「眼见为实」。本篇在本地 8321 端口起一个 Python 重定向服务器，提供 `/301`、`/302`、`/301local`、`/302local`、`/index.html` 五个路径，然后：
+{: .callout-prac}
 
 1. 用 `curl -I` 分别抓三种状态码的响应头，对比 `Location` 字段与状态行；
 2. 用 `curl -L` 实测「跟随跳转」到底发生了什么（一次请求变两次）；
@@ -194,6 +196,7 @@ curl --noproxy '*' -s -o /dev/null -w '状态码=%{http_code} 跳转目标=%{red
 > - 本机有代理环境变量时访问 `127.0.0.1` 必须加 `--noproxy '*'`，否则代理返回 502，会误以为服务没起来（本篇真实踩到）；
 > - 验证 301 配置后浏览器看不到效果，多半是**浏览器缓存了 301**，换 curl 测试或清缓存，不要反复改服务端配置干着急；
 > - `curl -L` 遇到互相跳转的死循环会自动停止（默认上限 50 跳），自己写跳转规则时注意别让 A 跳 B、B 又跳 A。
+{: .callout-pit}
 
 ### 步骤 5：跳转验证的通用排查流程（B 级落地）
 {: .sec-ts}
@@ -210,6 +213,7 @@ curl --noproxy '*' -s -o /dev/null -w '状态码=%{http_code} 跳转目标=%{red
 {: .sec-sum}
 
 **考察点**：两个最常用的 HTTP 客户端命令各自的能力边界——curl 是「万能 HTTP 请求工具」，wget 是「专用下载工具」。
+{: .callout-exam}
 
 ### curl 常用参数总结（已实操）
 {: .sec-prac}
@@ -315,10 +319,12 @@ Remote file exists.
 > - wget 的 `-O` 与 curl 的 `-o` 大小写不同，含义相同，混用时容易写错；
 > - `wget --spider` 探测到 404 时退出码非 0，可以用来做脚本里的健康检查判断；
 > - curl 默认把响应体打到屏幕上，下载文件忘了 `-o`/`-O` 会把二进制刷屏。
+{: .callout-pit}
 
 ## 题 3：提前部署安装好 nginx 服务（B 级，CentOS 7）
 
 **考察点**：用 yum 完成 nginx 的安装、启动、开机自启与验证，为后续综合架构课程提前备好环境。
+{: .callout-exam}
 
 ### 步骤 1：yum 安装 nginx
 {: .sec-prac}
@@ -449,6 +455,7 @@ curl -I http://example.com/admin           # 预期 302，Location 指向 /login
 6. 本机带代理环境时，curl 访问 `127.0.0.1` 要加 `--noproxy '*'`，否则 502 会误导排障方向——「先排除环境干扰，再怀疑服务本身」。
 
 > **参见**：[Nginx网站服务部署](/posts/linux-arch-13/)、[Nginx网站服务进阶](/posts/linux-arch-14/)
+{: .callout-ref}
 
 
 {% endraw %}

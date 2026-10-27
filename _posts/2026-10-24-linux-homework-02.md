@@ -29,10 +29,13 @@ mkdir -p /tmp/hw/day2 && cd /tmp/hw/day2
 ## 题 1：如果你购买了一块 100G 的硬盘，硬盘实际大小应该多大，如何进行运算
 
 **考察点**：厂商按 1000 进制、系统按 1024 进制，这套差异要能讲明白，还要动手算出标称 100G 的硬盘在系统里显示多大。
+{: .callout-exam}
 
 **实现思路**：手工推导一遍换算公式，然后用 numfmt、awk 实算对答案，最后上真机 lsblk、df -h 看显示值——三步对上了，这道题才算懂。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：理解两套进制。
 
@@ -124,6 +127,7 @@ sda      8:0    0  100G  0 disk
 注意：lsblk 显示的 100G 是取整后的约数，精确字节数要用 `blockdev --getsize64 /dev/sda` 查看。且系统可用容量还要再扣掉文件系统元数据、inode 表和保留块，所以"可用空间"会比 93.13 GiB 再小一点。
 
 **验证方法**：用 `blockdev --getsize64 /dev/sdX` 拿到精确字节数，除以 1024^3 后应与 93.13 吻合；`numfmt --to=iec-i` 的结果与 awk 的两位小数结果互相印证，说明计算无误。
+{: .callout-verify}
 
 > **易错点**：
 > - 把"系统显示 93G"当成硬盘缺容量：这是单位标准差异，非质量问题。
@@ -131,8 +135,10 @@ sda      8:0    0  100G  0 disk
 > - 忽略 numfmt 的取整方式：默认向上取整得 94GiB，要精确值得加 `--round=nearest` 或用 awk。
 > - 以为 93.13 GiB 全部可用：文件系统开销和保留块（ext4 默认 5%）会再占一部分。
 > - 采购 SSD 时还要注意 OP 预留空间与磨损均衡，实际可用同样小于标称。
+{: .callout-pit}
 
 > **参见**：[Linux系统概念](/posts/linux-basics-02/) 的[硬盘的数据存储单位](/posts/linux-basics-02/#硬盘的数据存储单位)。
+{: .callout-ref}
 
 ### 辨析：GB 与 GiB
 
@@ -142,10 +148,13 @@ GB 和 GiB 不是同一个单位的两种写法，是两套进制：GB 走 1000 
 {: .sec-expl}
 
 **考察点**：Dell 服务器 RAID 卡（PERC）的配置流程要说得清：进配置界面、建磁盘组、配热备，一步不落。
+{: .callout-exam}
 
 **实现思路**：RAID 配置是板级硬件操作，Git Bash 模拟不了，只能按 B 级给标准步骤和每步的界面要素。本地 Ctrl+R 和远程 iDRAC 两条入口分开写，装完系统再补验证命令。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：进入 RAID 卡配置界面。开机自检（POST）阶段，当屏幕提示按组合键时按下进入。
 
@@ -228,6 +237,7 @@ State 为 Optimal 表示阵列健康；Degraded 表示有盘掉线正在降级�
 热备盘也要纳入日常巡检：它长期不通电写入，真顶上的时候状态如何没人说得准，定期跑一致性校验才放心。
 
 **验证方法**：创建 VD 后 `lsblk` 应看到对应大小的逻辑盘（RAID 5 四盘 4TB 可用容量为 (4-1) x 4TB = 12TB，厂商十进制口径）；`storcli64 /c0 show` 中 VD 状态为 Optimal；配置热备后 `storcli64 /c0 /eall /sall show` 能看到 Global HS 属性的空闲盘。
+{: .callout-verify}
 
 > **易错点**：
 > - 忘记初始化就装系统：未完成初始化的阵列直接使用，性能和可靠性都没有保障。
@@ -235,17 +245,22 @@ State 为 Optimal 表示阵列健康；Degraded 表示有盘掉线正在降级�
 > - RAID 5 使用大盘（4TB 以上）：重建时间长，重建期间再坏盘风险高，优先 RAID 6 / RAID 10。
 > - 在配置界面误选 Clear Configuration：会清掉已有阵列配置，操作前务必确认服务器上无业务数据。
 > - 远程 iDRAC 用默认口令不修改：管理网暴露等于把服务器钥匙挂在门上，首次登录必须改密码。
+{: .callout-pit}
 
 > **参见**：[Linux系统概念](/posts/linux-basics-02/) 的[RAID 卡](/posts/linux-basics-02/#raid-卡)[远程管理卡](/posts/linux-basics-02/#远程管理卡)、[计算机硬件组成](/posts/linux-basics-01/) 的[RAID：把多块磁盘整合起来](/posts/linux-basics-01/#raid把多块磁盘整合起来)。
+{: .callout-ref}
 
 ## 题 3：进行课程知识总结
 {: .sec-sum}
 
 **考察点**：把 day1 至 day2 的硬件与系统概念组织成结构化、可检索、可自测的知识体系。
+{: .callout-exam}
 
 **实现思路**：按规范把"总结型"作业转化为：知识卡片 + 速查表 + 可直接运行的示例（真实执行）+ 自测题。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：知识卡片——硬件组成。
 
@@ -362,22 +377,28 @@ awk 'BEGIN{printf "标称100G ≈ %.2f GiB，少了 %.2f GiB\n", 100*1000^3/1024
 5. 双路 24 核的服务器总物理核心数是多少？答：2 x 24 = 48 个物理核心。
 
 **验证方法**：示例 1 至 5 在 Git Bash 或任意 Linux 上直接粘贴执行，输出与文中一致；自测题 5 题全部答对说明知识卡片掌握到位。
+{: .callout-verify}
 
 > **易错点**：
 > - 总结只抄结论不记命令：运维场景要"概念 + 命令 + 预期输出"三位一体。
 > - RAID 容量估算忘记扣校验盘：RAID 5 是 (N-1) 块盘的容量，不是 N 块。
 > - 容量单位混用：对外说 GB（厂商口径），对内看 GiB（系统口径），换算别用错进制。
+{: .callout-pit}
 
 > **参见**：[Linux系统概念](/posts/linux-basics-02/) 全文、[计算机硬件组成](/posts/linux-basics-01/) 的[知识卡片](/posts/linux-basics-01/#知识卡片)。
+{: .callout-ref}
 
 ## 题 4（扩展作业）：如何通过网络安装系统（PXE / Kickstart）
 {: .sec-ext}
 
 **考察点**：能否讲清通过网络（PXE + Kickstart）批量安装系统的流程与关键配置。
+{: .callout-exam}
 
 **实现思路**：先画 PXE 启动的数据流，再过一遍服务端搭建的标准命令，最后给一份最小可用的 ks.cfg 应答文件，流程、配置、验证齐了。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：理解 PXE 网络启动流程。
 
@@ -482,6 +503,7 @@ df -h
 ```
 
 **验证方法**：客户机网卡启动后自动获取 IP 并进入安装界面，全程无人工交互即说明 PXE + Kickstart 生效；安装完成后，`ip a` 看到的 IP、`lsblk` 看到的分区与 ks.cfg 中 `network`、`part` 指令逐项一致。
+{: .callout-verify}
 
 > **易错点**：
 > - 忘记在 DHCP 里指定 dhcp-boot：客户机下载不到引导文件，PXE 启动失败。
@@ -490,8 +512,10 @@ df -h
 > - BIOS 未开启网络启动：部分服务器默认禁用 PXE，需在 BIOS / UEFI 里启用 Network Boot。
 > - 安装源与 ks.cfg 地址不可达：先用 `curl -I http://10.0.0.1/kickstart/ks.cfg` 确认客户机视角下地址有效。
 > - 生成 ks.cfg 的捷径：装完一台机器后，root 家目录的 anaconda-ks.cfg 就是本次安装的应答记录，可改作模板复用。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 的[Kickstart 自动安装](/posts/linux-basics-03/#kickstart-自动安装)。
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

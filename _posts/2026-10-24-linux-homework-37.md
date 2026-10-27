@@ -110,8 +110,10 @@ YAML OK: sersync.yml
 ## 题 1：一键化部署全网备份项目
 
 **考察点**：把「rsync 服务端部署 + 客户端发密码文件 + 发备份脚本 + 配定时任务 + 立即试跑一次」固化成两个 play；`template` 渲染脚本里的服务器地址；`cron` 模块幂等部署定时任务；`changed_when` 精确判定同步是否发生。
+{: .callout-exam}
 
 **实现思路**：全网备份的完整链路是「客户端每天定时把本地数据 rsync 推到备份机的 backup 模块」。拆成两个 play：第一个 play 把备份机配成 rsync daemon（服务端）；第二个 play 给所有客户端发脚本、配 cron，并当场跑一次做链路验证。服务端与客户端的分工如下：
+{: .callout-prac}
 
 | 角色 | 关键任务清单 |
 | --- | --- |
@@ -353,12 +355,15 @@ index.html
 > - cron 不执行：脚本无执行权限（漏了 `mode: "0750"`）或 job 里没写绝对路径；
 > - 历史备份互相覆盖：忘了 `Remote_path=/${Date}`，所有日期的备份都挤进同一个模块根目录；
 > - 客户端密码文件内容必须是「纯口令」，写成 `用户:口令` 会被当作口令本身，报 auth failed。
+{: .callout-pit}
 
 ## 题 2：一键化部署 NFS 服务
 
 **考察点**：复用 day34 的三段式 NFS 剧本并纳入一键入口；理解「同一个服务在一键体系里就是一个子剧本」的组织方式。
+{: .callout-exam}
 
 **实现思路**：NFS 部署在 day34 已写成三段式剧本（全体装软件 → 服务端共享 → 客户端挂载），一键化只是把它改名落位为 `nfs_onekey.yml` 并挂进 `site.yml`，内容不再展开，完整的剧本、模板与逐行讲解见 day34 题 2。这里只保留两张速查表。
+{: .callout-prac}
 
 关键 task 清单：
 
@@ -396,8 +401,10 @@ $ ansible nfs_client -m shell -a "df -h | grep nfs"
 ## 题 3：一键化部署实时同步服务
 
 **考察点**：inotify + sersync 的工作原理（内核监听文件事件 → sersync 调 rsync 增量推送）；用 `get_url` + `unarchive` 部署二进制包；常驻进程的启动与开机自启；`confxml.xml` 模板化。
+{: .callout-exam}
 
 **实现思路**：实时同步解决「备份有定时窗口、数据会丢一个周期」的问题：客户端用 inotify 监听 `/data` 目录的写入事件，sersync 收到事件立即调 rsync 把变更推到备份机。前提是备份机的 rsync daemon 已就绪（backup.yml 的服务端 play 已完成）。客户端要装的东西分四层：
+{: .callout-prac}
 
 | 层 | 内容 | 剧本任务 |
 | --- | --- | --- |
@@ -530,6 +537,7 @@ $ ansible rsync_server -m shell -a "ls -l /backup/realtime_test.txt"
 > - 密码文件用错名字：sersync 的 rsync 参数里 `--password-file` 指向的路径必须与 02 步创建的文件一致；
 > - 常驻进程启动任务每次执行都 changed：后台启动类 shell 天然不幂等，必要时配 `changed_when: false` 或先用 `ps` 判断进程存在再启动；
 > - 监听目录权限不足：sersync 以 root 运行没问题，但 rsync 推送时受服务端目录属主约束，`/backup` 属主必须是 rsync。
+{: .callout-pit}
 
 ## 小结
 {: .sec-sum}
@@ -543,6 +551,7 @@ $ ansible rsync_server -m shell -a "ls -l /backup/realtime_test.txt"
 7. 验证按组件分关：备份看 crontab、远端目录与日志；NFS 看 exportfs、df 与读写测试；实时同步看进程存活与「造文件秒级到达」。
 
 > **参见**：[Ansible剧本实战](/posts/linux-arch-11/)、[批量管理Ansible（下）](/posts/linux-arch-10/)、[day34 剧本部署 rsync/nfs](/posts/linux-homework-35/)、[备份项目实战](/posts/linux-arch-03/)
+{: .callout-ref}
 
 
 {% endraw %}

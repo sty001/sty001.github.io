@@ -643,4 +643,228 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 .page-content h4 { color: var(--h4-color); font-weight: 650; }
 .page-content h5 { color: var(--h5-color); font-weight: 600; }
 
+/* ==========================================================================
+   阅读增强 v3：内容层级 callout 体系
+   与 AUTHOR.md 的「配色与区块含义」图例一一对应；正文里 **标签**：内容
+   会被构建期脚本加上 {: .callout-xxx}，这里负责把它渲染成"彩色标签条"。
+   读者一眼就能看出：这一段是定义 / 辨析 / 原理 / 坑位 / 答案 / 延伸 …
+   ========================================================================== */
+
+:root {
+  /* 17 类内容语义色：--cc 主色(文字/色条)，--cb 淡底，--ci 图标 */
+  --callout-bianxi-c:#6cb6ff;  --callout-bianxi-b:rgba(108,182,255,.13);  --callout-bianxi-i:"🔍 ";
+  --callout-card-c:#7ee787;   --callout-card-b:rgba(126,231,135,.13);   --callout-card-i:"📌 ";
+  --callout-ask-c:#d2a8ff;    --callout-ask-b:rgba(210,168,255,.13);    --callout-ask-i:"❓ ";
+  --callout-why-c:#ffae6b;    --callout-why-b:rgba(255,174,107,.13);    --callout-why-i:"💡 ";
+  --callout-pit-c:#ff8f8a;    --callout-pit-b:rgba(255,143,138,.13);    --callout-pit-i:"⚠️ ";
+  --callout-note-c:#e3b341;   --callout-note-b:rgba(227,179,65,.13);    --callout-note-i:"✏️ ";
+  --callout-answer-c:#56d3c9; --callout-answer-b:rgba(86,211,201,.13);  --callout-answer-i:"✅ ";
+  --callout-exam-c:#ff9a76;   --callout-exam-b:rgba(255,154,118,.13);   --callout-exam-i:"🎯 ";
+  --callout-explain-c:#b6c2d1;--callout-explain-b:rgba(182,194,209,.10); --callout-explain-i:"📖 ";
+  --callout-prac-c:#79c0ff;   --callout-prac-b:rgba(121,192,255,.13);   --callout-prac-i:"🛠 ";
+  --callout-verify-c:#56d3ff; --callout-verify-b:rgba(86,211,255,.13);  --callout-verify-i:"🧪 ";
+  --callout-trouble-c:#ff7b72;--callout-trouble-b:rgba(255,123,114,.13); --callout-trouble-i:"🔧 ";
+  --callout-key-c:#ffd479;    --callout-key-b:rgba(255,212,121,.12);    --callout-key-i:"🔑 ";
+  --callout-ext-c:#56d3ff;    --callout-ext-b:rgba(86,211,255,.12);     --callout-ext-i:"🚀 ";
+  --callout-cmd-c:#e3b98a;    --callout-cmd-b:rgba(227,185,138,.12);    --callout-cmd-i:"💻 ";
+  --callout-star-c:#ff9ecb;   --callout-star-b:rgba(255,158,203,.13);   --callout-star-i:"⭐ ";
+  --callout-ref-c:#8b98a5;    --callout-ref-b:rgba(139,152,165,.10);    --callout-ref-i:"🔗 ";
+
+  /* 关键字 / 行内代码 / 标签胶囊 */
+  --kw-color:#ffd479;
+  --kw-color-soft:rgba(255,212,121,.14);
+  --inline-code-c:#ffa657;
+  --inline-code-b:rgba(255,166,87,.13);
+  --inline-code-bd:rgba(255,166,87,.30);
+}
+
+/* ---------- 5) callout 基础：左侧彩色条 + 淡底 + 圆角 ---------- */
+.post-content p[class*="callout-"],
+.post-content blockquote[class*="callout-"],
+.post-content ul[class*="callout-"],
+.post-content ol[class*="callout-"] {
+  --cc: var(--callout-ref-c);
+  --cb: var(--callout-ref-b);
+  --ci: var(--callout-ref-i);
+  border-left: 4px solid var(--cc);
+  background: var(--cb);
+  border-radius: 0 10px 10px 0;
+  padding: 0.5rem 0.95rem;
+  margin: 0.85rem 0;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+}
+.post-content p[class*="callout-"] > strong:first-child,
+.post-content blockquote[class*="callout-"] > p > strong:first-child,
+.post-content ul[class*="callout-"] > li > strong:first-child,
+.post-content ol[class*="callout-"] > li > strong:first-child {
+  display: inline-block;
+  color: var(--cc);
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--cc);
+  border-radius: 999px;
+  padding: 0.02em 0.6em;
+  margin-right: .35em;
+  font-weight: 700;
+  letter-spacing: .02em;
+  font-size: .94em;
+}
+.post-content p[class*="callout-"]::before,
+.post-content blockquote[class*="callout-"]::before {
+  content: var(--ci);
+  margin-right: .1em;
+}
+
+/* 「标签单独成行 + 下面跟列表」时，两块合成同一个色块 */
+.post-content p[class*="callout-"]:has(+ ul),
+.post-content p[class*="callout-"]:has(+ ol) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+  padding-bottom: 0.25rem;
+}
+.post-content p[class*="callout-"]:has(+ ul) + ul,
+.post-content p[class*="callout-"]:has(+ ol) + ol {
+  border-left: 4px solid var(--cc);
+  background: var(--cb);
+  border-radius: 0 0 10px 0;
+  padding: 0.15rem 0.95rem 0.5rem 2.1rem;
+  margin-top: 0;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+}
+
+/* ---------- 6) 17 类语义色映射 ---------- */
+.post-content .callout-bianxi   { --cc:var(--callout-bianxi-c);   --cb:var(--callout-bianxi-b);   --ci:var(--callout-bianxi-i); }
+.post-content .callout-card     { --cc:var(--callout-card-c);     --cb:var(--callout-card-b);     --ci:var(--callout-card-i); }
+.post-content .callout-ask      { --cc:var(--callout-ask-c);      --cb:var(--callout-ask-b);      --ci:var(--callout-ask-i); }
+.post-content .callout-why      { --cc:var(--callout-why-c);      --cb:var(--callout-why-b);      --ci:var(--callout-why-i); }
+.post-content .callout-pit      { --cc:var(--callout-pit-c);      --cb:var(--callout-pit-b);      --ci:var(--callout-pit-i); }
+.post-content .callout-note     { --cc:var(--callout-note-c);     --cb:var(--callout-note-b);     --ci:var(--callout-note-i); }
+.post-content .callout-answer   { --cc:var(--callout-answer-c);   --cb:var(--callout-answer-b);   --ci:var(--callout-answer-i); }
+.post-content .callout-exam     { --cc:var(--callout-exam-c);     --cb:var(--callout-exam-b);     --ci:var(--callout-exam-i); }
+.post-content .callout-explain  { --cc:var(--callout-explain-c);  --cb:var(--callout-explain-b);  --ci:var(--callout-explain-i); }
+.post-content .callout-prac     { --cc:var(--callout-prac-c);     --cb:var(--callout-prac-b);     --ci:var(--callout-prac-i); }
+.post-content .callout-verify   { --cc:var(--callout-verify-c);   --cb:var(--callout-verify-b);   --ci:var(--callout-verify-i); }
+.post-content .callout-trouble  { --cc:var(--callout-trouble-c);  --cb:var(--callout-trouble-b);  --ci:var(--callout-trouble-i); }
+.post-content .callout-key      { --cc:var(--callout-key-c);      --cb:var(--callout-key-b);      --ci:var(--callout-key-i); }
+.post-content .callout-ext      { --cc:var(--callout-ext-c);      --cb:var(--callout-ext-b);      --ci:var(--callout-ext-i); }
+.post-content .callout-cmd      { --cc:var(--callout-cmd-c);      --cb:var(--callout-cmd-b);      --ci:var(--callout-cmd-i); }
+.post-content .callout-star     { --cc:var(--callout-star-c);     --cb:var(--callout-star-b);     --ci:var(--callout-star-i); }
+.post-content .callout-ref      { --cc:var(--callout-ref-c);      --cb:var(--callout-ref-b);      --ci:var(--callout-ref-i); }
+
+/* ---------- 7) 关键字 / 重点字 / 行内代码 的特殊字体标识 ---------- */
+.post-content strong {
+  color: var(--kw-color);
+  font-weight: 700;
+}
+.post-content a strong, .post-content strong a { color: inherit; }
+.post-content p > code,
+.post-content li > code,
+.post-content td > code,
+.post-content blockquote > code {
+  color: var(--inline-code-c);
+  background: var(--inline-code-b);
+  border: 1px solid var(--inline-code-bd);
+  border-radius: 5px;
+  padding: 0.06em 0.36em;
+  font-size: 0.9em;
+  word-break: break-word;
+}
+
+/* ---------- 8) 分区 / 阶段标签 彩色胶囊（总览页与标签区） ---------- */
+.page-content blockquote > p > strong:first-child,
+.post-content blockquote > p > strong:first-child {
+  display: inline-block;
+  color: #7ee787;
+  background: rgba(126,231,135,.12);
+  border: 1px solid rgba(126,231,135,.45);
+  border-radius: 999px;
+  padding: 0.02em 0.62em;
+  margin-right: .3em;
+  font-weight: 700;
+}
+.page-content .chip,
+.post-content .chip {
+  display: inline-block;
+  color: #56d3ff;
+  background: rgba(86,211,255,.12);
+  border: 1px solid rgba(86,211,255,.42);
+  border-radius: 999px;
+  padding: 0.02em 0.62em;
+  margin: 0 .25em .25rem 0;
+  font-size: .92em;
+  font-weight: 600;
+}
+
+/* ---------- 9) 代码块：字体/行高/内边距/滚动条/更多语言标签 ---------- */
+.post-content .highlight pre,
+.post-content pre {
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas,
+    "Liberation Mono", Menlo, "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.62;
+  tab-size: 2;
+}
+.post-content .highlight pre { padding: 0.85rem 1rem; }
+.post-content .highlight code { background: transparent; padding: 0; }
+.post-content .highlight pre::-webkit-scrollbar { height: 9px; }
+.post-content .highlight pre::-webkit-scrollbar-thumb {
+  background: rgba(240,246,252,.22); border-radius: 5px;
+}
+.post-content .highlight pre::-webkit-scrollbar-track { background: transparent; }
+.post-content .highlight:has(code.language-python)::after,
+.post-content .highlight:has(code.language-c)::after,
+.post-content .highlight:has(code.language-cpp)::after,
+.post-content .highlight:has(code.language-java)::after,
+.post-content .highlight:has(code.language-go)::after,
+.post-content .highlight:has(code.language-rust)::after,
+.post-content .highlight:has(code.language-json)::after,
+.post-content .highlight:has(code.language-yaml)::after {
+  content: "代码"; background: rgba(63,185,80,.88);
+}
+.post-content .highlight:has(code.language-markdown)::after,
+.post-content .highlight:has(code.language-diff)::after {
+  content: "文本"; background: rgba(188,140,255,.88);
+}
+
+/* ---------- 10) 浅色模式：同步新配色 ---------- */
+:root[data-bs-theme='light'] {
+  --callout-bianxi-c:#0969da;  --callout-bianxi-b:rgba(9,105,218,.09);
+  --callout-card-c:#1a7f37;    --callout-card-b:rgba(26,127,55,.09);
+  --callout-ask-c:#8250df;     --callout-ask-b:rgba(130,80,223,.09);
+  --callout-why-c:#b4530a;     --callout-why-b:rgba(180,83,10,.09);
+  --callout-pit-c:#cf222e;     --callout-pit-b:rgba(207,34,46,.09);
+  --callout-note-c:#9a6700;    --callout-note-b:rgba(154,103,0,.09);
+  --callout-answer-c:#0c7a6e;  --callout-answer-b:rgba(12,122,110,.09);
+  --callout-exam-c:#b8410f;    --callout-exam-b:rgba(184,65,15,.09);
+  --callout-explain-c:#3a4350; --callout-explain-b:rgba(60,67,80,.07);
+  --callout-prac-c:#0a58ca;    --callout-prac-b:rgba(10,88,202,.09);
+  --callout-verify-c:#0a78a8;  --callout-verify-b:rgba(10,120,168,.09);
+  --callout-trouble-c:#cf222e; --callout-trouble-b:rgba(207,34,46,.08);
+  --callout-key-c:#7a4d00;     --callout-key-b:rgba(122,77,0,.09);
+  --callout-ext-c:#0a78a8;     --callout-ext-b:rgba(10,120,168,.09);
+  --callout-cmd-c:#8a5a00;     --callout-cmd-b:rgba(138,90,0,.09);
+  --callout-star-c:#b8146e;    --callout-star-b:rgba(184,20,110,.09);
+  --callout-ref-c:#57606a;     --callout-ref-b:rgba(87,96,106,.07);
+  --kw-color:#7a4d00;
+  --inline-code-c:#b4530a;
+  --inline-code-b:rgba(180,83,10,.09);
+  --inline-code-bd:rgba(180,83,10,.28);
+}
+:root[data-bs-theme='light'] .post-content strong { color: var(--kw-color); }
+:root[data-bs-theme='light'] .post-content p[class*="callout-"] > strong:first-child,
+:root[data-bs-theme='light'] .post-content blockquote[class*="callout-"] > p > strong:first-child {
+  background: rgba(255,255,255,.7);
+}
+:root[data-bs-theme='light'] .page-content blockquote > p > strong:first-child,
+:root[data-bs-theme='light'] .post-content blockquote > p > strong:first-child {
+  color: #1a7f37;
+  background: rgba(26,127,55,.10);
+  border-color: rgba(26,127,55,.40);
+}
+:root[data-bs-theme='light'] .page-content .chip,
+:root[data-bs-theme='light'] .post-content .chip {
+  color: #0a78a8; background: rgba(10,120,168,.10); border-color: rgba(10,120,168,.38);
+}
+
+
 

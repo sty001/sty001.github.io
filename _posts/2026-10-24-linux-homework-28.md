@@ -36,8 +36,10 @@ slug: "linux-homework-28"
 {: .sec-expl}
 
 **考察点**：区分「归档、显示、压缩、删除、排除、限速、进度」七类参数各自的职责，理解 `-a` 的展开含义与 `--delete` 的风险边界。
+{: .callout-exam}
 
 **实现思路**：把七个参数按「影响什么」分成三组记忆——影响**传什么**（--exclude、--delete）、影响**怎么传**（-z、--bwlimit）、影响**怎么显示**（-v、-P），而 `-a` 是一个打包了六个子参数的「归档总开关」。
+{: .callout-prac}
 
 | 参数 | 含义 | 归类 | 使用注意 |
 | --- | --- | --- | --- |
@@ -62,6 +64,7 @@ slug: "linux-homework-28"
 ```
 
 > **易错点**：想让 `-o` / `-g` 真正生效，需要服务端 `rsyncd.conf` 里 `uid` / `gid` 改为 root 并注释 `fake super`；否则守护进程以普通虚拟用户身份落盘，属主会被替换成该虚拟用户。
+{: .callout-pit}
 
 ### 本地同步行为实测（A 级，已实操）
 {: .sec-prac}
@@ -206,8 +209,10 @@ logs 目录被排除未同步，其余内容完整复制——语义与 `rsync -
 ## 题 2：rsync daemon 服务端完整部署
 
 **考察点**：守护进程模式的部署五步法（装软件 → 写配置 → 建环境 → 起服务 → 做测试），rsyncd.conf 全局参数与模块参数的分工，密码文件 600 权限这个高频坑。
+{: .callout-exam}
 
 **实现思路**：服务端在 linux-node01（172.16.1.41）上部署。配置文件分两部分：`[backup]` 模块之前是全局参数，模块内是模块级参数；守护进程以专用虚拟用户 rsync 身份写盘，因此备份目录属主必须是 rsync。
+{: .callout-prac}
 
 ### 步骤 1：安装软件（预期输出，CentOS 7）
 {: .sec-prac}
@@ -327,8 +332,10 @@ drwxr-xr-x 2 rsync rsync 6 Oct 24 10:01 /backup
 ## 题 3：客户端免密推送两种方式
 
 **考察点**：`--password-file=` 与环境变量 `RSYNC_PASSWORD` 两种免交互方案的使用场景与安全差异；客户端密码文件「只放密码」的格式要求。
+{: .callout-exam}
 
 **实现思路**：两种方式的差别只在「密码从哪里读」。密码文件适合写进定时任务脚本（稳定、不依赖会话环境）；环境变量适合临时手工操作（不用落盘密码文件，但只对当前会话生效）。生产脚本推荐密码文件，且绝不把密码直接写在命令行参数里（会留在 shell 历史与 ps 输出中）。
+{: .callout-prac}
 
 顺带把推拉两种模式分清楚，这决定了密码文件该配在哪端：
 
@@ -381,6 +388,7 @@ total size is 371  speedup is 1.38
 | 环境变量 | `export RSYNC_PASSWORD='<your-password>'` | 不落盘，临时用完即弃 | 只对当前会话生效，换终端失效 | 临时手工测试 |
 
 > **易错点**：客户端密码文件内容是纯密码，多一个用户名前缀、多一个空格都会导致 `auth failed`；环境变量方式在 crontab 里不可靠，因为定时任务不会继承交互会话的环境变量。
+{: .callout-pit}
 
 ### 题 3 验证方法
 {: .sec-ver}
@@ -392,8 +400,10 @@ total size is 371  speedup is 1.38
 ## 题 4：systemctl 启停与开机自启
 
 **考察点**：用 systemd 管理 rsyncd 的启动、停止、状态查看与开机自启；确认 873 端口监听。
+{: .callout-exam}
 
 **实现思路**：rsync 包自带 systemd 单元文件 `/usr/lib/systemd/system/rsyncd.service`，直接 `systemctl` 管理即可；CentOS 6 时代通过 xinetd 托管的方式已淘汰。
+{: .callout-prac}
 
 （预期输出，CentOS 7）
 
@@ -446,6 +456,7 @@ LISTEN  0  5  0.0.0.0:873  0.0.0.0:*  users:(("rsyncd",pid=2311,fd=4))
 7. systemctl 管理三件套：`is-active`、`is-enabled`、`ss -lntp | grep 873`；排错先分「本地通不通、远程通不通」，再查配置与日志。
 
 > **参见**：[备份服务rsync](/posts/linux-arch-02/)、[day29 全网备份项目作业实操](/posts/linux-homework-29/)、[day14 文件批量压缩作业实操](/posts/linux-homework-14/)
+{: .callout-ref}
 
 
 {% endraw %}

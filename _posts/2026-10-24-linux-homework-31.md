@@ -35,8 +35,10 @@ slug: "linux-homework-31"
 ## 题 1：用脚本实现 inotify + rsync 实时同步
 
 **考察点**：理解事件驱动型实时同步的骨架——「监控目录变化 → 拿到变化事件 → 触发一次 rsync 推送」。作业要求用脚本实现，重点不是背命令，而是把 inotify 的事件流和 rsync 的传输动作串起来。
+{: .callout-exam}
 
 **实现思路**：实时同步 = inotify 监听 + rsync 传输，二者靠一个 `while read` 循环衔接：inotifywait 把每一个事件打印成一行，脚本逐行读，根据事件类型决定「拷贝」还是「删除」。本环境没有 inotifywait / rsync，所以先写一个逻辑完全一致的「本地模拟版」（用 `read` 读事件、`cp` 模拟 rsync）真跑，证明循环与事件分发逻辑正确；再给出挂上 inotifywait + rsync 的生产真机版。
+{: .callout-prac}
 
 ### 步骤 1：构造源目录与目标目录（已实操）
 {: .sec-prac}
@@ -199,6 +201,7 @@ total size is 0  speedup is 0.00
 > - 删除同步要带 `--delete`，否则目标端删掉的文件源端不会跟着删。
 > - 每次事件都跑完整 `rsync -az 源 目标` 即可（rsync 是增量比对，只传差异），不必区分文件；上面的脚本为演示才分了分支。
 > - inotify 递归大目录会耗尽 `fs.inotify.max_user_watches`，表现为「后建的文件不触发」，需 `sysctl` 调大。
+{: .callout-pit}
 
 ### 步骤 5：脚本常驻与停止（B 级）
 {: .sec-prac}
@@ -367,6 +370,7 @@ $ systemctl status lsyncd
 | 允许停服的小库 | 停服务 → 整目录同步 → 启动服务（冷备窗口） |
 
 > **注意**：若确实要同步数据库相关文件，先 `FLUSH TABLES WITH READ LOCK` 或停库，保证文件处于一致静止状态；否则宁可不同步，也不要同步一份会损坏的数据。
+{: .callout-note}
 {: .sec-pit}
 
 补充一点：数据库「实时同步」在企业里通常指主从复制（基于 binlog 的异步/半同步复制），由数据库自身保证主从数据一致，而不是存储层文件拷贝。文件级同步只适合「备份一份静止的库文件」这类低频场景，绝不能当作高可用方案。选择方案时先问清楚需求是「容灾备份」还是「高可用读写分离」，两者解法完全不同。
@@ -391,6 +395,7 @@ robocopy D:\data \\WIN-NODE02\share\data /MIR /MON:1 /MOT:1
 `/MIR` 镜像（含删除）、`/MON:1` 表示源目录变化 1 次就触发一次、`/MOT:1` 表示最多每 1 分钟轮询一次。它的本质是「轮询 + 增量」，与 Linux 上「cron + rsync 轮询」同级，比 inotify 事件驱动稍弱但足够稳。若要真正事件驱动，可用 `cwRsync` 配计划任务或 PowerShell 的 `FileSystemWatcher` 自写脚本。
 
 > **注意**：Windows 实时同步同样要避开「数据库数据目录直接拷」，SQL Server 用 Always On / 日志传送，而不是文件级复制。
+{: .callout-note}
 {: .sec-pit}
 
 若要在 Windows 上实现真正等价 Linux inotify 的事件驱动（而不是 robocopy 的轮询），可用 PowerShell 的 `FileSystemWatcher` 自写脚本，监听 `Created` / `Changed` / `Deleted` 事件后在动作里调用 `robocopy` 同步：

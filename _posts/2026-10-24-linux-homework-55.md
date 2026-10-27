@@ -40,6 +40,7 @@ slug: "linux-homework-55"
 > **答案：** 磁盘相当于"房子"，挂载点目录相当于"门"。数据存在磁盘里，但必须让一个目录与磁盘设备建立关联关系，才能通过进入这个目录去查看磁盘中的数据。**目录与磁盘设备建立关系的过程就叫挂载**。
 
 **解析**：Linux 不像 Windows 用 C 盘、D 盘这样的盘符访问磁盘，而是把设备文件（如 `/dev/sda1`、`/dev/cdrom`）挂到目录树的某个空目录（挂载点，如 `/mnt`、`/data`）上，之后对该目录的读写就是对该设备的读写。为什么要这么设计？因为 Linux 只有**一棵**目录树，所有存储都必须挂到这棵树的某个枝条上，路径体系才能统一。
+{: .callout-explain}
 
 - 挂载三要素：**设备文件**（`/dev/xxx`）+ **挂载点目录**（空目录）+ **文件系统类型**（xfs/ext4/iso9660）。
 - 挂载前目录是空的；挂载后目录里显示的是设备里的数据；**卸载（umount）后原目录内容会恢复显示**。
@@ -84,16 +85,20 @@ mount: /dev/sr0 is write-protected, mounting read-only
 ```
 
 **验证方法**：`df -h` 能看到设备与挂载点的对应关系，且 `ls /mnt` 能列出设备内的数据；`umount` 后 `ls /mnt` 恢复为空，即证明"目录只是门、数据在设备上"。
+{: .callout-verify}
 
 > **易错点**：误以为"把文件复制进了 /mnt 就是写进磁盘"——没挂载时写进 /mnt 的数据其实落在根分区上，卸载后会被"遮住"。另外卸载时提示 `target is busy` 是因为当前 shell 正处在挂载点目录里，需先 `cd /` 再 `umount`。
 >
+{: .callout-pit}
 > **参见**：[目录结构与挂载](/posts/linux-system-03/)
+{: .callout-ref}
 
 ---
 
 ### 题 2：简单描述以下目录的大致作用（/bin、/sbin、/home、/root、/usr、/opt、/var、/etc、/proc）？
 
 > **答案**：
+{: .callout-answer}
 
 | 目录 | 作用 |
 | --- | --- |
@@ -108,6 +113,7 @@ mount: /dev/sr0 is write-protected, mounting read-only
 | /proc | 内核与进程的虚拟文件系统，数据都在内存里 |
 
 **解析**：这是 FHS（文件系统层次结构标准）的核心内容。记住两条主线：**命令在哪**（/bin、/sbin、/usr/bin、/usr/sbin）、**配置与数据在哪**（/etc 配置、/var 日志、/proc 内核运行时信息）。/proc 是伪文件系统，不占磁盘空间，重启后重建，是排查内核与进程问题的重要入口。
+{: .callout-explain}
 
 生产注意点：`/var` 是磁盘占满的高发区（日志疯涨），分区规划时建议把 `/var` 或至少 `/var/log` 单独切出来，防止把根分区撑爆。
 
@@ -147,10 +153,13 @@ lrwxrwxrwx 1 user user 0 Oct 24 05:26 /proc/self -> 1146
 （说明：当前是 Git Bash 的精简根目录，因此 /sbin、/home、/root、/var、/opt 不存在；在 CentOS 7 真机上这些目录齐全，属主均为 `root root`。）
 
 **验证方法**：在 CentOS 7 真机执行 `ls -ld /bin /sbin /home /root /usr /opt /var /etc /proc`，九个目录都应存在且首列为 `d`；`ls /proc` 应能看到以 PID 命名的数字目录。
+{: .callout-verify}
 
 > **易错点**：把 `/bin` 与 `/sbin` 记反——`s` 可以理解为 super/root 专用（如 `fdisk`、`ifconfig`、`reboot`）。`/usr` 不是"用户目录"（用户目录是 /home），而是 Unix System Resources，放的是软件程序。`/proc` 下的数据重启即消失，不能当成配置存放地。
 >
+{: .callout-pit}
 > **参见**：[目录结构与挂载](/posts/linux-system-03/)
+{: .callout-ref}
 
 ---
 
@@ -160,6 +169,7 @@ lrwxrwxrwx 1 user user 0 Oct 24 05:26 /proc/self -> 1146
 > **答案：** 路径是 `/etc/sysconfig/network-scripts/ifcfg-eth0`（CentOS 7 网卡名可能是 `ens33`/`ens160`，文件名随之变化）。
 
 **解析**：网卡配置文件是"K=V"形式的键值对，由网络服务在启动时读取。核心字段含义如下：
+{: .callout-explain}
 
 | 字段 | 示例值 | 含义 |
 | --- | --- | --- |
@@ -244,16 +254,20 @@ DNS1=223.5.5.5
 ```
 
 **验证方法**：改完配置后用 `grep IPADDR 网卡文件` 核对写入值，再用 `ip addr show eth0`（或 `ifconfig eth0`）确认实际生效的 IP 与文件中一致。
+{: .callout-verify}
 
 > **易错点**：`BOOTPROTO=none` 与 `dhcp` 混用会导致配置不生效；只改了 IPADDR 却忘了改 GATEWAY/PREFIX 会造成能连通内网但出不了网；`ONBOOT=no` 会导致重启后网卡不起。另外 CentOS 7 网卡名不一定是 eth0，需在 `/etc/sysconfig/network-scripts/` 下先 `ls` 确认真实文件名。
 >
+{: .callout-pit}
 > **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)
+{: .callout-ref}
 
 ---
 
 ### 题 4：简单描述以下键盘快捷方式的作用？
 
 > **答案**：
+{: .callout-answer}
 
 | 快捷键 | 作用 |
 | --- | --- |
@@ -269,6 +283,7 @@ DNS1=223.5.5.5
 | Esc+. | 调取上一条命令的最后一部分内容 |
 
 **解析**：这些快捷键由 bash 的行编辑库（readline）提供，不是 shell 命令。`ctrl+u`/`ctrl+k`/`ctrl+w` 删除的内容进入剪切环，可用 `ctrl+y` 粘贴回来。最实用的是 `tab` 补全、`ctrl+a/e` 快速跳首尾、`Esc+.` 复用上一个参数（尤其是长路径）。
+{: .callout-explain}
 
 **实操验证**（已实操）：用 `bind -p` 可以直接查到 bash 内部的按键绑定，这是"快捷键到底绑了什么功能"的可验证依据。
 
@@ -300,18 +315,23 @@ bind -p | grep -i 'insert-last-argument'
 对照表：`\C-a` → beginning-of-line（行首）、`\C-e` → end-of-line（行尾）、`\C-u` → unix-line-discard（剪切到行首）、`\C-k` → kill-line（剪切到行尾）、`\C-w` → unix-word-rubout（剪切前一个词）、`\e.` → insert-last-argument（即 Esc+.）。
 
 **验证方法**：在交互终端里输入一条长命令后分别按 `ctrl+a`、`ctrl+e` 观察光标位置；输入 `cat /etc/hosts` 后按 `Esc+.` 应自动补出 `/etc/hosts`。
+{: .callout-verify}
 
 > **易错点**：`ctrl+s` 在 Xshell/终端里会"锁屏"，表现为敲什么都没反应，很多人以为系统卡死——按 `ctrl+q` 即可解锁。`ctrl+c` 与 `ctrl+z` 不同：`ctrl+c` 是终止，`ctrl+z` 是挂起到后台。另外 `ctrl+d` 是退出当前 shell，等同于 `exit`，误按会直接断开连接。
 >
+{: .callout-pit}
 > **变式追问**：`Esc+.` 连按多次会怎样？（在最近几条命令的最后一个参数之间轮换，翻过头了就 `ctrl+r` 搜历史重找。）
+{: .callout-ask}
 
 ---
 
 ### 题 5：如何实现对光驱进行挂载，并查看光驱中的数据信息？
 
 > **答案**：四个步骤——确认虚拟机光驱已加载镜像 → 检查系统中有光驱设备文件 `/dev/cdrom` → 执行 `mount /dev/cdrom /mnt` → `cd /mnt && ls` 检查确认。
+{: .callout-answer}
 
 **解析**：`mount 设备 挂载点` 是最简形式，文件系统类型可以自动识别。光盘是只读介质（iso9660），内核会提示 `mounting read-only`——为什么天然只读？iso9660 是为 CD-ROM 设计的文件系统，规范里压根没有写操作的语义。用完必须 `umount /mnt` 再取出镜像，否则虚拟机会报设备被占用。`-o loop` 用于把**镜像文件**（如 CentOS-7-x86_64-DVD.iso）挂载到目录，与挂载物理光驱是两种场景。
+{: .callout-explain}
 
 **实操验证**（B 级，预期输出）：Git Bash 虽有 `mount`/`umount`，但属于模拟实现、语义与 Linux 不同，因此按 CentOS 7 标准流程给出。
 
@@ -355,10 +375,13 @@ drwxr-xr-x 1 user user 0 Oct 24 05:31 /tmp/hw/day5/mnt
 ```
 
 **验证方法**：`ls /mnt` 能看到 `Packages`、`repodata`、`isolinux` 等 CentOS 安装盘特征目录，说明挂载成功；`df -h` 中应出现 `/dev/sr0` 与 `/mnt` 的对应关系，使用率通常接近 100%（只读光盘）。
+{: .callout-verify}
 
 > **易错点**：没在虚拟机设置里勾选"已连接/加载镜像"，导致 `/dev/cdrom` 不存在；挂载点目录非空时会被"遮盖"；卸载时报 `target is busy` 是因为当前路径还在 `/mnt` 里。光盘挂载后是只读的，`touch` 会报 `Read-only file system`。
 >
+{: .callout-pit}
 > **参见**：[目录结构与挂载](/posts/linux-system-03/)
+{: .callout-ref}
 
 ---
 
@@ -368,8 +391,10 @@ drwxr-xr-x 1 user user 0 Oct 24 05:31 /tmp/hw/day5/mnt
 > **答案**：编辑配置文件 `vi /etc/sysconfig/network-scripts/ifcfg-eth0` 后，重启网络服务：
 > - 要求 1（重启所有网卡服务）：`systemctl restart network`
 > - 要求 2（只重启被修改的那块网卡）：`ifdown eth0 && ifup eth0`
+{: .callout-answer}
 
 **解析**：配置文件只是"纸面上的配置"，必须由网络服务重新读取才会生效。`systemctl restart network` 会重启整机网络，远程连接会短暂中断；`ifdown eth0 && ifup eth0` 只影响单块网卡，风险更小，适合生产环境。用 `&&` 而不是 `;` 是为了保证先成功 down 再 up，避免顺序错乱——很多人栽在用分号连写，down 失败了 up 照样执行，网卡状态就乱了。
+{: .callout-explain}
 
 **实操验证**（B 级，预期输出）：
 
@@ -416,10 +441,13 @@ grep -nE 'IPADDR|PREFIX|GATEWAY' /tmp/hw/day5/ifcfg-eth0
 ```
 
 **验证方法**：`ip addr show eth0` 显示的 inet 地址必须与配置文件中的 IPADDR/PREFIX 一致；再用 `ping 网关地址` 验证二层连通、`ping` 外网域名验证 DNS 生效。
+{: .callout-verify}
 
 > **易错点**：改完文件不重启服务就以为生效了；远程改 IP 时 `systemctl restart network` 会让连接断一下，若新 IP 配错会直接失联（建议先在控制台留好后路，或用 `ifdown && ifup` 单卡操作）。另外 CentOS 7 上 NetworkManager 与 network 服务并存时可能互相干扰，排障时先看 `systemctl status network`。
 >
+{: .callout-pit}
 > **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)
+{: .callout-ref}
 
 ---
 

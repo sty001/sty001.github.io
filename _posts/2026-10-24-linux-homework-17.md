@@ -37,8 +37,10 @@ slug: "linux-homework-17"
 {: .sec-expl}
 
 **考察点**：同一个「把含有某内容的行剔掉」的需求，在三剑客里分别怎么表达；以及三者能力边界的差异——grep 只能整行匹配、sed 擅长行级编辑、awk 擅长按列判断。
+{: .callout-exam}
 
 **实现思路**：先构造一份带注释行和空行的主机清单作为统一输入，然后同一份输入分别用 `grep -v`、`sed '/pat/d'`、`awk '!/pat/'` 跑一遍，用 `diff` 证明三者输出完全一致；再分别演示各自独有的能力（grep 带行号、sed 原地改文件、awk 按列排除），最后给出选型对照表。
+{: .callout-prac}
 
 ### 步骤 1：构造统一测试文件（已实操）
 {: .sec-ver}
@@ -266,6 +268,7 @@ $ grep -c stopped sed_demo.txt.bak
 | 典型用途 | 快速查看/过滤日志 | 批量清理文件中的行 | 过滤 + 取列 + 计算一条龙 |
 
 **验证方法**：三种写法对同一输入跑完后，用 `diff <(命令A) <(命令B)` 比对输出为空、并用 `grep -c ''` 核对行数（9 行输入剔掉 3 行 = 6 行），即可证明过滤逻辑正确且三者等价。
+{: .callout-verify}
 
 > **易错点**：
 >
@@ -274,6 +277,7 @@ $ grep -c stopped sed_demo.txt.bak
 > - `sed -i` 会直接改写原文件且无回收站，生产环境一律先 `cp` 备份或用 `sed -i.bak` 留备份；
 > - `grep -v` 与 `awk` 输出重定向回原文件会先截断文件导致内容丢失，必须先写临时文件再 `mv`；
 > - 想排除的是「某一列等于某值」时，别用正则硬凑（`awk '!/stopped/'` 会把注释行里出现 stopped 的也排除掉），用 `awk '$3!="stopped"'` 最精确。
+{: .callout-pit}
 
 ### 辨析：sed 与 awk 怎么分工
 
@@ -286,12 +290,15 @@ $ grep -c stopped sed_demo.txt.bak
 一条流水线里经常三个都出现：grep 粗筛、sed 清洗格式、awk 出报表。经验法则是：要改文件内容找 sed，要按列判断或统计找 awk，单纯看有没有就 grep。
 
 > **参见**：[sed命令详解](/posts/linux-textproc-01/)、[awk命令详解](/posts/linux-textproc-02/)、[扩展正则表达式与grep](/posts/linux-fileattr-07/)
+{: .callout-ref}
 
 ## 题 2：批量创建用户 user01..user10 并给每个用户设置随机密码
 
 **考察点**：三个 shell 基础知识点如何串成一个可用脚本——①如何生成随机信息；②变量设置（含命令替换赋值）；③循环语句（for）。最终落地为 `useradd` + 非交互式设密码。
+{: .callout-exam}
 
 **实现思路**：把大题拆成三步知识点分别真跑，再合成完整脚本。随机信息与循环部分在本环境可真跑（A 级）；`useradd`/`chpasswd` 属系统级命令，本环境不存在，给 B 级命令 + 预期输出，并额外提供一个把系统命令换成 `echo` 的「干跑版」在本环境真跑，用来验证循环与变量拼接逻辑确实正确。
+{: .callout-prac}
 
 ### 知识点 1：如何生成随机信息（已实操）
 {: .sec-prac}
@@ -397,6 +404,7 @@ K9m$xP2vQa
 | mkpasswd | `mkpasswd -l 10 -d 3 -C 2` | 可指定数字/大写/符号个数，符合口令策略 | 需额外装 expect |
 
 **验证方法**：把任一方法放进 `for i in 1 2 3; do ...; done` 连跑三次，每次输出都不同即说明随机生效；再用 `... | wc -c` 核对长度确实等于设定值（注意 `echo` 会多一个换行，用 `printf` 或 `head -c` 更准）。
+{: .callout-verify}
 
 ### 知识点 2：变量设置（已实操）
 {: .sec-prac}
@@ -696,8 +704,10 @@ passwd: all authentication tokens updated successfully.
 > - 密码记录文件含明文口令（本文统一用 `<your-password>` 占位），必须 `chmod 600` 且交付后立即删除，绝不入库、不贴群；
 > - `tr -dc ... < /dev/urandom | head -c 8` 在某些系统上 `head` 提前退出会让 `tr` 收到 SIGPIPE，属正常现象（错误信息 `tr: write error: Broken pipe` 可忽略）；日常用 `/dev/urandom`，别用会阻塞的 `/dev/random`；
 > - 脚本重复执行时 `useradd` 会报「用户已存在」而中断，加 `id "$user" &>/dev/null && continue` 做幂等保护。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)、[sed命令详解](/posts/linux-textproc-01/)、[awk命令详解](/posts/linux-textproc-02/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

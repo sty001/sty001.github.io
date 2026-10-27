@@ -36,6 +36,7 @@ slug: "linux-homework-33"
 ## 题 1：认识日志——总行数与格式
 
 **考察点**：拿到陌生大日志的第一反应不是马上 grep，而是「先看量级、再看格式」。行数决定策略（是否需要采样），格式决定 awk 取列的写法。
+{: .callout-exam}
 
 ### 步骤 1：统计总行数与文件大小（已实操）
 {: .sec-prac}
@@ -87,10 +88,12 @@ Dec 19 03:42:01 localhost sshd[9030]: Failed password for root from 59.63.166.84
 3. 日志开头就在被爆破（`123.31.34.190` 连续试 invalid user），说明这台机器 24 小时暴露在扫描之下。
 
 > **易错点**：取用户名时如果直接写 `awk '{print $9}'`，对 `invalid user` 行会取到 `invalid` 而不是用户名，因为两种行的字段位置不同。解决办法见题 4。
+{: .callout-pit}
 
 ## 题 2：统计 Failed / Accepted password 条数
 
 **考察点**：`grep -c` 计数、以及「从成功与失败的比例里读出服务器处境」。
+{: .callout-exam}
 
 ```bash
 echo -n "Failed password 行数: "; grep -c "Failed password" "$LOG"
@@ -127,12 +130,15 @@ Dec 14 15:34:49 localhost sshd[18104]: Accepted password for root from 221.130.4
 ```
 
 **验证方法**：`grep -c "Failed password"` 的结果加上 `grep -c "Accepted password"` 应远小于总行数（本例 367491 / 494732 ≈ 74%），剩下的行是 `Invalid user`、`input_userauth_request`、`Did not receive identification string` 等伴随日志——一次爆破请求会产生多条日志，比例对得上才说明没数错。
+{: .callout-verify}
 
 ## 题 3：爆破失败次数最多的前 10 个 IP
 
 **考察点**：`awk 按条件取列 + sort + uniq -c + sort -rn + head` 这条统计流水线，它是 Linux 运维里最高频的一段组合命令。
+{: .callout-exam}
 
 **实现思路**：`Failed password` 行里 IP 跟在 `from` 后面，与其数死第几列，不如让 awk 找到 `from` 这个词、打印它的下一列，两种行格式通吃；再交给 `sort`（uniq 只认相邻行，必须先排序）、`uniq -c` 计数、`sort -rn` 按次数倒序、`head -10` 取前 10。
+{: .callout-prac}
 
 ```bash
 awk '/Failed password/ {for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}' "$LOG" \
@@ -196,12 +202,15 @@ awk '/Failed password/ {for(i=1;i<=NF;i++) if($i=="from") {split($(i+1),a,"."); 
 前三个网段合计 188793 + 69555 + 55527 = 313875 次，占全部失败数 367490 的约 **85%**——攻击高度集中在三个 C 段，几乎可以断定是同一批僵尸网络的分片。这个结论直接决定防护动作：安全组里封 3 个网段比封 87 个 IP 高效得多，也是 fail2ban 之外值得立刻执行的一条规则。
 
 > **易错点**：漏掉中间的 `sort` 直接 `uniq -c`，统计结果会碎成大量计数为 1 的行，因为 `uniq` 只对**相邻**重复行生效。`awk+sort+uniq` 三件套里，sort 是不可省略的一环。
+{: .callout-pit}
 
 ## 题 4：被爆破最多的前 10 个用户名
 
 **考察点**：处理「字段位置不固定」的两类行；正则分组提取与 sed 清洗。
+{: .callout-exam}
 
 **实现思路**：用 `awk -F'for | from'` 以「for 」和「 from」做分隔符，第 2 列就是要的用户名（invalid user 行会带上 `invalid user ` 前缀，用 sed 统一去掉）。
+{: .callout-prac}
 
 ```bash
 grep "Failed password" "$LOG" \
@@ -246,10 +255,12 @@ awk '/Failed password/ {if(match($0, /for (invalid user )?[^ ]+ from/)) {u=$0; s
 ```
 
 **验证方法**：把两种写法的输出并排 diff 一下，完全一致即互相印证；再抽一条 `invalid user` 原始日志人工核对用户名提取是否正确。
+{: .callout-verify}
 
 ## 题 5：成功登录 IP 是否藏在爆破名单里
 
 **考察点**：安全分析最关键的一步——区分「正常管理员」与「爆破得手」。判据：成功登录的 IP 若同时出现在爆破源列表中，就要按入侵处置；若不在，大概率是本人登录。
+{: .callout-exam}
 
 ```bash
 grep "Accepted password" "$LOG" | awk '{print $NF}'    # 先取出成功登录的 IP
@@ -293,6 +304,7 @@ grep "Failed password" "$LOG" | awk '{print $1" "$2}' | sort | uniq -c | sort -k
 ## 题 6：大文件处理技巧——先采样再分析
 
 **考察点**：生产日志动辄几个 GB，直接全量分析会很慢；`head -N` 截取样本先行验证命令正确性，再对全量执行，是标准作业流程。
+{: .callout-exam}
 
 ```bash
 mkdir -p /tmp/hw/day32
@@ -427,6 +439,7 @@ Status for the jail: sshd
 7. 生产上把这条流水线做成 cron 脚本加阈值告警，比出事后翻日志靠谱得多；日志本身记得配 logrotate，别让分析对象膨胀到 GB 级。
 
 > **参见**：[awk命令详解](/posts/linux-textproc-02/)、[扩展正则表达式与grep](/posts/linux-fileattr-07/)、[ssh服务与密钥登录](/posts/linux-arch-06/)
+{: .callout-ref}
 
 
 {% endraw %}

@@ -36,8 +36,10 @@ day43 的联动监控落地篇，对应课程第 43 天的课后作业：把「n
 {: .sec-ver}
 
 **考察点**：keepalived 的 `vrrp_script` 靠「脚本退出码」判断健康（0 健康、非 0 异常）。本脚本要回答一个问题——怎么可靠地知道 nginx 还在不在。`kill -0` 与 pid 文件组合是最稳的做法，必须讲清原理。
+{: .callout-exam}
 
 **实现思路**：先给出 `check_nginx.sh` 源码（读 `/var/run/nginx.pid` → `kill -0` 探测进程），再解释 `kill -0` 为什么不会真的杀进程、为什么 pid 文件比 `ps | grep` 更可靠，最后给出真机验证命令。
+{: .callout-prac}
 
 ### 步骤 1：check_nginx.sh 真实源码（已实操）
 {: .sec-prac}
@@ -89,12 +91,15 @@ exit 1
 > - `kill -0` 不是「杀进程 0 号」，是「零号信号 = 仅探测」，新手极易误解；
 > - pid 文件可能残留（nginx 异常退出没清掉），所以**必须** `kill -0` 二次确认，光判断文件存在不够；
 > - 脚本用 `.sh` 解释器跑，keepalived 默认以 root 调用，权限没问题；若 nginx 以非 root 运行且 pid 文件权限受限，`kill -0` 会误判，需保证读取权限。
+{: .callout-pit}
 
 ## 题 2：monitor_nginx_keepalived.sh 实时监控联动
 
 **考察点**：把「nginx 状态 ↔ keepalived 状态」用一段 while 死循环串起来，并做幂等控制——只在状态翻转的瞬间才执行一次 `systemctl`，避免每 2 秒重复启停。
+{: .callout-exam}
 
 **实现思路**：先给真机版 `monitor_nginx_keepalived.sh`（用 while + `kill -0` 判定 + `LAST_STATE` 幂等），再给可在 Git Bash 真跑的 `sim_monitor.sh` + `mock_nginx.sh` 仿真版，跑出真实日志证明联动成立。
+{: .callout-prac}
 
 ### 步骤 1：真机版 monitor_nginx_keepalived.sh 源码（已实操）
 {: .sec-prac}
@@ -257,6 +262,7 @@ bash /tmp/hw/day43/sim_monitor.sh
 > - `sleep` 的间隔（`CHECK_INTERVAL=2`）决定发现故障的快慢，太小耗资源、太大故障发现慢，通常 1~3 秒；
 > - 仿真版里 `kill -9` 是硬杀，真机里 `systemctl stop nginx` 是优雅停，但监控脚本只关心「进程在不在」，两种停法都能被 `kill -0` 捕获；
 > - 绝不能在监控脚本里对 keepalived 做「无条件每秒 restart」，否则 nginx 真挂时 keepalived 反复重启、VIP 反复抢回释放，造成抖动。
+{: .callout-pit}
 
 ### 辨析：vrrp_script 内置联动与外部监控脚本联动
 
@@ -270,8 +276,10 @@ bash /tmp/hw/day43/sim_monitor.sh
 ## 题 3：weight 正负对抢占的影响推演（sim_weight.sh）
 
 **考察点**：day43 已讲 `weight -20` 的扣分模型，本篇用 `sim_weight.sh` 把「主健康 / 主故障 / 主恢复 / 正权重 / weight=0」五个场景的有效优先级全部算出来，彻底理解为什么联动能切、为什么生产用负权重。
+{: .callout-exam}
 
 **实现思路**：脚本实现一个 `eff()` 函数，按 `weight` 正负套用不同规则，分别打印 linux-node01（基础 100）与 linux-node02（基础 90）的有效优先级，谁大谁当 MASTER。
+{: .callout-prac}
 
 ### 步骤 1：sim_weight.sh 关键源码（已实操）
 {: .sec-prac}
@@ -348,17 +356,20 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 4. nginx 恢复 → `check_nginx.sh` 返回 0 → linux-node01 优先级回到 100 > 90 → 默认抢占，VIP 抢回（题 2 日志 `VIP 抢回 linux-node01`）。
 
 **验证方法**：`weight=0` 场景特别提醒——它不是「扣 0 分」，而是「脚本失败直接进 FAULT、VIP 立即摘除」，这在某些要求「宁可全断也不能错发给坏节点」的场景有用，但会丢失优先级协商的细节，所以默认还是用 `-20`。
+{: .callout-verify}
 
 > **易错点**：
 >
 > - `weight=0` 不是「无影响」，而是「失败即 FAULT」，行为完全不同，配置时务必想清楚；
 > - 正负权重都能切换，但只有负值在「主恢复后自动抢回」这件事上语义最干净；
 > - `preempt`（抢占）默认开启，所以场景 C 主恢复后 VIP 自动回来；若配了 `nopreempt`，主恢复后 VIP 会留在备机，需手动干预。
+{: .callout-pit}
 
 ## 题 4：联动监控真实日志与最终流程图
 {: .sec-expl}
 
 **考察点**：用真实 `monitor.log` 把整条联动链路的时间线坐实，并画出「事件 → 探测 → 动作 → VIP 归属」的总流程图，作为本篇的总收口。
+{: .callout-exam}
 
 ### 步骤 1：monitor.log 真实日志（已实操，原始产物）
 {: .sec-prac}
@@ -418,12 +429,14 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 | 结束 | nginx=up, ka=on | 稳定 | 巡检循环继续 | linux-node01 |
 
 **验证方法**：把 `monitor.log` 与上面两张图对照，逐行确认「时间 → 事件 → VIP 归属」是否对应；真机上可用 `ip a show eth0 | grep 10.0.0.3` 在切换窗口期多次取样，肉眼确认漂移方向。
+{: .callout-verify}
 
 > **易错点**：
 >
 > - 监控脚本的「幂等」与 keepalived 的「权重」是两套独立机制，前者管「是否调 systemctl」，后者管「VIP 漂不漂」，二者缺一不可；
 > - 日志里 `keepalived 保持停止` 的重复行，正是 `LAST_STATE` 幂等控制生效的证据（只在翻转瞬间写一次动作，其余轮次只记录状态）；
 > - 真机排障先看 `monitor.log` 时间线，再看 `ip a` 的 VIP 实际落点，最后看 keepalived 的 `journalctl -u keepalived`，三层交叉定位最快。
+{: .callout-pit}
 
 ## 本篇小结
 {: .sec-sum}
@@ -436,6 +449,7 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 6. 仿真脚本 `sim_monitor.sh` + `mock_nginx.sh` 已在本环境真实运行，可 `bash /tmp/hw/day43/sim_monitor.sh` 复现全部联动日志；`nginx.pid` 示例值 `1871` 与日志恢复行一一对应。
 
 > **参见**：[day43 keepalived 实时监控与上游切换作业实操](/posts/linux-homework-44/)、[keepalived高可用原理](/posts/linux-arch-18/)、[nginx健康检查与upstream](/posts/linux-arch-13/)
+{: .callout-ref}
 
 
 {% endraw %}

@@ -33,6 +33,7 @@ slug: "linux-homework-34"
 ## 题 1：预习八个新模块
 
 **考察点**：理解每个模块「管什么对象、关键参数、典型 state 取值」，以及模块化的意义——一条 `yum` 命令背后是幂等的「检测已装就跳过」。这八个模块覆盖了「装软件 / 管服务 / 定时任务 / 挂载 / 用户 / 用户组 / 打包 / 解包」八类最常见运维动作。
+{: .callout-exam}
 
 ### 1.1 八模块作用对比表
 
@@ -210,6 +211,7 @@ linux-node02 | CHANGED => {
 > - `user` 模块设密码必须密文 + 单引号，明文不会生效。
 > - `mount` 的 `mounted` 与 `present` 区别：`present` 只写 fstab 不立即挂载，`mounted` 一步到位。
 > - `unarchive` 的 `src` 默认在管理端，与 `copy` 的 `remote_src` 语义一致。
+{: .callout-pit}
 
 ### 辨析：command 与 shell 模块
 
@@ -293,6 +295,7 @@ $ ansible-doc -s yum
 ## 题 2：预习剧本（playbook）编写格式
 
 **考察点**：把一串 ad-hoc 命令固化成「可重复执行、幂等、可读」的 YAML 剧本。核心是理解 `hosts`（在哪些主机执行）、`remote_user`（以谁登录）、`tasks`（具体任务列表），以及 YAML 的三条书写规范。
+{: .callout-exam}
 
 ### 步骤 1：写一份最小化 playbook（已实操）
 {: .sec-prac}

@@ -41,6 +41,7 @@ slug: "linux-homework-54"
 > **答案：** `ls -d /data/app01`；更严谨的写法是 `[ -d /data/app01 ] && echo 存在 || echo 不存在`。目录不存在时提示 `No such file or directory`，退出码非 0。
 
 **解析**：考点是"如何查看文件或目录是否存在"。这题就是在考 `-d` 的意义：`ls 目录` 列的是**内容**，`ls -d 目录` 只显示目录**本身**——不加 `-d`，目录存在时会被一堆内容刷屏。命令的退出码（`$?`）是脚本里判断存在性的依据：0 表示成功/存在，非 0 表示失败/不存在。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -70,10 +71,13 @@ ls: cannot access 'data': No such file or directory
 ```
 
 **验证方法**：看到 `No such file or directory` 且 `echo $?` 输出非 0（此处为 2），即证明目录不存在；若目录存在，`ls -d` 会原样打印目录名且退出码为 0。
+{: .callout-verify}
 
 > **易错点**：用 `ls /data/app01` 判断存在性时，目录存在会列出内容而不是只回显目录名，容易误判；目录**不存在**时两者报错一致，无法区分"目录不存在"和"目录存在但为空"。判断存在性优先用 `ls -d` 或 `[ -d ]`。
 >
+{: .callout-pit}
 > **参见**：[常用文件操作命令](/posts/linux-system-02/)
+{: .callout-ref}
 
 ---
 
@@ -82,6 +86,7 @@ ls: cannot access 'data': No such file or directory
 > **答案：** `mkdir -p /data/app01`。`-p` 可以递归创建多级目录，并且目录已存在时**不报错**（幂等）。
 
 **解析**：`mkdir` = make directory，默认只能创建**一级**目录，`mkdir /data/app01` 在 `/data` 不存在时会报 `No such file or directory`；加上 `-p`（parents）会连同父目录一起创建。生产环境写脚本时一律建议带 `-p`，因为重复执行不会中断脚本。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -110,8 +115,10 @@ drwxr-xr-x 1 user user 0 Oct 24 05:28 data/app01
 ```
 
 **验证方法**：`ls -d` 能打印出目录名，且 `ls -ld` 首列以 `d` 开头，说明创建成功且类型是目录。
+{: .callout-verify}
 
 > **易错点**：不加 `-p` 创建多级目录会失败（`mkdir: cannot create directory 'data/app01': No such file or directory`）；加了 `-p` 但路径写错，会静默创建出一堆空目录，事后很难发现。创建前先 `ls -d` 确认、创建后立刻 `ls -ld` 复核是好习惯。
+{: .callout-pit}
 
 ---
 
@@ -121,6 +128,7 @@ drwxr-xr-x 1 user user 0 Oct 24 05:28 data/app01
 > **答案：** `cd /data/app01` 切换目录，`pwd` 查看当前所在绝对路径。
 
 **解析**：`cd` = change directory，`pwd` = print working directory，输出的是**绝对路径**。相对路径与绝对路径都能用于 `cd`；运维排障时第一步通常就是 `pwd`，确认自己"站在哪里"，避免误操作到别的目录。`cd -` 可以回到上一次所在目录，`cd ..` 回到上级目录。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -139,8 +147,10 @@ pwd
 ```
 
 **验证方法**：`pwd` 输出的路径末段必须是 `data/app01`，说明确实进入了目标目录而不是同名目录。
+{: .callout-verify}
 
 > **易错点**：`cd` 后不 `pwd` 确认就执行 `rm -rf` 是最危险的习惯。另外 `pwd` 在遇到软链接目录时显示的是链接路径，要看物理路径需 `pwd -P`。
+{: .callout-pit}
 
 ---
 
@@ -150,6 +160,7 @@ pwd
 > **答案：** `touch app.txt`（相对路径）或 `touch /data/app01/app.txt`（绝对路径）。
 
 **解析**：`touch` 的本意是"摸一下"文件——文件不存在时创建**空文件**，文件已存在时只更新其时间戳（atime/mtime），**不会清空原有内容**。这是它与 `>` 重定向最大的区别。为什么不清空？touch 的设计目标就是更新时间戳，压根不往文件里写数据，自然碰不到内容。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -175,8 +186,10 @@ total 0
 ```
 
 **验证方法**：`ls -l` 第 5 列（文件大小）为 `0`，且首列是 `-`（普通文件），即空文件创建成功。
+{: .callout-verify}
 
 > **易错点**：以为 `touch` 会清空文件内容——不会，重复 `touch` 只改时间戳。真正清空文件要用 `> app.txt` 或 `: > app.txt`。另外 `touch` 与 `mkdir` 不要混用：建文件用 `touch`，建目录用 `mkdir`。
+{: .callout-pit}
 
 ---
 
@@ -187,6 +200,7 @@ total 0
 > - 方法 b（不打开文件）：`echo "www.example.com-linux" > app.txt`（覆盖）或 `>>`（追加）。
 
 **解析**：考点是"生成文件内容的两种途径"以及 `>` 与 `>>` 的区别。
+{: .callout-explain}
 - `>` 是**覆盖重定向**：先清空文件再写入。
 - `>>` 是**追加重定向**：在文件末尾追加，保留原有内容。
 vim 三步曲是运维基本功：`vi 文件` → `i` → 编辑 → `Esc` → `:wq`（保存退出）/ `:q!`（强制不保存退出）。
@@ -235,10 +249,13 @@ www.example.com-linux      # 输入内容
 ```
 
 **验证方法**：`cat app.txt` 能看到目标内容即成功；用 `cat -A app.txt` 可额外确认行尾没有多余字符（正常输出应为 `www.example.com-linux$`，`$` 代表换行符）。
+{: .callout-verify}
 
 > **易错点**：把 `>` 写成 `>>` 导致内容被重复追加（脚本里尤其致命）；反之需要追加时用了 `>` 会清空历史数据。vim 里忘了 `Esc` 就输入 `:wq`，会变成把 `:wq` 当作文本写进文件。
 >
+{: .callout-pit}
 > **参见**：[文档编辑软件使用技巧](/posts/linux-system-08/)
+{: .callout-ref}
 
 ---
 
@@ -247,6 +264,7 @@ www.example.com-linux      # 输入内容
 > **答案：** 先 `ls -d /tmp/app-bak` 检查备份目录是否存在，不存在则 `mkdir -p /tmp/app-bak`，再 `cp app.txt /tmp/app-bak/`。
 
 **解析**：`cp` 的行为取决于**目标是否存在**：
+{: .callout-explain}
 1. 目标是**已存在的目录** → 把文件保存到该目录内（文件名不变）。
 2. 目标**不存在** → 把源文件复制一份并**重命名**为目标名。
 所以复制前必须先确认目标目录存在，否则会得到一个名字奇怪的文件而不是目录里的副本。写备份目录时结尾加 `/` 可以明确表达"这是目录"，目标不存在时会直接报错而不是悄悄改名。
@@ -282,10 +300,13 @@ total 1
 ```
 
 **验证方法**：`ls -l /tmp/hw/day4/app-bak/` 能看到 `app.txt` 且大小与源文件一致（22 字节），说明复制成功；再用 `diff app.txt /tmp/hw/day4/app-bak/app.txt` 无输出即内容完全一致。
+{: .callout-verify}
 
 > **易错点**：忘记先建目录，导致 `cp` 把文件"复制并改名"成了 `/tmp/app-bak` 这个文件；或漏写目标结尾的 `/`，一旦目录不存在就会静默改名。备份目录建议统一用 `mkdir -p` 兜底。
 >
+{: .callout-pit}
 > **变式追问**：`cp` 复制出的文件保留源文件的时间戳吗？（不保留，默认是复制时刻；要连属性一起保留得用 `cp -a` 或 `cp -p`。）
+{: .callout-ask}
 
 ---
 
@@ -294,6 +315,7 @@ total 1
 > **答案：** `cp -r /data/app01 /tmp/`。复制目录必须加 `-r`（递归）。目标已存在同名文件时，默认会逐个询问是否覆盖，回答 `y` 确认。
 
 **解析**：`cp` 默认只复制文件，遇到目录会报 `omitting directory`；`-r`（recursive）才会连目录内的内容一起复制。`-a` = `-dpr` 的合集，能保留属性、保留链接，做备份时比 `-r` 更推荐。root 用户的 `cp` 通常被别名成 `cp -i`，因此覆盖前会询问。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -327,10 +349,13 @@ app.txt
 （`cp: overwrite ...?` 是覆盖询问提示，输入 `y` 回车即覆盖；批量复制时可加 `\cp` 或 `/bin/cp` 跳过别名以避免交互卡住脚本。）
 
 **验证方法**：`ls -ld /tmp/app01` 显示是目录，且 `ls /tmp/app01` 里面有 `app.txt`，说明目录整体复制成功；对比 `ls -l` 的文件大小与源文件一致。
+{: .callout-verify}
 
 > **易错点**：复制目录漏 `-r`，报 `cp: omitting directory 'data/app01'`；脚本里被 `-i` 别名卡住等待输入。另外 `cp -r /data/app01 /tmp/` 与 `cp -r /data/app01/ /tmp/` 在部分场景下行为不同，统一写成不带尾部斜杠最稳妥。
 >
+{: .callout-pit}
 > **参见**：[常用文件操作命令](/posts/linux-system-02/)
+{: .callout-ref}
 
 ---
 
@@ -340,6 +365,7 @@ app.txt
 > **答案：** `rm -rf /data/app01`（`-r` 递归删除目录，`-f` 强制不询问）；确认用 `ls -d /data/app01`。
 
 **解析**：`rm` = remove。删文件直接 `rm 文件`；删目录必须 `-r`；`-f`（force）跳过逐个确认提示。`rm -rf` 是最危险的组合之一，因为它不进回收站、不询问、不可恢复，所以删除前必须`ls -d` 复核路径，删除后必须 `ls -d` 确认结果。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -366,8 +392,10 @@ total 0
 ```
 
 **验证方法**：再次 `ls -d` 报 `No such file or directory` 且退出码为 2，父目录 `ls -l` 的 total 为 0，说明删除干净。
+{: .callout-verify}
 
 > **易错点**：`rm -rf /data/app01 /` 这种手滑多打一个空格会造成灾难性后果；变量未赋值时 `rm -rf $DIR/*` 会变成 `rm -rf /*`。铁律：删除前 `pwd` + `ls -d` 双重复核，生产环境尽量用 `mv` 到回收目录代替直接 `rm`。变量为空之所以这么危险，是因为 shell 先做变量展开再做单词拆分，`$DIR` 展开成空串后 `$DIR/*` 就只剩 `/*`——所以脚本里引用变量要加双引号 `"$DIR"/*`，并在删除前先判空。
+{: .callout-pit}
 
 ---
 
@@ -376,6 +404,7 @@ total 0
 > **答案：** `mv /tmp/app01 /data/`。用 `mv`（移动）而不是 `cp`，移动后 `/tmp` 里自然就不再有该文件。
 
 **解析**：`mv` = move，既用于**移动**也用于**重命名**。题目要求"还原且 /tmp 中不再保存"，说白了只能用 `mv`——用 `cp` 还原还得再删一次 /tmp 的副本。同一分区内 `mv` 只修改目录项，不搬数据，速度极快；跨分区 `mv` 则等价于"复制 + 删除"。
+{: .callout-explain}
 
 **实操验证**（已实操）：
 
@@ -413,8 +442,10 @@ total 1
 ```
 
 **验证方法**：`ls -d /data/app01/` 成功打印且里面能看到 `app.txt`；同时 `ls -d /tmp/app01` 应报不存在（因为已被 `mv` 走）。
+{: .callout-verify}
 
 > **易错点**：`mv /tmp/app01 /data/` 中 `/data/` 结尾的斜杠不能少——若 `/data` 不存在，会被当成"重命名成 /data 文件"。另外 `mv` 覆盖同名目录时默认不询问（root 下 `mv` 别名是 `mv -i` 会询问），还原前先 `ls` 目标目录确认没有同名文件被覆盖。
+{: .callout-pit}
 
 ---
 
@@ -424,6 +455,7 @@ total 1
 > **答案：** `shutdown -h 5`（5 分钟后关机）；5 分钟后重启是 `shutdown -r 5`；取消计划用 `shutdown -c`。
 
 **解析**：`shutdown` 是与系统运行相关的命令，常用组合：
+{: .callout-explain}
 
 | 命令 | 含义 |
 | --- | --- |
@@ -470,10 +502,12 @@ echo "5分钟后: $(date -d '+5 minutes' '+%F %T')"
 ```
 
 **验证方法**：执行 `shutdown -h 5` 后系统会广播一条 `The system is going down for power-off at ...` 的提示，时间点应为当前时间 +5 分钟；再执行 `shutdown -c` 应看到 `Shutdown cancelled`，即计划已取消。远程维护时一定要先 `shutdown -c` 确认环境安全。
+{: .callout-verify}
 
 > **易错点**：`-h`（halt，关机）与 `-r`（reboot，重启）记混；远程连接时执行立即关机把自己踢下线；忘记用 `shutdown -c` 取消导致业务中断。生产环境关机前必须 `who` 确认是否有其他用户在线。
 >
 > 生产注意点：真要关机，用 `shutdown -h +5 "系统维护"` 带上附言，广播会一起发出去，给在线用户留出保存工作的时间。
+{: .callout-pit}
 
 ---
 

@@ -36,8 +36,10 @@ slug: "linux-homework-48"
 {: .sec-know}
 
 **考察点**：UserParameter 的格式 `UserParameter=key[*],command`、带参数 key 的 `$1` 位置参数写法，以及「先在命令行把取值命令跑通，再写进配置」的正确顺序——agent 只是替你执行这条命令，命令本身不成立，监控项一定取不到值。
+{: .callout-exam}
 
 **实现思路**：三个监控需求分别对应三种典型写法——无参数直接返回数值（内存剩余、登录用户数）、带参数的通用模板（端口状态统计）。第一步先把每个取值命令在本机跑通，第二步写进 `userparameter.conf`，第三步用 grep 校验定义。
+{: .callout-prac}
 
 ### 步骤 1：内存剩余取值命令（已实操）
 {: .sec-prac}
@@ -222,6 +224,7 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 {: .sec-expl}
 
 **考察点**：Zabbix 告警链路的完整配置顺序，任何一环断了都收不到告警。
+{: .callout-exam}
 
 | 步骤 | 界面路径 | 关键配置 | 校验方法 |
 | --- | --- | --- | --- |
@@ -258,6 +261,7 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 {: .sec-warn}
 
 **考察点**：不同告警渠道的实时性、成本与配置复杂度差异，以及「配置骨架相同、投递通道不同」这一共性。
+{: .callout-exam}
 
 | 告警方式 | 实现途径 | 实时性 | 成本 | 适用场景 |
 | --- | --- | --- | --- | --- |
@@ -272,8 +276,10 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 ## 题 4：监控模板与主机关联（B 级）
 
 **考察点**：模板的复用价值——监控项、触发器、图形集中配在模板里，主机链接模板即继承全部配置，改一次模板全部生效。
+{: .callout-exam}
 
 **实现思路**：新主机上线时「先建主机、再链模板」，而不是逐台手建监控项。
+{: .callout-prac}
 
 1. 配置 → 主机 → 创建主机：填主机名（须与 agent 的 Hostname 一致）、可见名称、所属主机组。
 2. agent 接口填 IP（172.16.1.7）与端口 10050。
@@ -282,6 +288,7 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 5. 定制需求（如题 1 的自定义 key）配在主机级监控项上，通用需求尽量沉淀回模板。
 
 > **易错点**：在主机上直接修改模板继承来的监控项会与模板「断开联动」，之后模板更新不再同步到该主机；生产环境的规范做法是改模板统一生效。一台主机可以链接多个模板，但键值重复会导致采集冲突。
+{: .callout-pit}
 
 ## 验证方法
 {: .sec-ver}
@@ -302,6 +309,7 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 6. 模板是配置复用的载体：主机链接模板即继承全部监控配置，通用需求沉淀进模板、改一处全局生效；主机级直接改动继承项会断开联动，应尽量避免。
 
 > **参见**：[监控服务Zabbix（下）](/posts/linux-arch-20/)、[监控服务Zabbix（上）](/posts/linux-arch-19/)、[day44 部署作业实操](/posts/linux-homework-47/)
+{: .callout-ref}
 
 
 {% endraw %}

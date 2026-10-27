@@ -34,8 +34,10 @@ A 级部分无法在本机跑起真实 nginx，因此用本地 HTTP 服务器提
 ## 题 1：利用命令取出状态页面信息中的数值（curl）
 
 **考察点**：nginx 的 `stub_status` 状态页各字段含义；curl 抓取页面配合 awk/grep 提取数值——「curl 负责拿数据，awk/grep 负责算数据」这条运维取数的标准链路；awk 的模式匹配（`/^Active/`）、按行号取列（`NR==3`）与 END 汇总三种用法。
+{: .callout-exam}
 
 **实现思路**：状态页就是一个纯文本页面，内容固定四行。取数分两步：
+{: .callout-prac}
 
 1. `curl -s http://127.0.0.1/stub_status` 把页面抓成纯文本；
 2. 用 awk 按行匹配提取目标数值：`/^Active/` 匹配活跃连接行、`NR==3` 取第三行的三个计数、`/^Reading/` 取最后一行的三个状态值；进阶写法是一次 awk 里同时提取全部六个数值。
@@ -159,6 +161,7 @@ Active=15 accepts=8421 requests=32768 Reading=0 Writing=3 Waiting=12
 > - `$3` 取到的是 `15` 还是别的列，取决于该行有没有标签词，先 `head -1` 看清行结构再定列号；
 > - 第 3 行行首有一个空格，肉眼容易看漏；awk 默认切分不受影响，但如果用 `cut -d' '` 就会被切出空列；
 > - 状态页属于敏感信息（暴露连接数与请求量），生产环境必须配 `allow 127.0.0.1; deny all;` 限制来源。
+{: .callout-pit}
 
 ## 题 1 前置：开启 nginx stub_status 状态页（B 级）
 
@@ -199,8 +202,10 @@ Reading: 0 Writing: 3 Waiting: 12
 {: .sec-expl}
 
 **考察点**：Linux + Nginx + MariaDB（MySQL 的社区分支）+ PHP 四件套的 yum 部署；nginx 通过 fastcgi 把 `.php` 请求转交给 php-fpm（9000 端口）的机制；数据库初始化与 phpinfo 验证页。
+{: .callout-exam}
 
 **实现思路**：LNMP 各组件职责分明——nginx 管静态内容与转发，php-fpm 管 PHP 动态解析（进程方式常驻，监听 127.0.0.1:9000），MariaDB 管数据。部署顺序：一次装齐 → 全部启动并设自启 → 修正 php-fpm 运行用户 → 配置 nginx 的 PHP 转发 → 数据库初始化 → 放 phpinfo 页验证整条链路。php-fpm 用户那一步最容易被跳过，后面上传文件写不进去时，报错却指向很隐晦，坑就在这。
+{: .callout-prac}
 
 ### 步骤 1：yum 一次装齐四件套
 {: .sec-prac}
@@ -394,6 +399,7 @@ DB Connect OK, server version: 5.5.68-MariaDB
 > - `fastcgi_pass` 写成 nginx 自己的 80 端口会形成转发环，必须指向 php-fpm 的 9000；
 > - 数据库口令绝不出现在命令历史与文档里，交互式输入或用 `mysql_config_editor`；脚本中一律用 `<your-password>` 占位并在执行时替换；
 > - `mysql_secure_installation` 的每一步都答 y（设口令、删匿名用户、禁远程 root、删 test 库），这是裸机数据库的第一道安全底线。
+{: .callout-pit}
 
 ## 验证方法
 {: .sec-ver}
@@ -415,6 +421,7 @@ DB Connect OK, server version: 5.5.68-MariaDB
 6. 排障口诀：502 查 php-fpm 与 9000 端口（找「死」），504 查超时与慢查询（找「慢」），File not found 查 SCRIPT_FILENAME，403 查权限与 index，数据库起不来查 /var/log/mariadb/；phpinfo 验证页打通后尽快删除，免得暴露服务器敏感配置。
 
 > **参见**：[LNMP网站架构实战](/posts/linux-arch-16/)、[Nginx网站服务部署](/posts/linux-arch-13/)、[day38 Nginx 部署与 301/302 跳转](/posts/linux-homework-39/)
+{: .callout-ref}
 
 
 {% endraw %}

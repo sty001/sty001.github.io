@@ -33,8 +33,10 @@ slug: "linux-homework-14"
 ## 题 1：将以 .txt 结尾的文件统一进行压缩处理
 
 **考察点**：find 的 `-name` 筛选、find 与后续命令的三种衔接方式（`-exec`、`xargs`、`tar --exclude`）、tar 的打包与追加参数，以及「文件名含空格」这一生产环境高频坑。
+{: .callout-exam}
 
 **实现思路**：作业要求的是「只压缩 .txt，不压缩 jpg/png」。核心是先拿到「准确的 .txt 文件清单」，再把这份清单交给 tar。思路分三层：
+{: .callout-prac}
 
 1. 第一层：**先筛后打包**。用 `find` 按名字筛选，把结果交给 tar。这是最通用、最符合运维习惯的做法。
 2. 第二层：**反向排除**。不筛选，直接打包整个目录，用 tar 的 `--exclude` 把 jpg/png 挡在门外。写法最短，但依赖「非 txt 的扩展名可枚举」这一前提。
@@ -140,6 +142,7 @@ data/test03.txt
 三个文件齐全，做法一成立。等价的 `-v` 可见写法是 `find data -name "*.txt" -exec tar -czvf txt_exec.tar.gz {} +`。
 
 > **易错点**：`-exec` 结尾的 `+` 并不是「永远只执行一次」。当文件数量大到命令行长度超过系统上限时，find 会自动**分批**调用，此时 `-czf` 的覆盖问题会再次出现，最终包里只剩最后一批。文件数量可能过千时，改用步骤 7 的「`-rf` 追加后再 gzip」写法。
+{: .callout-pit}
 
 ### 步骤 4：做法二 find 管道 xargs（已实操）
 {: .sec-prac}
@@ -482,6 +485,7 @@ verify/data/test03.txt => hello 03
 内容与源文件逐一对应，解压正确。
 
 > **生产注意**：备份脚本里打包前先 find 清单落盘或 `tar -tzf` 核对数量，压缩完成校验退出码再动源文件——「压缩完就删原始数据」没有回退余地。
+{: .callout-pit}
 
 ### 步骤 11：踩坑补充 绝对路径打包（已实操）
 {: .sec-warn}
@@ -559,6 +563,7 @@ find data -type f -name "*.txt" -print0 | xargs -0 tar -czf txt_final.tar.gz
 7. 打包一律用相对路径，给 tar 传绝对路径会被剥掉开头的 `/`；打包完成必须 `tar -tzf` 列清单 + 解压抽样验证。
 
 > **参见**：[find](/posts/linux-fileattr-03/)、[tar](/posts/linux-fileattr-05/)、[权限与inode](/posts/linux-fileattr-03/)、[tar三件套与inode/block](/posts/linux-fileattr-05/)、[day13 find 命令真跑](/posts/linux-homework-13/)
+{: .callout-ref}
 
 
 {% endraw %}

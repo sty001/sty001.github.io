@@ -42,6 +42,7 @@ printf '# comment\nname=1\n#note\nname=2\naddress=x\nport=8080\n' > config.txt
 > 突然中断（断电、SSH 断开、Ctrl+Z 后进程被杀）时，缓冲区内容丢失，但 `.swp` 交换文件保留，可用 `vim -r 文件名` 恢复，或打开后在提示界面按 `R`（Recover）恢复，恢复后用 `:wq` 保存，再**手动删除** `.swp` 文件。
 
 **解析**：考察点是「编辑缓冲区 + 交换文件 swap file」机制。判断是否存在可恢复数据的依据是同目录下的 `.xxx.swp` 文件；`vim -r` 不带参数会列出所有可恢复的交换文件。
+{: .callout-explain}
 
 **实操验证**（B 级，需真机 vim）：
 
@@ -85,6 +86,7 @@ Recovery completed. You should check if everything is OK.
 > 2. 若选择 `(D)elete it` 则直接丢弃恢复内容，不可撤销。
 > 3. 多人同时编辑同一文件会提示 `found a swap file by the name ...`，此时应选 `(O)pen Read-Only` 或 `(Q)uit`，避免互相覆盖。
 > 4. `.swp` 是隐藏文件，`ls` 看不到，必须 `ls -a`。
+{: .callout-pit}
 
 ### 题 02：如何查看 Linux 系统中是否开启了 8080 端口服务
 
@@ -95,6 +97,7 @@ Recovery completed. You should check if everything is OK.
 > 有输出即已监听；无输出说明该端口无服务监听。
 
 **解析**：考察点是端口监听状态查看。选项含义：`-l` 仅显示监听 socket，`-n` 不做域名/服务名反解（快且直观），`-t` TCP，`-u` UDP，`-p` 显示占用进程。`grep 8080` 也可换成 `grep -w 8080` 精确匹配。注意「端口开启」有两层含义：服务是否监听（本地看 `ss`）、防火墙是否放行（看 `firewalld`/`iptables`），两者都要查。为什么加 `-n` 更快？不反解就得把端口号映射成服务名（查 `/etc/services`）、IP 反查域名，多走一遍解析，输出大时肉眼可见地卡。
+{: .callout-explain}
 
 **实操验证**（B 级，需 CentOS 7 真机）：
 
@@ -131,6 +134,7 @@ java    1321 root   45u  IPv6  23145      0t0  TCP *:webcache (LISTEN)
 > 2. 不加 `-n` 时 8080 可能显示成 `webcache`，容易误判成没开。
 > 3. `ss -lntup | grep 8080` 也可能匹配到 PID 中含 8080 的行，用 `grep ':8080'` 更精确。
 > 4. 服务监听正常但外部访问不通，问题多半在防火墙/安全组，不在服务本身。
+{: .callout-pit}
 
 ### 题 03：vim 中把所有的 linux 替换为 python，给出命令
 
@@ -140,6 +144,7 @@ java    1321 root   45u  IPv6  23145      0t0  TCP *:webcache (LISTEN)
 > 若要求每次替换前确认，改为 `:%s#linux#python#gc`。
 
 **解析**：考察点 vim 末行替换语法：`%` 表示全文范围（等价于 `1,$`），`s` 表示 substitute，`g` 表示一行内所有匹配（不加 `g` 只替换每行第一个）。分隔符可任选，内容含 `/` 时用 `#` 或 `@` 更省事，避免大量转义。
+{: .callout-explain}
 
 **实操验证**（vim 为 B 级；等价的 sed 命令为 A 级已实操）：
 
@@ -167,14 +172,17 @@ python07
 > 2. 落 `g`：每行只替换第一个匹配。
 > 3. 只替换不保存：替换后必须 `:wq`，否则退出后文件内容不变。
 > 4. 只想改真机文件用 `sed -i`，但 `-i` 不可逆，建议先 `sed` 不带 `-i` 预览。
+{: .callout-pit}
 
 > **参见**：[文档编辑软件使用技巧](/posts/linux-system-08/)
+{: .callout-ref}
 
 ### 题 04：Linux 内核引导时，从（）文件中读取要加载的文件系统信息；文件属性中每个普通文件用（）来标识
 
 > **答案：** 第一个空：`/etc/fstab`；第二个空：`-`（短横线）。
 
 **解析**：考察两个固定知识点。`/etc/fstab` 是开机自动挂载配置文件，内核引导后期由 `mount -a` 依据它挂载各文件系统；`ls -l` 输出的第一个字符是文件类型标识符，普通文件为 `-`，目录为 `d`，软链接为 `l`，块设备 `b`，字符设备 `c`，套接字 `s`，管道文件 `p`。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操——用本地文件对照文件类型位）：
 
@@ -214,8 +222,10 @@ UUID=2c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f swap    swap    defaults        0 0
 > 1. `/etc/fstab` 与 `/etc/mtab`（或 `/proc/mounts`）混淆：前者是开机挂载配置，后者是**当前已挂载**的实时记录。
 > 2. 把「普通文件标识 `-`」答成文件权限位，类型位是 `ls -l` 输出的**第 1 个字符**，权限是后面 9 个字符。
 > 3. fstab 写错会导致开机进入 emergency 模式，修改前务必备份。
+{: .callout-pit}
 
 > **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ref}
 
 ### 题 05：vim 中如何忽略大小写搜索指定信息（至少两种方法）
 
@@ -225,6 +235,7 @@ UUID=2c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f swap    swap    defaults        0 0
 > 命令行下对应的是 `grep -i`。
 
 **解析**：考察搜索选项。`\c` 是 vim 正则里的大小写忽略标志，放在模式任意位置都对整次匹配生效；`:set ic` 是全局开关，影响后续所有搜索。`grep -i` 是知识点在命令行侧的延伸。
+{: .callout-explain}
 
 **实操验证**（grep 部分 A 级已实操）：
 
@@ -258,6 +269,7 @@ LINUX
 > 1. `\c` 写成了 `\C`（`\C` 恰恰是**强制区分**大小写）。
 > 2. `:set ic` 只对当前 vim 会话有效，退出即失效；永久生效需写入 `~/.vimrc`。
 > 3. `smartcase` 必须在 `ignorecase` 打开的前提下才有意义。
+{: .callout-pit}
 
 ### 题 06：用命令行更改 config.txt，把里边所有的 name 更改为 address（vim 和 sed 分别如何实现）
 
@@ -267,6 +279,7 @@ LINUX
 > sed 方式（落盘并备份）：`sed -i.bak 's#name#address#g' config.txt`
 
 **解析**：考察同一需求的两条实现路径。注意 `sed -i.bak` 与 `sed -i .bak` 的区别：连写是「后缀」，分开写在 GNU sed 里也表示后缀但在 BSD/macOS 上语义不同，Linux 上推荐连写 `sed -i.bak`。另外 `name` 会匹配到 `username`、`name_server` 这类子串，需要精确替换时用 `s#\bname\b#address#g` 或 `s#^name=#address=#g`。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -311,8 +324,10 @@ sed 's#^name=#address=#' config.txt
 > 2. 忘记 `g`，每行只替换第一个。
 > 3. 替换内容含 `/` 时还在用 `/` 做分隔符，导致语法错误，应换成 `#` 或 `@`。
 > 4. 用 `sed -i` 修改正在被服务读取的配置，可能引发配置重载问题。
+{: .callout-pit}
 
 > **参见**：[sed命令详解](/posts/linux-textproc-01/)
+{: .callout-ref}
 
 ### 题 07：管道符号 `|` 的含义说明
 {: .sec-expl}
@@ -320,6 +335,7 @@ sed 's#^name=#address=#' config.txt
 > **答案：** 管道把**前一个命令的标准输出（stdout）**作为**后一个命令的标准输入（stdin）**，用于在一条命令行里串联多个命令完成流水线处理。形式：`命令A | 命令B | 命令C`。默认只传递 stdout，不传递 stderr，如需把 stderr 一起传给后续命令，要写成 `命令A 2>&1 | 命令B`。
 
 **解析**：这题就是在考管道的本质——「数据流重定向」，不是「参数传递」。这一点决定了：`ls | rm` 不能删除文件（rm 只认命令行参数，不读 stdin），必须借助 `xargs`。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -353,8 +369,10 @@ rm: missing operand
 > 2. 忘记 `2>&1`，错误信息「漏出」管道直接打到屏幕。
 > 3. 管道会**丢失**前一个命令的退出状态码：`cmd1 | cmd2` 的 `$?` 是 `cmd2` 的，判断 cmd1 结果要用 `PIPESTATUS[0]`。
 > 4. `grep` 无匹配时返回 1，会导致管道后续 `set -e` 脚本中断。
+{: .callout-pit}
 
 > **参见**：[常用文件操作命令](/posts/linux-system-02/)
+{: .callout-ref}
 
 ### 题 08：搜索文件中指定文本内容的方法（至少三种）
 
@@ -364,6 +382,7 @@ rm: missing operand
 > 补充：`egrep`/`grep -E`（扩展正则）、`less` 内输入 `/关键字` 交互式查找、`cat 文件 | grep 关键字`（不推荐，多一次无用 cat）。
 
 **解析**：考察「文本三剑客」的分工：grep 擅长过滤、sed 擅长取行与替换、awk 擅长按列处理。查内容优先 grep，效率最高。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -403,12 +422,14 @@ hello-shanghai test
 > 2. `grep` 不加 `-n` 看不到行号，排错时不好定位。
 > 3. 关键字含正则元字符（`.` `*` ``）时要 `grep -F` 或转义，否则匹配结果不符预期。
 > 4. `cat file | grep x` 属于无用 cat（UUOC），直接 `grep x file` 即可。
+{: .callout-pit}
 
 ### 题 09：在 /data/linux/linux.txt 中查找出包含 hello-shanghai 的所有信息并显示行号
 
 > **答案：** `grep -n "hello-shanghai" /data/linux/linux.txt`
 
 **解析**：考察 `grep -n`（--line-number）显示行号。若还想看上下文，加 `-A`/`-B`/`-C`；若只要文件名，加 `-l`。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -427,12 +448,14 @@ cd /tmp/hw/linux && grep -n "hello-shanghai" hello.txt
 > 1. 行号是**文件内的真实行号**，与 `cat -n` 一致；用 `grep -n` 后再 `| grep` 一次会丢失行号。
 > 2. 文件名写相对路径时，需确认当前目录，否则报 `No such file or directory`。
 > 3. 关键字含 `-` 开头时会被当成选项，用 `grep -n -- "-abc" file`。
+{: .callout-pit}
 
 ### 题 10：文件内容如下，输出 linux03 的上 2 行和下 3 行
 
 > **答案：** `grep -B2 -A3 "linux03" linux.txt`，或 `grep -C3 "linux03" linux.txt`（前后各 3 行），或 `grep -2 "linux03" linux.txt`。
 
 **解析**：考察 grep 上下文控制三兄弟：`-A n`（After，后 n 行）、`-B n`（Before，前 n 行）、`-C n`（Context，前后各 n 行）。`-2` 是 `-C 2` 的简写。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -463,6 +486,7 @@ linux07
 > 2. 匹配行本身用 `:` 分隔，上下文行用 `-` 分隔，看输出时要分清哪行是命中行。
 > 3. 文件行数不足时，只输出存在的行，不会报错。
 > 4. 多个匹配结果之间会用 `--` 分隔，容易误以为是文件内容。
+{: .callout-pit}
 
 ### 题 11：给 /data/linux/linux.txt 创建软链接 /tmp/linux_link.txt，源文件删除后软链接是否失效
 
@@ -470,6 +494,7 @@ linux07
 > 源文件删除后：软链接**会失效**（变成无效链接，俗称「断链」）。此时 `ls -l` 中链接目标闪烁/标红，`cat` 报 `No such file or directory`；但如果之后又创建了同名同路径的源文件，软链接会自动恢复可用。
 
 **解析**：考察软链接（符号链接）的本质——它保存的是**源文件的路径字符串**，不保存 inode，因此源文件消失后按路径找不到目标即失效。软链接可跨文件系统、可链接目录，inode 号与源文件不同。
+{: .callout-explain}
 
 **实操验证**（B 级，软链接需真机；A 级演示硬链接与 ls -l 判读）：
 
@@ -502,8 +527,10 @@ cat: /tmp/linux_link.txt: No such file or directory
 > 2. `ln -s` 参数顺序是「源文件 在前，链接文件 在后」，写反了会报错或把链接建到源文件目录里。
 > 3. 目标已存在同名目录时，`ln -s src dst` 会在 dst 目录里再建一个链接，用 `ln -sfn` 强制替换。
 > 4. 软链接权限永远显示 `lrwxrwxrwx`，实际权限由源文件决定。
+{: .callout-pit}
 
 > **参见**：[文件属性与inode](/posts/linux-fileattr-03/)
+{: .callout-ref}
 
 ---
 
@@ -520,6 +547,7 @@ cat: /tmp/linux_link.txt: No such file or directory
 > 5. **最小化安装 + 及时更新**：`yum update`、关闭无用服务（`systemctl disable`）。
 
 **解析**：考察「最小化暴露面」的安全思路。操作顺序有讲究：**必须先配好普通用户和 sudo、先放行新端口，再改 SSH 配置并重启 sshd**，否则会把自己锁在门外。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -569,8 +597,10 @@ success
 > 3. `PermitRootLogin` 行默认被 `#` 注释，只 `sed -i 's#PermitRootLogin yes#PermitRootLogin no#'` 改不到，要处理注释行。
 > 4. 禁用 root 登录前必须先验证普通用户能 sudo 成功。
 > 5. **变式追问**：改完 sshd_config 后 `reload` 与 `restart` 怎么选？（reload 重读配置不断开已有连接，远程改 SSH 配置更稳；restart 会重置连接。无论如何，改完先另开窗口验证新配置能登录，再退出当前会话。）
+{: .callout-pit}
 
 > **参见**：[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ### 题 13：防火墙配置完毕后，如何检查防火墙已关闭且没有开机自启动
 {: .sec-ver}
@@ -578,6 +608,7 @@ success
 > **答案：** CentOS 7：`systemctl status firewalld` 看 `Active: inactive (dead)`；`systemctl is-enabled firewalld` 返回 `disabled`；两者结合即可证明「当前已关闭 + 不开机自启」。也可用 `systemctl is-active firewalld` 返回 `unknown`/`inactive`。
 
 **解析**：考察 systemd 的两个独立状态：`is-active`（当前运行状态）与 `is-enabled`（开机自启状态）。`systemctl stop` 只改前者，`systemctl disable` 只改后者，**两个都要做**才算真正关掉。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -622,6 +653,7 @@ Disabled
 > 2. 用 `service firewalld status` 或 `chkconfig` 属于 CentOS 6 写法，CentOS 7 用 systemctl。
 > 3. `systemctl is-enabled` 对未安装的服务返回 `Failed to get unit file state`，与服务存在但 disabled 要区分。
 > 4. 生产环境「永久关闭防火墙」通常不是最优解，正确做法是放行需要的端口。
+{: .callout-pit}
 
 ### 题 14：rm 命令修改了别名信息的文件 /etc/profile，但还是不能直接删除信息，是什么原因？写出别名相关的文件及路径
 {: .sec-know}
@@ -639,6 +671,7 @@ Disabled
 登录 shell：`/etc/profile` → `/etc/profile.d/*.sh` → `~/.bash_profile` → `~/.bashrc` → `/etc/bashrc`
 非登录 shell：`~/.bashrc` → `/etc/bashrc`
 后加载的会覆盖先加载的同名别名，这是本题的核心。
+{: .callout-explain}
 
 **实操验证**（A 级已实操——脚本方式演示 alias 定义/查看/取消）：
 
@@ -683,8 +716,10 @@ source /etc/profile
 > 2. `~/.bashrc` 后加载会覆盖 `/etc/profile` 的同名别名，改全局文件无效。
 > 3. 脚本中执行 `alias` 默认不展开，需 `shopt -s expand_aliases`，这是脚本里别名「不起作用」的常见原因。
 > 4. 想临时绕过 `rm -i` 别名，用 `\rm file` 或 `/bin/rm file` 或 `unalias rm`。
+{: .callout-pit}
 
 > **参见**：[系统优化实践-上](/posts/linux-system-06/)
+{: .callout-ref}
 
 ### 题 15：字符集进行优化方法
 
@@ -694,6 +729,7 @@ source /etc/profile
 > 临时生效：`export LANG=zh_CN.UTF-8`。
 
 **解析**：考察「乱码三要素一致」：系统字符集、远程工具字符集、文件本身编码，三者必须相同。排查顺序是「先看系统 `echo $LANG`，再看终端设置，最后看文件编码 `file -i`」。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -739,6 +775,7 @@ zh_CN.gbk
 > 2. `/etc/locale.conf` 里写了系统不支持的字符集（如 `zh_CN.UTF-8` 未安装），会回退到 `C`/`POSIX`。
 > 3. CentOS 6 与 CentOS 7 配置文件不同（`/etc/sysconfig/i18n` vs `/etc/locale.conf`）。
 > 4. 文件本身是 GBK 编码时，即使系统 UTF-8 也乱码，需 `iconv -f gbk -t utf-8 file -o newfile` 转换。
+{: .callout-pit}
 
 ### 题 16：说明这些特殊符号的含义：`>` `>>` `2>` `2>>` `#` `.` `..` `$` `|` `&&` `;`
 {: .sec-expl}
@@ -760,6 +797,7 @@ zh_CN.gbk
 | `;` | 命令分隔符，按顺序执行，不关心成败 |
 
 **解析**：考察 shell 元字符。文件描述符编号要记牢：`0` stdin、`1` stdout、`2` stderr，所以 `>` 等价于 `1>`。合并写法 `>file 2>&1` 或 `&>file` 表示正确与错误都进同一文件。为什么 `2>&1` 必须写在 `>` 后面？它是"让 stderr 指向 stdout 现在指向的位置"，先重定向 stdout、再复制指向；顺序反了，stderr 就还指着屏幕。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -799,6 +837,7 @@ after
 > 2. `2>` 和 `>` 是两条独立的流，`cmd > a.txt 2> b.txt` 正确输出进 a、错误进 b。
 > 3. `2>&1` 必须写在重定向之后：`cmd > file 2>&1` 正确，`cmd 2>&1 > file` 错误（顺序变了含义就变）。
 > 4. `&&` 与 `;` 混用：`A && B; C` 中 C 无论 A/B 成败都会执行。
+{: .callout-pit}
 
 ### 题 17：Linux 系统中文件属性信息都包含什么
 
@@ -817,6 +856,7 @@ after
 | 文件名 | linux.txt | 目录项名称 |
 
 **解析**：考察「文件 = 目录项（文件名）+ inode（元数据）+ block（数据）」的三段式结构。文件名存在目录的 block 里，属性存在 inode 里，真正内容存在 data block 里。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -845,8 +885,10 @@ Change: 2026-10-24 05:26:12.679712200 +0800
 > 2. `ls -l` 的大小对目录来说不是目录内文件总大小，要用 `du -sh`。
 > 3. 硬链接数对目录而言 = 2 + 子目录数量，不能按普通文件理解。
 > 4. `ctime` 不是创建时间（creation），是 inode 属性变更时间。
+{: .callout-pit}
 
 > **参见**：[文件属性与inode](/posts/linux-fileattr-03/)
+{: .callout-ref}
 
 ---
 
@@ -857,6 +899,7 @@ Change: 2026-10-24 05:26:12.679712200 +0800
 > **答案：** `/home`（管理员即 root 执行 `useradd` 时，默认在 `/home` 下创建同名家目录，如 `useradd ops01` → `/home/ops01`）。
 
 **解析**：考察 useradd 的默认行为。家目录模板来自 `/etc/skel/`（内含 `.bashrc`、`.bash_profile` 等隐藏文件），`useradd -M` 可不创建家目录，`useradd -d /path` 可指定位置。相关默认值在 `/etc/default/useradd` 与 `/etc/login.defs` 里。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -889,8 +932,10 @@ ops01:x:1001:1001::/home/ops01:/bin/bash
 > 1. 把答案写成 `/root`——`/root` 是 root 用户自己的家目录，不是新建用户的父目录。
 > 2. `useradd -M` 创建的用户无家目录，切换后会在 `/` 下，提示符异常。
 > 3. 家目录权限为 `700`，属主属组为该用户，手动 `cp -r` 复制会导致权限/属主错误，应 `cp -a` 或用 `useradd -m`。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)
+{: .callout-ref}
 
 ### 题 19：说出下面几个文件的作用
 
@@ -905,6 +950,7 @@ ops01:x:1001:1001::/home/ops01:/bin/bash
 | `/etc/rc.local` | 开机最后执行的自定义脚本；CentOS 7 需 `chmod +x /etc/rc.d/rc.local` 才生效 |
 
 **解析**：考察运维最常打交道的 5 个文件。日志类两个文件由 rsyslog 按 facility 分流；`/etc/hosts` 常用于内网机器间免 DNS 解析；`/etc/rc.local` 在 CentOS 7 中是 rc-local.service 调用的兼容入口。
+{: .callout-explain}
 
 **实操验证**（A 级已实操部分 + B 级 CentOS 7 部分）：
 
@@ -955,8 +1001,10 @@ lrwxrwxrwx. 1 root root 13 /etc/rc.local -> rc.d/rc.local
 > 2. `/var/log/secure` 只在 CentOS/RHEL 系存在，Debian/Ubuntu 对应 `/var/log/auth.log`。
 > 3. 日志由 logrotate 轮转，直接 `cat messages` 可能看到的是旧内容，最新日志要看 `messages-20261024` 或直接 `tail -f messages`。
 > 4. `/etc/hosts` 修改后无需重启网络，立即生效；但 `nscd`/`systemd-resolved` 有缓存时可能延迟。
+{: .callout-pit}
 
 > **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ref}
 
 ### 题 20：将配置文件中注释信息去除掉显示，有什么办法（至少三种）
 {: .sec-expl}
@@ -969,6 +1017,7 @@ lrwxrwxrwx. 1 root root 13 /etc/rc.local -> rc.d/rc.local
 > 若注释在行尾（如 `port=8080  # 端口`）：`sed 's/#.*//' file | grep -v '^$'`。
 
 **解析**：考察「反向过滤 + 正则锚点」。`^#` 锚定行首，避免把行中间的 `#` 当注释整行删掉；`-v` 是 grep 取反，`d` 是 sed 删除，`!` 是 awk 取反。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -1016,6 +1065,7 @@ port=8080
 > 2. 缩进过的注释（行首有空格）用 `^#` 匹配不到，应写 `^[[:space:]]*#`。
 > 3. `sed '/^#/d'` 不加 `-i` 只显示不修改文件，这是**安全的预览**做法，推荐先预览后落盘。
 > 4. 这些命令只处理显示，不改文件，别误以为配置已被清理。
+{: .callout-pit}
 
 ### 题 21：日志文件 /var/log/messages 一直在变化，如何实时监控其变化
 
@@ -1026,6 +1076,7 @@ port=8080
 > 只想看含关键字的实时日志：`tail -f /var/log/messages | grep --line-buffered 'error'`
 
 **解析**：考察 `-f` 与 `-F` 的区别。`tail -f` 按文件描述符跟踪，logrotate 切割后旧 fd 失效，会「卡住不动」；`-F` 等价于 `--follow=name --retry`，按文件名跟踪并在文件消失/重建时重试，生产环境应选 `-F`。
+{: .callout-explain}
 
 **实操验证**（B 级，跟踪为阻塞命令）：
 
@@ -1058,6 +1109,7 @@ Oct 24 09:51:12 linux-node1 sshd[2311]: Failed password for invalid user admin f
 > 3. 跟踪后忘了 Ctrl+C，终端一直被占用。
 > 4. 想看「过去某时段」的日志不要用 tail -f，用 `sed -n '/09:00/,/09:30/p'` 或 `awk` 按时间范围过滤。
 > 5. 生产注意点：要挂很久的 `tail -f` 建议放进 `tmux`/`screen` 会话里跑，SSH 断线跟踪不丢。
+{: .callout-pit}
 
 ### 题 22：如何创建一个新用户并设置密码，且采用免交互方式创建密码
 
@@ -1067,6 +1119,7 @@ Oct 24 09:51:12 linux-node1 sshd[2311]: Failed password for invalid user admin f
 > 一条龙：`useradd dev01 && echo '<your-password>' | passwd --stdin dev01`
 
 **解析**：考察免交互（非交互式）设置口令。`passwd` 默认要交互输入两次，脚本中会卡住；`--stdin` 让它从标准输入读取一次（CentOS/RHEL 支持，Ubuntu 用 `chpasswd`）。`chpasswd` 更通用，格式是 `用户名:密码`，可多行批量。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -1105,8 +1158,10 @@ Account expires                                         : never
 > 2. 密码明文会留在 `history` 里，脚本中应用变量或 `read -s`，事后 `history -c`。
 > 3. 简单密码会触发 `BAD PASSWORD` 警告，但仍能设置成功（root 强制）。
 > 4. 批量创建应用 `newusers`（读取与 /etc/passwd 同格式的文件），逐条 `useradd` 效率低。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)
+{: .callout-ref}
 
 ### 题 23：如何批量创建 linux01 … linux20 共 20 个文件
 
@@ -1116,6 +1171,7 @@ Account expires                                         : never
 > 备选：`seq -w 1 20 | xargs -i touch linux{}`
 
 **解析**：考察 bash 的花括号展开（brace expansion）`{01..20}`，它会自动补零。`seq -w` 的 `-w` 也是等宽补零。`{1..20}` 不会补零，得到 linux1…linux20，与题目要求不符，这是最常见的失分点。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -1168,6 +1224,7 @@ linux03
 > 2. `touch linux$(seq 1 20)` 不加 `-w` 同样不补零。
 > 3. 花括号展开是 bash 特性，`sh`（dash）不支持，脚本首行必须是 `#!/bin/bash`。
 > 4. 文件名含空格时 `xargs` 会被拆分，需 `xargs -0` 配合 `find -print0`。
+{: .callout-pit}
 
 ### 题 24：yum 安装软件时只知道安装后会用到的命令，忘记软件包名称，如何处理
 
@@ -1178,6 +1235,7 @@ linux03
 > 扩展：`rpm -qf $(which ifconfig)`（已安装的命令反查所属包）
 
 **解析**：考察 `yum provides` 的反向查询能力。关键字是「由文件/命令查包」，与「由包查文件」（`rpm -ql`）方向相反。注意查询本地不存在的命令时要写路径通配 `*/bin/xxx` 或 `*/xxx`，否则可能搜不到。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -1220,8 +1278,10 @@ openssh-clients-7.4p1-21.el7.x86_64
 > 2. `yum search` 是按包名和摘要关键字搜，不能按命令搜，容易搜出一堆无关结果。
 > 3. 最小化安装的 CentOS 7 没有 `ifconfig`/`netstat`，正是本题典型场景，答案都是 `net-tools` 包。
 > 4. `rpm -qf` 只能查**已安装**的文件，未安装的命令要用 `yum provides`。
+{: .callout-pit}
 
 > **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ref}
 
 ### 题 25：统计 linux.txt 文件中 linux 信息出现的行数总计有多少
 
@@ -1230,6 +1290,7 @@ openssh-clients-7.4p1-21.el7.x86_64
 > 等价写法：`grep "linux" linux.txt | wc -l`、`awk '/linux/{n++}END{print n}' linux.txt`
 
 **解析**：考察 `-c`（count lines）与「出现次数」的区别。`grep -c` 数的是**有多少行包含**关键字，一行出现 3 次也只算 1 行；`grep -o` 把每个匹配单独输出一行再 `wc -l`，才是真实出现次数。这题就是在考这个陷阱，一字之差结果能差好几倍。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操）：
 
@@ -1262,6 +1323,7 @@ awk '/linux/{n++}END{print n}' linux.txt
 > 2. `grep -c` 与 `wc -l` 混用会重复计数，二选一即可。
 > 3. 关键字含正则元字符时结果偏多，用 `grep -F -c`。
 > 4. `grep` 无匹配时返回退出码 1，会中断 `set -e` 脚本。
+{: .callout-pit}
 
 ### 题 26：运维同事在 /etc 目录中创建了一个文件但没告知文件名，如何快速找出最新创建的文件
 
@@ -1272,6 +1334,7 @@ awk '/linux/{n++}END{print n}' linux.txt
 > `find /etc -newer /etc/hosts -type f`（比参照文件更新的文件）
 
 **解析**：考察时间排序定位。「最新创建」严格对应 ctime（inode 变更时间），但新建文件的 mtime 与 ctime 会同时更新，所以 `ls -lt` 一般够用。`ls -lt` 的 `-t` 是按 mtime 排序，`-r` 反转顺序。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操——以 /tmp/hw/linux 模拟 /etc）：
 
@@ -1311,6 +1374,7 @@ find . -type f -newer config.txt
 > 3. `find /etc` 不限制 `-type f` 会把目录也列出来，目录数量多时干扰判断，要加 `-maxdepth 1` 或 `-type f`。
 > 4. `-printf` 是 GNU find 特性，macOS/BSD find 没有。
 > 5. **变式追问**：mtime、atime、ctime 里"最新创建"更贴近哪个？（ctime——inode 一变更必更新；不过新建文件三者几乎同时刷新，日常用 `ls -lt` 按 mtime 排序就够用。）
+{: .callout-pit}
 
 ### 题 27：如何查看系统的信息
 
@@ -1328,6 +1392,7 @@ find . -type f -newer config.txt
 | 硬件总览 | `dmidecode`、`lspci`、`dmesg` |
 
 **解析**：考察「排障先看什么」的信息采集能力。线上排障的顺序通常是 `uptime`（看负载）→ `free`（看内存）→ `df -h`（看磁盘）→ `dmesg`/日志（看内核报错）。
+{: .callout-explain}
 
 **实操验证**（A 级已实操 uname + B 级 CentOS 7）：
 
@@ -1371,14 +1436,17 @@ Model name:            Intel Core i5
 > 2. `free` 中 `buff/cache` 不是真正被占用的内存，`available` 才是可用量。
 > 3. `df -h` 看的是磁盘空间，`df -i` 看的是 inode，两者要分开看。
 > 4. 最小化系统没有 `lscpu`/`dmidecode`，需 `yum install -y util-linux dmidecode`。
+{: .callout-pit}
 
 > **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ref}
 
 ### 题 28：`echo "linux" | tr "linux101" "python123"` 请写出命令结果
 
 > **答案：** 结果：`pytho`
 
 **解析**：考察 tr 的**按位置一一映射**规则——tr 眼里没有"字符串"，只有一个个字符，按位置配对翻译，所以绝不是整体替换。两个字符集按下标配对：
+{: .callout-explain}
 
 | 位置 | SET1 | SET2 |
 | --- | --- | --- |
@@ -1420,6 +1488,7 @@ pytho223
 > 2. 忽略 SET1 中重复字符「后者覆盖前者」的规则。
 > 3. 忽略 SET2 更短时「补最后一个字符」的规则。
 > 4. tr 只能处理单字符，不能做字符串级替换，字符串替换用 `sed`。
+{: .callout-pit}
 
 ### 题 29：修改系统字符集的方法
 
@@ -1430,6 +1499,7 @@ pytho223
 > 写入 `~/.bashrc` 可对单用户永久生效。
 
 **解析**：考察字符集配置的三个层次：全局（`/etc/locale.conf`）、用户（`~/.bashrc`）、会话（`export`）。修改后必须确认系统已安装该字符集（`locale -a`），否则会回退。
+{: .callout-explain}
 
 **实操验证**（B 级，CentOS 7）：
 
@@ -1469,8 +1539,10 @@ zh_CN.UTF-8
 > 2. CentOS 6 的路径是 `/etc/sysconfig/i18n`，写成 `/etc/locale.conf` 无效。
 > 3. 系统字符集与远程工具字符集不一致仍会乱码。
 > 4. `LC_ALL` 优先级最高，一旦被设置会覆盖 `LANG` 的所有分项，排查时要注意。
+{: .callout-pit}
 
 > **参见**：[系统优化实践-上](/posts/linux-system-06/)
+{: .callout-ref}
 
 ### 题 30：写出目前所学的 20 个命令及其作用
 
@@ -1504,6 +1576,7 @@ zh_CN.UTF-8
 | `which`/`whereis` | 查命令路径 | `which ssh` |
 
 **解析**：本题为总结型题，重点不在数量而在「每个命令的典型参数」。学习时按「增删改查 + 查看 + 查找 + 压缩 + 权限」五类归类记忆效率更高。
+{: .callout-explain}
 
 **实操验证**（A 级，已实操——批量验证命令是否可用）：
 
@@ -1536,8 +1609,10 @@ grep   -> /usr/bin/grep
 > 2. `cp` 不加 `-a`/`-p` 会丢失时间戳与权限，备份场景必须加。
 > 3. `chmod 777` 图省事等于放弃权限控制，是典型错误做法。
 > 4. `find` 不加路径默认从当前目录开始，在大目录下极慢，应明确路径与 `-maxdepth`。
+{: .callout-pit}
 
 > **参见**：[命令速查表](/posts/linux-homework-05/#命令速查表)
+{: .callout-ref}
 
 ---
 

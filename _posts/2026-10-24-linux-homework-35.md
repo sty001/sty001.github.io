@@ -33,8 +33,10 @@ slug: "linux-homework-35"
 ## 题 1：利用剧本部署 rsync 服务
 
 **考察点**：把一个服务的部署流程（装软件 → 推配置 → 建用户 → 建目录 → 建密码文件 → 启动服务）固化成多 play 剧本；掌握 `vars` 变量、`template` 模板、`handlers` + `notify` 触发器的综合运用；理解「服务端 + 客户端」两组主机的剧本拆分方式；用 `no_log` 保护含口令的任务输出。
+{: .callout-exam}
 
 **实现思路**：先写出不用剧本时的 ad-hoc 部署历程，再把每条 ad-hoc 命令翻译成一个 task。rsync 以 daemon 模式提供服务，需要三样差异化的东西——守护进程配置 `rsyncd.conf`、系统虚拟用户 `rsync`、密码文件 `/etc/rsync.password`。配置文件带变量（uid、端口、备份目录），得用 `template` 渲染后再下发，`copy` 只会原样搬运；配置变了要让 rsyncd 重启，就用 `notify` 挂一个 handler。ad-hoc 历程与剧本 task 的对应关系如下：
+{: .callout-prac}
 
 | 历程 | ad-hoc 写法 | 剧本 task（模块） |
 | --- | --- | --- |
@@ -77,6 +79,7 @@ secrets file = /etc/rsync.password
 ```
 
 > **注意**：`fake super = yes` 让 rsync 用文件属性模拟 root 权限，免去了「备份文件属主必须是 root」与「守护进程降权运行」的矛盾，配合属主为普通用户的备份目录即可正常读写。
+{: .callout-note}
 {: .sec-pit}
 
 ### 步骤 2：编写服务端 + 客户端一体化剧本（已实操）
@@ -288,6 +291,7 @@ total 4
 > - 服务端密码文件内容是 `用户:口令`，客户端只写口令，两边口令不一致会报 `@ERROR: auth failed on module backup`；
 > - rsync 要求密码文件权限不超过 600，`mode: "0600"` 不能省；
 > - `user` 任务里 `create_home: no` 忘写会多建一个家目录，虽不报错但不规范。
+{: .callout-pit}
 
 ### 辨析：copy 与 template
 
@@ -301,8 +305,10 @@ total 4
 ## 题 2：利用剧本部署 NFS 服务
 
 **考察点**：NFS 部署的三段式结构（全体装软件、服务端配置共享、客户端挂载）；`loop` 循环启动多个服务；`mount` 模块 `state=mounted` 的「立即挂载 + 写 fstab」语义；`register` + `debug` 回显挂载结果。
+{: .callout-exam}
 
 **实现思路**：NFS 比 rsync 多一个「客户端挂载」环节，所以剧本由三个 play 组成。服务端要动的东西是 `/etc/exports` 与共享目录，客户端只做一件事——把服务端的共享目录挂到本地。把共享目录路径提成变量 `Data_dir`，服务端创建目录、客户端挂载路径引用同一个变量，改共享目录只改一处：
+{: .callout-prac}
 
 | play | 目标组 | 关键任务 |
 | --- | --- | --- |
@@ -483,6 +489,7 @@ $ ansible nfs_client -m shell -a "touch /mnt/testfile && ls -l /mnt/testfile"
 > - showmount 看不到共享：先 `systemctl status rpcbind nfs` 确认两个服务都起来了，NFS 依赖 rpcbind 注册端口；
 > - 挂载成功但写不进：共享目录属主不是 `nfsnobody`，或 exports 未配 `rw`；
 > - `mount` 的 `state=present` 只写 fstab 不立即挂载，日常一步到位用 `mounted`。
+{: .callout-pit}
 
 ## 小结
 {: .sec-sum}
@@ -497,6 +504,7 @@ $ ansible nfs_client -m shell -a "touch /mnt/testfile && ls -l /mnt/testfile"
 8. 含口令的任务记得 `no_log: true`，进阶做法是口令走 `ansible-vault` 加密的变量文件，剧本和代码仓库里都不留明文。
 
 > **参见**：[批量管理Ansible（中）](/posts/linux-arch-08/)、[Ansible剧本实战](/posts/linux-arch-11/)、[备份服务rsync](/posts/linux-arch-02/)、[存储服务NFS](/posts/linux-arch-04/)
+{: .callout-ref}
 
 
 {% endraw %}

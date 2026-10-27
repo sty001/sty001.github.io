@@ -36,8 +36,10 @@ slug: "linux-homework-15"
 ## 题 1：如何修改磁盘中 block 大小、如何查看默认的 block 大小
 
 **考察点**：block 的概念、block 大小的查看方法（ext 系列与 xfs 两套命令）、block 大小的设定时机与代价。
+{: .callout-exam}
 
 **实现思路**：先说前提——**block 大小是格式化（创建文件系统）时定的，不能在线改**。想改就得重新格式化，等于清空数据。所以这题的标准答案就两句：
+{: .callout-prac}
 
 1. 查看：ext 系列用 `dumpe2fs -h` 或 `tune2fs -l`，xfs 用 `xfs_info`，通用用 `stat -f`；
 2. 修改：`mkfs.ext4 -b 大小 设备` 或 `mkfs.xfs -b size=大小 设备`，且必须重新格式化。
@@ -231,6 +233,7 @@ df -h /data                           # 确认挂载成功
 ```
 
 > **易错点**：`mkfs` 会**清空整个分区**，执行前必须确认设备名（用 `lsblk`、`fdisk -l` 核对），并确认数据已备份。把 `-b` 误写成 `-B` 在 `mkfs.ext4` 上会被拒绝；`mkfs.xfs` 必须写成 `-b size=4096`，写 `-b 4096` 会报错。
+{: .callout-pit}
 
 ### 步骤 4：block 大小的选型（大一点好还是小一点好）
 {: .sec-prac}
@@ -246,19 +249,23 @@ df -h /data                           # 确认挂载成功
 判断依据一句话：**文件普遍大于 block 就选大，普遍小于 block 就选小**；不确定就用 4096 默认值。
 
 **验证方法**：
+{: .callout-verify}
 
 1. `stat -f 挂载点` 输出的 `Block size` 与格式化时指定的一致（已实操，本机为 4096）；
 2. 建一个 1 字节文件，`du --block-size=1` 显示的值等于 block 大小的整数倍；建一个「block 大小 + 1」字节的文件，应占用 2 个 block（本机 5000 字节占 8192，即 2×4096，已验证）；
 3. `mkfs` 输出的 `Block size=` 行与预期一致；`tune2fs -l` 或 `xfs_info` 复查一致。
 
 > **参见**：[block大小的查看与调整](/posts/linux-fileattr-05/)、[文件系统类型与格式化命令](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 ## 题 2：总结数据存储与读取原理
 {: .sec-know}
 
 **考察点**：inode、block、超级块、位图（inode 位图 + block 位图）四者的职责，以及一个文件从创建到落盘、从路径到内容的完整流程。
+{: .callout-exam}
 
 **实现思路**：先讲四类元数据结构，再用「写入一个文件」「读取一个文件」两个流程串起来，最后用 `stat`、`ls -i`、硬链接等命令真机验证。
+{: .callout-prac}
 
 ### 2.1 四种核心结构
 {: .sec-sum}
@@ -391,14 +398,18 @@ $ du --block-size=1 big.txt
 `size` 是属性（记在 inode 里），`blocks` 是实际占用（记在位图与块指针里），两者不是一回事。
 
 **验证方法**：能不查资料回答下面四个问题即为掌握——①文件名存在哪里（目录的 block）；②文件内容存在哪里（数据 block）；③怎么从路径找到内容（目录项 → inode 号 → inode 表 → block 指针 → 数据块）；④为什么硬链接的两个文件 size 相同而软链接不同（前者同 inode，后者是新 inode 存路径串）。
+{: .callout-verify}
 
 > **参见**：[inode：索引节点](/posts/linux-fileattr-05/#inode索引节点)、[block：数据块](/posts/linux-fileattr-05/#block数据块)、[磁盘的结构体系](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 ## 题 3：磁盘满无法存储数据的原因
 
 **考察点**：「磁盘满」不是一个原因而是三种，且报错信息不同，排查命令也不同。
+{: .callout-exam}
 
 **实现思路**：三种原因分别是 block 满、inode 满、文件被删除但句柄未释放。先给对照表，再逐个给排查命令与处置方法，其中 inode 耗尽与句柄未释放两个实验在本机真跑。
+{: .callout-prac}
 
 ### 3.1 三种原因对照表
 {: .sec-chk}
@@ -410,6 +421,7 @@ $ du --block-size=1 big.txt
 | ③ 文件删除但句柄未释放 | 空间没被回收，写入报 `No space left on device` | `df -h` 显示已用很高，`du -sh` 累加却很小，两者对不上 | `lsof \| grep deleted`、`lsof +L1` | 重启持有句柄的进程，或截断文件 `> 文件名` |
 
 > **易错点**：三种情况的报错**完全相同**，都是 `No space left on device`。光看报错无法区分，必须同时跑 `df -h` 和 `df -i`。
+{: .callout-pit}
 
 ### 3.2 原因一：block 存储空间不足（B 级排查命令 + A 级 df 实测）
 {: .sec-ts}
@@ -594,6 +606,7 @@ systemctl restart nginx
 `df` 读的是文件系统超级块的统计（整个分区用了多少 block），`du` 是遍历目录树把看得到的文件加起来。三个典型差异：① deleted 句柄占的空间，`df` 算、`du` 看不见；② 硬链接的文件，`du` 单目录统计会重复算，跨目录求和又可能算重；③ 挂载点下挂了别的文件系统，`du` 默认会穿进去（加 `-x` 可限定同一文件系统）。排查磁盘满时先看两者差多少，对不上就往 deleted 句柄查。
 
 > **易错点**：正确的日志清理姿势是**先截断后删除**，或者干脆只截断不删除（`> access.log`）。直接 `rm` 正在被写入的日志，是生产环境「磁盘莫名其妙满了」的第一号原因。另外日志切割工具（logrotate）要用 `copytruncate` 或给进程发 `reopen` 信号，也是同一个道理。
+{: .callout-pit}
 
 ### 3.5 磁盘满排错总流程
 {: .sec-ts}
@@ -608,14 +621,17 @@ systemctl restart nginx
 6. 清理完再跑一次 `df -h` 与 `df -i` 复查，确认 `Use%` 与 `IUse%` 都降下来了。
 
 > **生产注意**：动手清理前先 `df -h` 与 `df -i` 各截一张图留档，删错文件的代价远大于晚十分钟清理。
+{: .callout-pit}
 
 **验证方法**：
+{: .callout-verify}
 
 1. 能同时说出三种原因的区分依据（`df -h` 的 `Use%` 与 `df -i` 的 `IUse%`，以及 `du`/`df` 是否对得上）；
 2. 本机 500 空文件实验中，`du -sh` 与 `du -sh --apparent-size` 的差异能说明 inode 与 block 是两套独立资源（已实操）；
 3. 本机句柄实验中能看到 `(deleted)` 标记，并知道在 CentOS 7 上用 `lsof +L1` 得到同样的信息（已实操）。
 
 > **参见**：[企业常见问题磁盘满](/posts/linux-fileattr-05/)、[容量查看df与du](/posts/linux-fileattr-05/)、[du命令详解](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}
@@ -631,6 +647,7 @@ systemctl restart nginx
 7. 清理正在被写入的日志用截断 `> 文件名` 而不是 `rm`，否则空间不会释放；已发生则用 `lsof +L1` 定位进程后重启。
 
 > **参见**：[文件系统类型与格式化命令](/posts/linux-fileattr-05/)、[格式化操作与磁盘满](/posts/linux-fileattr-05/)、[inode/block概念](/posts/linux-fileattr-05/)
+{: .callout-ref}
 
 
 {% endraw %}

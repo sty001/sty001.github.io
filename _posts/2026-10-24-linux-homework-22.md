@@ -36,8 +36,10 @@ slug: "linux-homework-22"
 {: .sec-ex}
 
 **考察点**：五段时间字段的顺序与取值范围（**分 时 日 月 周**，最短周期 1 分钟）、四个特殊符号（`*`、`,`、`-`、`/`）的含义，以及「日期与星期不要同时出现」「`/` 前尽量写 `*`」两条编写原则。
+{: .callout-exam}
 
 **实现思路**：先默写标准头注释确认五段顺序，再把 8 个经典时间写法整理成表；星期字段用 `date +%w` 真跑核对（0~6，0 与 7 都是周日），确保示例里的星期数不写错。
+{: .callout-prac}
 
 ### 五段字段与特殊符号
 
@@ -114,14 +116,18 @@ $ date "+%F %T"
 > - cron 不支持 `?`、`L`、`W` 等 Quartz 表达式符号，遇到「每月最后一天」类需求用脚本里 `date` 判断实现；
 > - `%` 在 crontab 命令里是特殊符号（第一个未转义的 `%` 之后的内容会作为标准输入送给命令），必须写 `\%` 或放进脚本；
 > - `20/10` 表示「从第 20 分钟起每隔 10 分钟」（20、30、40、50 分），不是「每 10 分钟」的等价写法。
+{: .callout-pit}
 
 > **参见**：[定时任务与crond](/posts/linux-cron-01/)
+{: .callout-ref}
 
 ## 题 2：每天凌晨 1 点打包备份 /data/linux 的定时任务
 
 **考察点**：定时任务落地的标准三步——写脚本（多命令封装 + 绝对路径 + 按日期命名）、手工验证脚本、再挂 crontab；以及「为什么把任务写进脚本而不是直接塞进 crontab 命令列」。
+{: .callout-exam}
 
 **实现思路**：备份动作拆成「tar 打包 + date 生成日期后缀 + 解压回读验证」。脚本在本环境用沙箱路径 `/tmp/hw/day22` 真跑（A 级），生产版本把路径替换为 `/data/linux` 与 `/backup`；crontab 行给标准写法（B 级）。
+{: .callout-prac}
 
 ### 步骤 1：构造测试数据（已实操）
 {: .sec-ver}
@@ -272,13 +278,16 @@ Oct 25 01:00:01 linux-node1 CROND[4021]: (root) CMD (/bin/sh /server/scripts/bac
 > - crontab 命令列里写 `$(date +%F)` 要写成 `$\(date +\%F\)`（`%` 必须转义），不如直接放进脚本省心——这正是「多命令需求一律写脚本」的理由之一；
 > - 脚本路径、命令一律绝对路径（`/bin/sh /server/scripts/backup.sh`），脚本内部变量也用绝对路径；
 > - 上线前先手工跑一遍脚本并解压回读，确认无误再挂 crontab。
+{: .callout-pit}
 
 > **参见**：[定时任务与crond](/posts/linux-cron-01/)、[day14 tar 打包真跑](/posts/blogmap/)
+{: .callout-ref}
 
 ## 题 3：定时任务排错三板斧
 {: .sec-ts}
 
 **考察点**：任务到点没跑/跑出意外的三种最高频原因——①crond 日志里到底执行没有；②cron 的极简环境（PATH 只有 `/usr/bin:/bin`）导致「手工能跑、定时不跑」；③输出没重定向，邮件把磁盘撑爆。三板斧各对应一组固定排查命令。
+{: .callout-exam}
 
 ### 第一板斧：日志排查（B 级）
 {: .sec-ts}
@@ -377,14 +386,18 @@ grep "MAIL" /var/log/cron | tail                      # 看哪些任务在发邮
 > - `>/dev/null 2>&1` 不能写成 `2>&1 >/dev/null`——顺序反了，标准错误仍会打到屏幕（触发邮件）；
 > - 日志里出现 `MAIL (mailed ... but got status 0x004b...)` 说明 postfix 有问题，先按第三板斧清理，再统一 `MAILTO=""`；
 > - 排错时可在 crontab 里临时加一条每分钟任务把变量打印到文件（`* * * * * echo $PATH > /tmp/cron_env.txt`），两分钟后对比手工环境的 `echo $PATH`，差异一目了然。
+{: .callout-pit}
 
 > **参见**：[定时任务与crond](/posts/linux-cron-01/)
+{: .callout-ref}
 
 ## 题 4：crontab -e/-l/-r 与 /etc/crontab、/etc/cron.d 的区别
 
 **考察点**：用户级与系统级两套定时任务入口的格式差异（6 段 vs 7 段）、存放位置、执行身份，以及 `crontab -r` 的危险性。
+{: .callout-exam}
 
 **实现思路**：先把 crontab 命令参数过一遍，再用一张对照表把三个入口的差异说全，最后给出选型建议。以下命令均为 B 级（CentOS 7 真机可用）。
+{: .callout-prac}
 
 ### crontab 命令参数
 {: .sec-expl}
@@ -430,8 +443,10 @@ grep "MAIL" /var/log/cron | tail                      # 看哪些任务在发邮
 > - `/etc/cron.d/` 下的文件名不能含点（`.`），否则 crond 直接忽略；属主必须 root，权限不能组可写；
 > - `crontab -r` 没有 `-u` 时删的是**当前用户**的任务，root 执行就是删 root 的全部任务；
 > - 用户级任务文件（`/var/spool/cron/用户名`）不要用 vi 直接改，一律走 `crontab -e`，否则 crond 可能不重载。
+{: .callout-pit}
 
 > **参见**：[定时任务与crond](/posts/linux-cron-01/)
+{: .callout-ref}
 
 ## 小结
 {: .sec-sum}

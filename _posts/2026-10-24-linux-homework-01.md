@@ -30,10 +30,13 @@ mkdir -p /tmp/hw/day1 && cd /tmp/hw/day1
 {: .sec-expl}
 
 **考察点**：主流机架式服务器的品牌和系列要能张口就来，还要能按 CPU / 内存 / 硬盘 / RAID 卡 / 电源 / 网卡这几个维度把一台机器的配置说完整。
+{: .callout-exam}
 
 **实现思路**：调研拆成两张表——品牌型号表管"买什么"，配置参数表管"买到什么"。最后补几条真机核对命令，结论不是纸上谈兵，能对着机器验。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：整理主流品牌与机架系列（1U / 2U 为常见形态，4U 支持更多硬盘位）。
 
@@ -92,23 +95,29 @@ Model name:            Intel Xeon CPU E5-2620 v3 @ 2.40GHz
 ```
 
 **验证方法**：对照上表逐项核对——`lscpu` 的 Socket(s) 对应路数、Core(s) per socket 对应每路核数；`dmidecode -t memory` 的 Error Correction Type 为 Multi-bit ECC 才说明 ECC 已生效；`lsblk` 看到的单盘容量总和应大于 RAID 阵列可用容量（RAID 5 按 (N-1) x 单盘容量计算）。
+{: .callout-verify}
 
 > **易错点**：
 > - 混淆"路数"与"核数"：双路 = 2 个物理 CPU，不是 2 个核。
 > - 混淆品牌与系列层级：Dell 的 R 系列、HP 的 DL 系列是系列名，不是具体型号，采购单上必须写到具体型号（如 R740）。
 > - 忽略二手与保修：同型号有全新机和翻新机之分，采购时要核对保修年限与出厂日期。
 > - 配置表漏掉远程管理卡：Dell iDRAC、HP iLO 是服务器的独立管理通道，上架时必须插管理网线，否则无法远程运维。
+{: .callout-pit}
 
 > **参见**：[计算机硬件组成](/posts/linux-basics-01/) 的[服务器的种类](/posts/linux-basics-01/#服务器的种类)[服务器硬件组成详解](/posts/linux-basics-01/#服务器硬件组成详解)[服务器品牌与代际](/posts/linux-basics-01/#服务器品牌与代际)。
+{: .callout-ref}
 
 ## 题 2：总结缓冲和缓存的概念（缓存服务器）
 {: .sec-know}
 
 **考察点**：buffer（缓冲）和 cache（缓存）到底差在哪，`free -h` 的 buff/cache 列怎么读，以及"缓存服务器"凭什么快。
+{: .callout-exam}
 
 **实现思路**：一张概念对比表打底，然后拿真机 `free -h` 输出逐列过一遍，最后在本地跑一组写盘实验——buffer 是不是"写延迟"，cache 是不是"读加速"，跑出数据说话。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：概念对比。buffer 与 cache 都占用内存，但服务的方向相反。
 
@@ -180,14 +189,17 @@ rm -f buf-demo-1.bin buf-demo-2.bin
 步骤 4：理解 cache 的"读加速"效果。第一次读文件要从磁盘加载，重复读同一文件时命中 page cache，速度大幅提升。Linux 上可以用 `dd` 连续读同一文件两次对比耗时，也可以先 `echo 3 > /proc/sys/vm/drop_caches` 清掉缓存再读做对照（生产环境慎用）。
 
 **验证方法**：步骤 3 中两次 dd 的速率差（2.1 GB/s 对 419 MB/s）即为 buffer 带来的写加速比例；速率越高说明数据越多地暂存在内存而未真正落盘。清缓存前后重复读同一文件，第二次更快即证明 cache 命中。
+{: .callout-verify}
 
 > **易错点**：
 > - 看到 `free` 很小就以为内存不够：buff/cache 随时可回收，要看 `available`。
 > - 认为 buffer/cache 是被浪费的内存：恰恰相反，空闲内存不拿来做缓存才是浪费。
 > - 忽略"延迟写"的风险：只写进 buffer 就认为数据安全，掉电时未刷盘的数据会丢失（这正是题 3 的切入点）。
 > - `sync` 只负责发起刷盘，不保证磁盘物理写入完成（除非设备带掉电保护），重要场景要用 RAID 卡缓存 + 电池或应用层确认。
+{: .callout-pit}
 
 > **参见**：[计算机硬件组成](/posts/linux-basics-01/) 的[内存：缓冲与缓存](/posts/linux-basics-01/#内存缓冲与缓存)、[Linux系统概念](/posts/linux-basics-02/) 的[内存：CPU 与磁盘之间的桥梁](/posts/linux-basics-02/#内存cpu-与磁盘之间的桥梁)。
+{: .callout-ref}
 
 ### 辨析：buffer 与 cache
 
@@ -199,10 +211,13 @@ rm -f buf-demo-1.bin buf-demo-2.bin
 {: .sec-ex}
 
 **考察点**：企业存储数据的典型案例要能总结出来，更关键的是回答"先写内存再落盘"的架构里，内存中那份不安全的数据怎么保住。
+{: .callout-exam}
 
 **实现思路**：先画两张数据流图，大型、中小企业各一张；然后专门讲数据只到内存为什么不算安全，配持久化、RAID、备份三道防线；收尾用 dd + md5sum 在本地把"写盘 - 读回 - 校验"整个走一遍。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：企业存储数据案例总结。
 
@@ -333,14 +348,17 @@ Access: (0644/-rw-r--r--)  Uid: (197609/   user)   Gid: (197609/ UNKNOWN)
 {: .sec-note}
 
 **验证方法**：`md5sum` 前后两次输出逐字符相同，即证明"写盘 - 读回"零损坏；步骤 4 中单字节篡改导致校验和巨变，证明该校验手段对损坏敏感；步骤 5 从备份恢复后校验和还原，证明备份可用。
+{: .callout-verify}
 
 > **易错点**：
 > - 认为"写进内存"或"写进 RAID"就等于数据安全：前者怕掉电，后者怕误删和逻辑损坏。
 > - 备份从不演练恢复：没验证过的备份等于没有备份，恢复流程要定期演练。
 > - 只在源端算校验和：传输 / 备份后必须在目标端重新校验并比对，才能发现传输损坏。
 > - 混淆 RAID 重建期风险：RAID 5 重建期间再坏一块盘会全部丢失，大盘场景优先 RAID 6 / RAID 10。
+{: .callout-pit}
 
 > **参见**：[计算机硬件组成](/posts/linux-basics-01/) 的[企业存储数据的案例](/posts/linux-basics-01/#企业存储数据的案例)[RAID：把多块磁盘整合起来](/posts/linux-basics-01/#raid把多块磁盘整合起来)。
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

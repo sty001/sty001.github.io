@@ -33,8 +33,10 @@ keepalived 这块，课程第 43 天留了两个方向性题目：①如何实�
 ## 题 1：用 while 循环实现 keepalived 实时监控
 
 **考察点**：理解「监控」与「自动切换」的关系——keepalived 自身负责 VRRP 心跳，但业务进程（nginx）是否活着需要额外巡检；掌握用 while 循环周期性探测、异常即告警或联动的脚本写法。
+{: .callout-exam}
 
 **实现思路**：keepalived 只保证「LB 节点之间」的高可用，它并不知道 nginx 是不是真的能提供服务。所以需要一层业务监控：用 while 循环每隔几秒检查一次 nginx 进程（或 VIP 是否在本地网卡），一旦发现异常就发告警（或触发让出 VIP）。本文给出两种监控视角：监控「业务进程 nginx 是否存活」与监控「VIP 是否在本机」（用于发现脑裂）。
+{: .callout-prac}
 
 ### 思路一：while 循环巡检 nginx 进程（A 级，已实操）
 {: .sec-prac}
@@ -143,12 +145,15 @@ done
 > - while 循环里要有 `sleep`，否则会 100% 占满一颗 CPU 空转。
 > - 用 `ps -ef | grep -c [n]ginx` 时，中括号写法 `[n]ginx` 让 grep 自身的进程命令行里不再出现完整字符串 `nginx`，避免把 grep 自己数进去；等价写法还有 `pgrep -x nginx`（本环境不可用）或 `killall -0 nginx`。
 > - 巡检 VIP 的脚本只能「告警」，不能自动决策——因为本机持有 VIP 可能是正常 MASTER，也可能是脑裂，需人工结合日志判断。
+{: .callout-pit}
 
 ## 题 2：nginx 停 → keepalived 停；nginx 起 → keepalived 自动恢复（weight）
 
 **考察点**：理解「业务进程（nginx）与高可用管家（keepalived）的联动」——nginx 挂了就让出 VIP，nginx 恢复就抢回 VIP；掌握 `vrrp_script` + `track_script` + `weight` 三种配合方式（直接停服务 / 负权重降级 / 正权重降级）与 `nopreempt` 的作用。
+{: .callout-exam}
 
 **实现思路**：课程把二者关系比喻为「nginx 是皇帝，keepalived 是妃子」——皇帝死了，妃子殉情。落地有两种流派：
+{: .callout-prac}
 
 1. **强硬派（脚本里直接停）**：检测脚本一旦发现 nginx 不在，直接 `systemctl stop keepalived`，VIP 立刻漂移到对端；nginx 恢复后，需要人为或脚本重新拉起 keepalived。
 2. **平滑派（用 weight 联动优先级）**：检测脚本只返回成功/失败，由 keepalived 根据 `weight` 动态调整本节点优先级——失败时优先级大幅下降（低于对端），VIP 自然漂移；nginx 恢复后脚本成功，优先级回升，因默认开启抢占，VIP 又被抢回，实现「自动恢复」。作业提示的 `weight` 正是这一派的核心。
@@ -298,8 +303,10 @@ $ ip a s eth0 | grep 10.0.0.3
 > - `nopreempt` 必须配置在**两台**节点上且优先级高的节点恢复后才会「不抢回」；只要想实现「nginx 恢复 keepalived 自动恢复（抢回 VIP）」，就不能两端都 nopreempt——作业要求自动恢复，故 MASTER 端可保留默认抢占。
 > - 检测脚本必须 `chmod +x` 且有可执行权限，否则 keepalived 调不起来会报脚本错误。
 > - `fall` 建议设为 2~3，避免瞬时抖动把 VIP 误漂走；`interval` 别太短，一般 2~3 秒。
+{: .callout-pit}
 
 > **参见**：[高可用服务keepalived](/posts/linux-arch-18/)、[反向代理与负载均衡作业实操](/posts/linux-homework-43/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

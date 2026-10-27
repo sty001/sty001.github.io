@@ -42,8 +42,10 @@ man <命令>                              # 再查权威语法
 ### 服务器（Server）
 
 **一句话定义**：为业务提供 7×24 小时持续计算与存储服务的专用计算机，按外形分为机架式、塔式、刀片式，云主机是它的虚拟化形态。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 机架式服务器以 U 为高度单位，1U = 1.75 英寸 = 4.45 cm，机房按机柜空间、电力与散热规划台数。
 - 与台式机的本质差别在冗余设计：双电源、双网卡、RAID 阵列、ECC 纠错内存、热插拔风扇。
@@ -53,19 +55,24 @@ man <命令>                              # 再查权威语法
 - 新购服务器默认 UEFI 启动 + GPT 分区表，远程管理卡出厂即带独立网口。
 
 **常见误区**：
+{: .callout-pit}
 
 - 把服务器当"高配台式机"买：只看 CPU 与内存，忽略电源冗余与磁盘阵列，上线后单点故障频发。
 - 认为上了云就不需要懂物理机：云主机的性能瓶颈、磁盘 IO、网络抖动最终仍落在物理资源上。
 
 **相关命令**：`dmidecode -t system` `lscpu` `free -h` `lsblk`
+{: .callout-cmd}
 
-**延伸阅读**：计算机硬件组成
+**延伸阅读**：[计算机硬件组成](/posts/linux-basics-01/)
+{: .callout-ext}
 
 ### CPU 与多核（CPU / Core）
 
 **一句话定义**：中央处理器，负责指令运算与控制，其性能指标由架构、主频、缓存、核数与是否支持超线程共同决定。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 「路数」指主板上物理 CPU 的颗数，「核数」指每颗 CPU 内的物理核心，逻辑核 = 物理核 × 超线程。
 - CPU 缓存分 L1 / L2 / L3 三级，越靠近核心越快越小，跨 NUMA 节点访问内存会明显变慢。
@@ -81,19 +88,24 @@ man <命令>                              # 再查权威语法
 | 报警阈值 | 持续 80% 以上值得关注 | 高于 CPU 核数才算排队 |
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为核数越多一定越快：单线程程序只能跑在一个核上，核多只解决并发不解决单点延迟。
 - 把 load 高直接等同于 CPU 使用率高，忽略了 IO 等待与锁等待。
 
 **相关命令**：`lscpu` `top` `mpstat 1` `uptime` `pidstat -u 1`
+{: .callout-cmd}
 
-**延伸阅读**：计算机硬件组成、软件安装与硬件信息查看
+**延伸阅读**：[计算机硬件组成](/posts/linux-basics-01/)、[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ext}
 
 ### 内存与缓冲缓存（Memory / Buffer / Cache）
 
 **一句话定义**：内存是 CPU 与磁盘之间的高速桥梁，断电即丢；buffer 是写缓冲，cache 是读缓存，二者合称系统缓存。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 内存读写速度比机械磁盘高几个数量级，「先写内存、后落磁盘」几乎是所有高并发架构的第一原则。
 - buffer 对应写过程（把零散写合并后一次落盘），cache 对应读过程（把热点数据留在内存里）。
@@ -110,19 +122,24 @@ man <命令>                              # 再查权威语法
 | 典型来源 | 文件写入、元数据修改 | 打开过的文件、目录项 |
 
 **常见误区**：
+{: .callout-pit}
 
 - 看到 `free` 中 buff/cache 占用大就以为内存不够，其实这部分在需要时会被内核自动回收。
 - 认为 swap 可以替代内存：swap 只是应急的安全垫，长期依赖它等于业务已经出问题。
 
 **相关命令**：`free -h` `vmstat 1` `sar -r` `sync` `drop_caches`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、系统优化实践（下）
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[系统优化实践（下）](/posts/linux-system-07/)
+{: .callout-ext}
 
 ### 磁盘与接口（Disk / Interface）
 
 **一句话定义**：用于永久保存数据的存储介质，机械盘靠磁头寻道，固态盘靠电子寻址，接口速率决定上限。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 接口速率排序：IDE < SATA（6 Gbps）< SAS（12 Gbps）< NVMe（PCIe 通道），注意网络用 bit、磁盘用 Byte，相差 8 倍。
 - 机械盘内部结构四要素：磁道（同心圆）、扇区（最小单位 512 字节）、柱面、单元块；磁头径向寻道是机械运动，是性能瓶颈根源。
@@ -132,19 +149,24 @@ man <命令>                              # 再查权威语法
 - 机械盘怕随机小 IO 的原因：每读一次都要磁头寻道加盘片旋转，一次几毫秒，随机 IO 让磁头不停换位置；SSD 没有机械动作，随机 IO 正是它的主场。
 
 **常见误区**：
+{: .callout-pit}
 
 - 只看容量不看 IOPS：数据库类业务容量够但 IOPS 不够，照样卡死。
 - 认为 SSD 不会坏：SSD 有写入寿命，到期会掉速甚至只读，必须有监控与更换计划。
 
 **相关命令**：`lsblk` `fdisk -l` `iostat -x 1` `smartctl -a /dev/sda` `badblocks -v /dev/sdb`
+{: .callout-cmd}
 
-**延伸阅读**：磁盘管理基础、计算机硬件组成
+**延伸阅读**：[磁盘管理基础](/posts/linux-disk-01/)、[计算机硬件组成](/posts/linux-basics-01/)
+{: .callout-ext}
 
 ### RAID（磁盘阵列）
 
 **一句话定义**：把多块物理盘按某种规则组合成一个逻辑盘，用冗余换安全、或用条带换性能的技术。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 | 级别 | 最少盘数 | 可用容量 | 冗余能力 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -160,19 +182,24 @@ man <命令>                              # 再查权威语法
 - RAID 5 每次写都要读旧数据、算校验、再写回去，一次写放大成多次 IO，写敏感业务要慎选；RAID 10 没有校验计算、写入路径最短，这正是数据库选它的原因。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为做了 RAID 就等于做了备份：误删一个文件，RAID 会非常忠实地在所有盘上同步删除。
 - 以为 RAID 5 万无一失：大容量盘重建时间极长，重建期间再坏一块即全盘皆失。
 
 **相关命令**：`mdadm -D /dev/md0` `cat /proc/mdstat` `megacli -LDInfo -Lall -aAll`
+{: .callout-cmd}
 
-**延伸阅读**：计算机硬件组成、磁盘管理基础
+**延伸阅读**：[计算机硬件组成](/posts/linux-basics-01/)、[磁盘管理基础](/posts/linux-disk-01/)
+{: .callout-ext}
 
 ### BIOS 与 UEFI（固件接口）
 
 **一句话定义**：主板上的固件程序，负责开机自检、初始化硬件并引导操作系统；UEFI 是 BIOS 的现代替代者。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - BIOS 搭配 MBR 分区表，最大支持 2 TB 磁盘与 4 个主分区；UEFI 搭配 GPT，突破容量与分区数限制。
 - 2 TB 这个硬顶从哪来：MBR 的分区表用 32 位 LBA，2^32 × 512 字节扇区恰好等于 2 TB；GPT 用 64 位，上限按现有盘的容量根本望不到头。
@@ -181,20 +208,25 @@ man <命令>                              # 再查权威语法
 - 安装系统时若要在 BIOS / UEFI 间切换，必须同时调整分区表类型，否则无法引导。
 
 **常见误区**：
+{: .callout-pit}
 
 - 把 BIOS 与 CMOS 混为一谈：BIOS 是固件程序，CMOS 是保存配置的小块存储（靠主板电池供电）。
 - 新机器装系统时用 MBR 分区表，导致 2 TB 以上磁盘只能识别一部分。
 
 **相关命令**：`ls /sys/firmware/efi` `efibootmgr` `parted -l`
+{: .callout-cmd}
 
-**延伸阅读**：计算机硬件组成、系统安装部署
+**延伸阅读**：[计算机硬件组成](/posts/linux-basics-01/)、[系统安装部署](/posts/linux-basics-03/)
+{: .callout-ext}
 
 ### 操作系统（Operating System）
 {: .sec-prac}
 
 **一句话定义**：管理硬件资源并为应用程序提供统一接口的软件层，由「硬件 + 内核 + 解释器 + 应用程序」四层构成。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 核心职能是四大管理：进程管理、内存管理、文件系统管理、设备管理。
 - 内核负责与硬件打交道，应用程序通过系统调用（syscall）向内核申请资源，用户不能直接碰硬件。
@@ -203,19 +235,24 @@ man <命令>                              # 再查权威语法
 - Linux 是类 Unix 的自由内核，与 GNU 项目与 GPL 协议共同构成今天的开源世界；Unix 与 Linux 是思想传承而非同一产品。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 Linux 是"一个操作系统"：严格说 Linux 只是内核，日常所说的系统是内核 + GNU 工具 + 软件包的发行版。
 - 以为图形界面就是操作系统：桌面环境只是跑在内核之上的一个应用程序集合。
 
 **相关命令**：`uname -a` `cat /etc/os-release` `hostnamectl`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)
+{: .callout-ext}
 
 ### Linux 发行版（Distribution）
 
 **一句话定义**：把 Linux 内核、GNU 工具、软件包管理器与应用软件打包成可安装产品的完整系统，如 RHEL、CentOS、Rocky、Ubuntu、Debian。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - RHEL 系（含 CentOS、Rocky、AlmaLinux）用 rpm + yum/dnf，Debian 系用 deb + apt，包管理命令不通用。
 - RHEL 收费并提供商业支持，CentOS 是去掉商标的免费重建版；CentOS 7 已停止维护，Rocky Linux 与 AlmaLinux 是 1:1 兼容替代。
@@ -223,19 +260,24 @@ man <命令>                              # 再查权威语法
 - 发行版差异集中在包管理、服务管理（systemd 已成事实标准）、默认目录与配置习惯，其余高度一致。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为"版本越新越好"：生产环境更看重稳定性与支持周期，追新往往换来未知 bug。
 - 混用不同发行版的软件包：为 A 发行版打的 rpm 强行装到 B 上，依赖关系会迅速失控。
 
 **相关命令**：`cat /etc/redhat-release` `cat /etc/os-release` `yum repolist` `dnf --version`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、综合架构开篇与规划
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[综合架构开篇与规划](/posts/linux-arch-01/)
+{: .callout-ext}
 
 ### Linux 内核（Kernel）
 
 **一句话定义**：操作系统的核心程序，直接管理 CPU、内存、磁盘与网络等硬件资源，并向用户提供系统调用接口。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 版本号格式为主版本.次版本.修订号，次版本奇数为开发版、偶数为稳定版是历史惯例，现代内核主要看 LTS 标记。
 - 内核按模块（module）方式加载驱动，`lsmod` 看到的就是已加载模块，硬件驱动问题多在这一层排查。
@@ -243,19 +285,24 @@ man <命令>                              # 再查权威语法
 - 内核态与用户态分离：应用程序运行在用户态，权限受限，越关键的操作越要经过内核审查。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为升级内核等于升级系统：内核只是其中一层，库与软件包版本并不随之升级。
 - 随意在线升级生产内核而不留旧内核启动项，一旦新内核不兼容硬件将直接无法开机。
 
 **相关命令**：`uname -r` `lsmod` `modprobe` `sysctl -a` `dmesg`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、软件安装与硬件信息查看
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[软件安装与硬件信息查看](/posts/linux-system-05/)
+{: .callout-ext}
 
 ### Shell（命令解释器）
 
 **一句话定义**：接收用户输入、解释并交给内核执行的人机翻译层，Linux 默认的交互 Shell 是 bash。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 常见 Shell 有 bash、sh、zsh、csh，脚本首行的 `#!/bin/bash` 决定用哪个解释器执行。
 - 内部命令（如 cd、echo）由 Shell 自身实现，外部命令（如 ls、grep）是磁盘上的可执行程序。
@@ -264,13 +311,16 @@ man <命令>                              # 再查权威语法
 - 「一切皆文件」为什么值钱：统一的读写接口意味着读磁盘、写 socket、改内核参数用的是同一套命令，学一套工具吃遍整个系统。
 
 **常见误区**：
+{: .callout-pit}
 
 - 以为 Shell 就是"黑窗口"：窗口是终端模拟器，Shell 是运行在其中的解释程序，两者不是一回事。
 - 脚本不加 `#!/bin/bash` 或用 `sh script.sh` 执行 bash 语法，容易出现莫名其妙的兼容性报错。
 
 **相关命令**：`echo $SHELL` `cat /etc/shells` `bash -x script.sh` `type cd`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、文档编辑软件使用技巧
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[文档编辑软件使用技巧](/posts/linux-system-08/)
+{: .callout-ext}
 
 ---
 
@@ -279,8 +329,10 @@ man <命令>                              # 再查权威语法
 ### 文件类型（File Type）
 
 **一句话定义**：Linux 中一切皆文件，文件按类型分为普通文件、目录、链接、设备、套接字与管道，`ls -l` 首字符即为类型标识。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 常见标识：`-` 普通文件、`d` 目录、`l` 软链接、`b` 块设备、`c` 字符设备、`s` 套接字、`p` 管道。
 - 扩展名在 Linux 中没有强制含义，判断文件真实类型要用 `file` 而不是看后缀。
@@ -289,19 +341,24 @@ man <命令>                              # 再查权威语法
 - 目录本质上也是一种文件，其内容是一张「文件名 → inode 号」的映射表。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 `.txt`、`.log` 后缀决定了文件类型：后缀只是命名习惯，改后缀不会改变文件内容与类型。
 - 把软链接当成真实文件去备份，结果只备份了一个路径字符串。
 
 **相关命令**：`ls -l` `file` `stat` `find / -type l`
+{: .callout-cmd}
 
-**延伸阅读**：文件属性与 inode
+**延伸阅读**：[文件属性与 inode](/posts/linux-fileattr-03/)
+{: .callout-ext}
 
 ### inode 与 block（索引节点与数据块）
 
 **一句话定义**：inode 存放文件的属性与数据块指针，block 存放文件的真实内容；文件名只存在于目录的映射表中，不在 inode 里。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 读取一个文件的完整链路：目录项找到 inode → inode 找到 block 地址 → 读取 block 返回内容。
 - inode 记录类型、权限、属主属组、大小、时间戳与链接数，唯独不记录文件名。
@@ -311,19 +368,24 @@ man <命令>                              # 再查权威语法
 - 为什么要设计 inode？把「文件名」和「文件数据」分开存放：名字留在目录映射表里，属性与数据地址放进 inode。分离之后，多个名字指向同一份数据（硬链接）才成为可能。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 `rm` 一个大文件后空间一定会回来：文件被进程打开时，删除只去掉目录项，空间仍被占用。
 - 只看 `df -h` 判断磁盘是否满，忽略了 inode 耗尽这一类"看不见的满"。
 
 **相关命令**：`df -i` `df -h` `stat file` `ls -i` `lsof +L1`
+{: .callout-cmd}
 
-**延伸阅读**：文件属性与 inode、文件属性实战
+**延伸阅读**：[文件属性与 inode](/posts/linux-fileattr-03/)、[文件属性实战](/posts/linux-fileattr-05/)
+{: .callout-ext}
 
 ### 硬链接（Hard Link）
 
 **一句话定义**：给同一个 inode 再添加一个目录项（文件名），多个名字指向同一份数据，删除任意一个名字数据仍在。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 硬链接与源文件共享同一个 inode，权限、属主、内容自然完全一致，修改任一处另一处同步变化。
 - 只有链接数归零时数据才真正被删除，这是"删了文件空间没释放"的另一种解释路径。
@@ -332,19 +394,24 @@ man <命令>                              # 再查权威语法
 - `ls -l` 第二列的数字就是链接数，目录的默认链接数为 2（自身与内部的 `.`）。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为硬链接是"复制了一份"：它不额外占用 block，只是多了一个目录项。
 - 试图给目录建硬链接来"做备份"，命令会直接报错，目录应该用软链接或复制。
 
 **相关命令**：`ln source hardlink` `ls -li` `stat -c %h file` `find / -inum 12345`
+{: .callout-cmd}
 
-**延伸阅读**：文件属性实战
+**延伸阅读**：[文件属性实战](/posts/linux-fileattr-05/)
+{: .callout-ext}
 
 ### 软链接（Symbolic Link）
 
 **一句话定义**：存放目标路径字符串的独立文件，访问时被内核自动跳转到目标，又称符号链接。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 软链接有自己的 inode，内容是目标路径字符串，删除源文件后链接变成"断链"（闪烁红色）。
 - 软链接可以跨文件系统、可以指向目录，这是它与硬链接最大的两点差异。
@@ -352,19 +419,24 @@ man <命令>                              # 再查权威语法
 - 备份时 `rsync -a` 会保留软链接本身，`-L` 或 tar 的 `-h` 才是跟随链接复制真实内容。
 
 **常见误区**：
+{: .callout-pit}
 
 - 用相对路径创建软链接后再移动链接文件，路径会失效；跨目录场景一律用绝对路径。
 - 认为删除软链接会删掉源文件：删链接只删链接。这里有个坑：`rm -rf 链接/` 末尾带斜杠删的是目标目录里面的东西，不带斜杠才是删链接本身。
 
 **相关命令**：`ln -s /abs/path link` `readlink -f link` `ls -l link` `find / -type l -xtype l`
+{: .callout-cmd}
 
-**延伸阅读**：文件属性实战、文件属性进阶
+**延伸阅读**：[文件属性实战](/posts/linux-fileattr-05/)、[文件属性进阶](/posts/linux-fileattr-04/)
+{: .callout-ext}
 
 ### 权限模型（Permission Model）
 
 **一句话定义**：Linux 用「属主 u / 属组 g / 其他 o」三组身份 ×「读 r / 写 w / 执行 x」三种权限，共 9 个权限位来控制访问。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 文件的 rwx：r 能读内容，w 能改内容，x 能当程序执行；目录的 rwx：r 能列名，w 能增删文件，x 能进入目录。
 - 判定口诀：文件重 r（w、x 都要 r 配合），目录重 x（r、w 都要 x 配合）。
@@ -374,19 +446,24 @@ man <命令>                              # 再查权威语法
 - 为什么每一级目录都要 x？内核解析路径是逐级进行的，每进一层都要在该目录里「找下一个名字」，找名字靠执行权限（x）；中间断一层，后面的权限配得再对也走不到。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为目录有 r 就能进：没有 x 权限连 `cd` 都进不去，`ls` 也读不出属性，只会显示 `???`。
 - 用 `chmod 777` 解决权限问题：等于对所有人都开放，是典型的安全事故起点。
 
 **相关命令**：`chmod` `chown` `id` `namei -l /path/to/file` `stat -c %a file`
+{: .callout-cmd}
 
-**延伸阅读**：用户管理、用户权限与提权
+**延伸阅读**：[用户管理](/posts/linux-userperm-01/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ext}
 
 ### umask（默认权限掩码）
 
 **一句话定义**：决定新建文件与目录初始权限的掩码值，文件从 666、目录从 777 中减去 umask 得到默认权限。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 计算规则：文件 666 - umask，目录 777 - umask；umask 某一位为奇数时，文件对应位再 +1（因为文件默认不带执行位）。
 - 常见 umask 022 得到文件 644、目录 755；umask 077 得到文件 600、目录 700，适合高安全场景。
@@ -394,19 +471,24 @@ man <命令>                              # 再查权威语法
 - 多用户共享目录要正确设置 umask 与 SGID，否则别人创建的文件自己改不了。
 
 **常见误区**：
+{: .callout-pit}
 
 - 直接用减法算文件权限而忘记奇数位 +1，导致算出 664 却实际是 644。
 - 只在当前 Shell 改了 umask 就以为永久生效，下次登录又回到默认值。
 
 **相关命令**：`umask` `umask 022` `grep umask /etc/profile /etc/bashrc`
+{: .callout-cmd}
 
-**延伸阅读**：用户管理
+**延伸阅读**：[用户管理](/posts/linux-userperm-01/)
+{: .callout-ext}
 
 ### 特殊权限（SUID / SGID / Sticky）
 
 **一句话定义**：在基本 9 位之外附加的三个权限位——SUID 以属主身份执行、SGID 以属组身份执行或继承属组、Sticky 限制共享目录中只能删除自己的文件。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - SUID = 4：执行者临时获得文件属主的权限，典型例子是 `passwd` 命令让普通用户能改 `/etc/shadow`。
 - SGID = 2：对文件是以属组身份执行；对目录是"目录内新建文件自动继承目录的属组"，共享目录必配。
@@ -415,19 +497,24 @@ man <命令>                              # 再查权威语法
 - 为什么脚本设 SUID 无效？内核只对二进制文件兑现 SUID，解释器脚本真正执行的是 bash 这类解释器，解释器自身没有 SUID，权限就落不到脚本上——这是防脚本被塞恶意内容的保守设计。
 
 **常见误区**：
+{: .callout-pit}
 
 - 给脚本设置 SUID 期待提权：Linux 对解释型脚本的 SUID 基本无效，这是安全设计而非 bug。
 - 不做巡检就放任系统里存在陌生 SUID 文件，这是最常见的本地提权入口。
 
 **相关命令**：`chmod 4755 file` `chmod g+s dir` `chmod 1777 /tmp` `find / -perm -4000 -type f`
+{: .callout-cmd}
 
-**延伸阅读**：用户权限与提权
+**延伸阅读**：[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ext}
 
 ### ACL（访问控制列表）
 
 **一句话定义**：在传统三组身份之外，为指定用户或组单独授予权限的扩展机制，解决"9 位权限不够用"的问题。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - `setfacl -m u:用户名:rwx 文件` 为单个用户授权，`-m g:组名:rx` 为组授权，`-m d:...` 设置目录默认继承。
 - 设置了 ACL 后，`ls -l` 权限位末尾会出现 `+` 号，此时必须看 `getfacl` 才能知道真实权限。
@@ -435,19 +522,24 @@ man <命令>                              # 再查权威语法
 - 备份与迁移时要专门处理 ACL，普通 `cp` 会丢失扩展属性，跨文件系统前先确认目标支持 ACL。
 
 **常见误区**：
+{: .callout-pit}
 
 - 看到 `ls -l` 显示正常就以为没有 ACL：必须看权限位后有没有 `+`。
 - 排障时忽略了 ACL：用户抱怨"权限给了还是拒绝"，十有八九是 ACL 或 SELinux 在作怪，而不是基本权限。
 
 **相关命令**：`setfacl -m u:ops:rwx /data` `getfacl /data` `setfacl -b /data` `setfacl -R -m u:ops:rwx /data`
+{: .callout-cmd}
 
-**延伸阅读**：文件属性实战、用户权限与提权
+**延伸阅读**：[文件属性实战](/posts/linux-fileattr-05/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ext}
 
 ### 分区表（MBR / GPT）
 
 **一句话定义**：记录在磁盘开头、描述"磁盘分成几个区、每个区从哪到哪"的元数据，主流格式是 MBR 与 GPT。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - MBR 最大支持 2 TB 磁盘，最多 4 个主分区；想要更多分区要做成 3 主 + 1 扩展，再在扩展分区里建逻辑分区（编号从 sda5 开始）。
 - GPT 支持 2 TB 以上磁盘与 128 个以上分区，自带备份分区表，是现代与新服务器的默认选择。
@@ -455,19 +547,24 @@ man <命令>                              # 再查权威语法
 - 分区后要执行 `partprobe` 让内核重新读取分区表，否则 `lsblk` 看不到新分区。
 
 **常见误区**：
+{: .callout-pit}
 
 - 用 `fdisk` 去分 3 TB 的盘，结果只能用到 2 TB，剩余空间白白浪费。
 - 以为逻辑分区编号从 1 开始：主分区占 1-4，逻辑分区永远从 5 开始。
 
 **相关命令**：`fdisk -l` `parted -l` `fdisk /dev/sdb` `parted /dev/sdb mklabel gpt` `partprobe /dev/sdb`
+{: .callout-cmd}
 
-**延伸阅读**：磁盘管理基础、磁盘管理进阶
+**延伸阅读**：[磁盘管理基础](/posts/linux-disk-01/)、[磁盘管理进阶](/posts/linux-disk-02/)
+{: .callout-ext}
 
 ### 文件系统类型（ext4 / xfs）
 
 **一句话定义**：操作系统用来组织 inode、block 与目录结构的规则集合，格式化就是在磁盘上创建这种规则。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - ext4 通用稳健，支持缩容，是 CentOS 6 时代的主力；xfs 适合大文件与高并发，是 RHEL 7+ 的默认文件系统。
 - xfs 只能扩容不能缩容，ext4 缩容前必须先离线缩文件系统再缩逻辑卷。
@@ -477,19 +574,24 @@ man <命令>                              # 再查权威语法
 - 挂载参数（noatime、nodiratime、data=writeback 等）对性能影响显著，需按业务场景取舍。
 
 **常见误区**：
+{: .callout-pit}
 
 - 混用工具：对 xfs 卷执行 `resize2fs`，或对 ext4 卷执行 `xfs_growfs`，都会直接报错。
 - 认为"格式化 = 删除数据"：格式化是重建元数据，虽然数据大多不可访问，但严格说这是两件事。
 
 **相关命令**：`mkfs.xfs /dev/sdb1` `mkfs.ext4 /dev/sdb1` `blkid` `xfs_info /mount` `tune2fs -l /dev/sdb1`
+{: .callout-cmd}
 
-**延伸阅读**：磁盘管理基础、磁盘管理进阶
+**延伸阅读**：[磁盘管理基础](/posts/linux-disk-01/)、[磁盘管理进阶](/posts/linux-disk-02/)
+{: .callout-ext}
 
 ### LVM（逻辑卷管理）
 
 **一句话定义**：在分区与文件系统之间插入的一层抽象，用 PV → VG → LV 四层结构把多块盘整合成弹性存储池。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 四层结构：物理卷 PV（把分区纳入管理）→ 卷组 VG（存储池）→ 逻辑卷 LV（真正挂载使用），PE 是最小分配单元。
 - PE 的角色类似文件系统里的 block，是 VG 中最细的分配颗粒（默认 4 MB）：PE 越小空间利用率越高，元数据开销也越大。
@@ -499,19 +601,24 @@ man <命令>                              # 再查权威语法
 - LV 的设备路径有三种写法：`/dev/vg/lv`、`/dev/mapper/vg-lv`，fstab 中推荐用 UUID。
 
 **常见误区**：
+{: .callout-pit}
 
 - 扩完 LV 就以为容量生效：文件系统还停留在旧大小，必须再跑一次 growfs。
 - 长期保留快照：快照会随原卷写入不断消耗空间，满了即失效，用完必须立刻删除。
 
 **相关命令**：`pvcreate` `vgcreate` `lvcreate` `lvextend -r` `lvcreate -s` `vgs` `lvs`
+{: .callout-cmd}
 
-**延伸阅读**：磁盘管理进阶、磁盘管理基础
+**延伸阅读**：[磁盘管理进阶](/posts/linux-disk-02/)、[磁盘管理基础](/posts/linux-disk-01/)
+{: .callout-ext}
 
 ### 挂载与 fstab（Mount / fstab）
 
 **一句话定义**：把块设备关联到目录树某个目录的过程；`/etc/fstab` 用于定义开机自动挂载的持久配置。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 挂载三步走：有设备（分区/逻辑卷）→ 有文件系统（格式化）→ 有挂载点（空目录），三者齐备才能挂载。
 - 挂载点为什么必须是目录：挂载的本质是把设备的根「接」到目录树上，目录树才是统一视图，设备从哪接进来，用户就从哪访问。
@@ -521,19 +628,24 @@ man <命令>                              # 再查权威语法
 - 查看当前挂载用 `findmnt` 与 `/proc/mounts`，比 `df` 更接近内核真实状态。
 
 **常见误区**：
+{: .callout-pit}
 
 - fstab 写错直接导致开机进不了系统（进入紧急模式），改完务必用 `mount -a` 验证再重启。
 - 把设备名 `/dev/sdb1` 写进 fstab：磁盘顺序可能变化，UUID 才是稳定标识。
 
 **相关命令**：`mount -a` `mount UUID=xxx /data` `umount /data` `findmnt` `blkid`
+{: .callout-cmd}
 
-**延伸阅读**：目录结构与挂载、磁盘管理基础
+**延伸阅读**：[目录结构与挂载](/posts/linux-system-03/)、[磁盘管理基础](/posts/linux-disk-01/)
+{: .callout-ext}
 
 ### swap（交换空间）
 
 **一句话定义**：内存不足时把不活跃页面临时换出到磁盘的空间，是内存的安全垫而非替代品。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 规划经验值：内存小于 8 GB 时取 1.5 倍，大于等于 8 GB 时取 8 GB；内存极大的场景可以只留少量兜底。
 - 正规做法是独立分区（类型 82）并写入 fstab；临时扩容用文件方式：`dd` 造文件 → `mkswap` → `swapon`。
@@ -541,19 +653,24 @@ man <命令>                              # 再查权威语法
 - 判断内存压力看 `si/so`（换入换出）是否持续非零，一旦持续说明真实内存已经不够。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为加了 swap 就不会 OOM：swap 只是延缓，内存真正耗尽时 OOM Killer 仍会杀进程。
 - 把 swap 开在性能差的盘上又不限制，结果 IO 打满拖垮整个系统。
 
 **相关命令**：`swapon -s` `free -h` `mkswap /dev/sdb2` `swapoff -a` `sysctl vm.swappiness`
+{: .callout-cmd}
 
-**延伸阅读**：系统安装部署、磁盘管理进阶
+**延伸阅读**：[系统安装部署](/posts/linux-basics-03/)、[磁盘管理进阶](/posts/linux-disk-02/)
+{: .callout-ext}
 
 ### 磁盘配额（quota）
 
 **一句话定义**：按用户或组限制磁盘使用量与文件数量的机制，用软限制（可越界有宽限期）与硬限制（绝对上限）两级控制。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - ext4 用 `quotacheck` → `quotaon` → `edquota`/`setquota` → `repquota` 的标准流程；xfs 统一用 `xfs_quota`。
 - 软限制越过后会进入宽限期（grace period），超时未降回则禁止再写。
@@ -562,13 +679,16 @@ man <命令>                              # 再查权威语法
 - 典型应用是多用户主机、FTP 空间、容器数据目录，避免单个用户吃满整块盘。
 
 **常见误区**：
+{: .callout-pit}
 
 - 配完 quota 没加挂载参数就以为生效：必须重新挂载并生成配额文件。
 - 以为 quota 能限制目录大小：它按属主/属组计量，不是按目录，目录级限制要靠独立文件系统或 LVM。
 
 **相关命令**：`xfs_quota -x -c 'report' /data` `setquota -u ops 10G 12G 0 0 /data` `repquota -a`
+{: .callout-cmd}
 
-**延伸阅读**：磁盘管理进阶
+**延伸阅读**：[磁盘管理进阶](/posts/linux-disk-02/)
+{: .callout-ext}
 
 ---
 
@@ -577,8 +697,10 @@ man <命令>                              # 再查权威语法
 ### 进程与线程（Process / Thread）
 
 **一句话定义**：进程是程序的一次执行实例，是系统分配资源的基本单位；线程是进程内的执行流，是 CPU 调度的基本单位。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 每个进程有独立 PID、独立地址空间、打开的文件描述符、环境变量与权限身份。
 - 同一进程的线程共享地址空间与文件描述符，切换成本低，但一个线程崩溃会拖垮整个进程。
@@ -589,19 +711,24 @@ man <命令>                              # 再查权威语法
 - 进程启动时继承的环境决定了它能看到什么，这也是"手工能跑、定时不跑"的根源。
 
 **常见误区**：
+{: .callout-pit}
 
 - 看到 D 状态的进程就去 `kill -9`：不可中断睡眠的进程杀不掉，必须找出背后的磁盘或网络故障。
 - 把进程当成程序：程序是磁盘上的静态文件，进程是运行时的动态实体，一个程序可对应多个进程。
 
 **相关命令**：`ps -ef` `pstree -p` `top` `pidstat 1` `kill` `pkill -f`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、常用文件操作命令
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[常用文件操作命令](/posts/linux-system-02/)
+{: .callout-ext}
 
 ### 前台与后台（Job Control）
 
 **一句话定义**：前台任务占用当前终端并接收键盘输入，后台任务在终端之外继续运行，用作业控制命令在两者之间切换。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 命令末尾加 `&` 直接后台运行；运行中按 `Ctrl + Z` 挂起，再用 `bg` 转后台、`fg` 拉回前台。
 - `jobs` 查看当前 Shell 的作业列表，`nohup cmd &` 让任务在退出终端后继续存活，输出默认写入 nohup.out。
@@ -610,19 +737,24 @@ man <命令>                              # 再查权威语法
 - 后台任务的输出必须重定向到文件或 `/dev/null`，否则会干扰当前终端甚至被阻塞。
 
 **常见误区**：
+{: .callout-pit}
 
 - 以为加了 `&` 就万无一失：SSH 断开照样会终止任务，长时间任务必须配合 nohup 或终端复用器。
 - 把交互式命令（如 top、vim）丢到后台，任务会立刻被挂起停住。
 
 **相关命令**：`cmd &` `jobs` `fg %1` `bg %1` `nohup cmd >out.log 2>&1 &` `disown`
+{: .callout-cmd}
 
-**延伸阅读**：常用文件操作命令、基础知识回顾（上）
+**延伸阅读**：[常用文件操作命令](/posts/linux-system-02/)、[基础知识回顾（上）](/posts/linux-fileattr-01/)
+{: .callout-ext}
 
 ### 守护进程（Daemon）
 
 **一句话定义**：脱离终端、在系统后台长期运行并提供服务的进程，通常随系统启动、随系统关闭，名字多以 d 结尾。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 守护进程的通用特征：脱离控制终端、PID 1 或 systemd 的子进程、无交互输入输出、日志写文件或 journal。
 - 常见例子：sshd、crond、rsyncd、nginx、mysqld、zabbix-agent。
@@ -630,19 +762,24 @@ man <命令>                              # 再查权威语法
 - 判断服务是否真的在工作，要看进程 + 端口 + 业务响应三层，只看进程存在会漏掉"僵死但还活着"的情况。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为进程在就等于服务正常：进程可能已经僵死、端口没监听、或依赖的后端已断。
 - 直接 kill 掉守护进程：应该走 systemctl，否则 systemd 的重启策略与依赖关系会被绕过。
 
 **相关命令**：`systemctl status crond` `ps -ef | grep sshd` `ss -lntup` `systemctl restart nginx`
+{: .callout-cmd}
 
-**延伸阅读**：Linux 系统概念、重要系统文件与运行级别
+**延伸阅读**：[Linux 系统概念](/posts/linux-basics-02/)、[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ext}
 
 ### systemd 与服务管理（systemd / systemctl）
 
 **一句话定义**：CentOS 7 之后的初始化系统与服务管理器，负责并行拉起服务、管理依赖、统一日志与开机自启。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 一个服务对应一个 unit 文件，常见类型有 service、target、socket、timer、mount，位于 `/usr/lib/systemd/system/`。
 - 日常四件套：`systemctl start|stop|restart|reload 服务`，开机自启用 `enable`，查状态用 `status`。
@@ -651,19 +788,24 @@ man <命令>                              # 再查权威语法
 - 自定义服务要写 unit 文件，修改后必须 `systemctl daemon-reload` 才能生效。
 
 **常见误区**：
+{: .callout-pit}
 
 - 改了 unit 文件不执行 daemon-reload，改动永远不生效。
 - 用 `systemctl stop` 代替 `disable`：前者只停当前，重启后服务照样起来。
 
 **相关命令**：`systemctl status nginx` `systemctl enable --now nginx` `systemctl daemon-reload` `journalctl -u nginx`
+{: .callout-cmd}
 
-**延伸阅读**：重要系统文件与运行级别、系统优化实践（下）
+**延伸阅读**：[重要系统文件与运行级别](/posts/linux-system-04/)、[系统优化实践（下）](/posts/linux-system-07/)
+{: .callout-ext}
 
 ### 运行级别与 target（Runlevel / Target）
 
 **一句话定义**：描述系统"启动到什么状态"的一组目标，CentOS 6 用 0-6 数字运行级别，CentOS 7 用 target 表达同一件事。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 常见对应关系：0 = 关机（poweroff.target）、1 = 单用户（rescue.target）、3 = 多用户命令行（multi-user.target）、5 = 图形（graphical.target）、6 = 重启。
 - 为什么叫「运行级别」？早期 Unix 用一个数字概括系统启动后的状态，数字即状态；systemd 之后换成有名字的 target，本质没变。
@@ -673,20 +815,25 @@ man <命令>                              # 再查权威语法
 - 忘记密码等救援场景进入单用户/救援模式，chroot 后改密码，SELinux 环境记得创建 `/.autorelabel`。
 
 **常见误区**：
+{: .callout-pit}
 
 - 把运行级别理解成"系统版本"：它只描述启动状态，与版本无关。
 - 临时切换忘了切回来：用 `isolate` 是临时的，重启后回到默认 target。
 
 **相关命令**：`systemctl get-default` `systemctl set-default multi-user.target` `runlevel` `systemctl isolate rescue.target`
+{: .callout-cmd}
 
-**延伸阅读**：重要系统文件与运行级别、用户管理
+**延伸阅读**：[重要系统文件与运行级别](/posts/linux-system-04/)、[用户管理](/posts/linux-userperm-01/)
+{: .callout-ext}
 
 ### 启动流程（Boot Process）
 {: .sec-expl}
 
 **一句话定义**：从按下电源到出现登录提示符的全过程，CentOS 6 走 init 串行启动，CentOS 7 走 systemd 并行启动。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 通用链路：固件自检（BIOS/UEFI）→ 引导加载器（GRUB2）→ 加载内核与 initramfs → 启动 1 号进程 → 挂载根文件系统 → 拉起服务 → 登录。
 - GRUB2 负责选择内核与传递启动参数，网卡改名（`net.ifnames=0`）等需求都在这一层改。
@@ -695,20 +842,25 @@ man <命令>                              # 再查权威语法
 - 启动故障排查优先级：引导器 → 内核与 initramfs → 文件系统与 fstab → 服务启动失败。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 fstab 写错只是"那块盘挂不上"：实际上可能让系统直接进入紧急模式，连登录都不给。
 - 把启动慢一律归咎于硬件：多数情况是某个服务超时等待（如网络、DNS）拖慢了整体。
 
 **相关命令**：`systemd-analyze` `systemd-analyze blame` `journalctl -b` `grub2-mkconfig -o /boot/grub2/grub.cfg`
+{: .callout-cmd}
 
-**延伸阅读**：用户管理、重要系统文件与运行级别
+**延伸阅读**：[用户管理](/posts/linux-userperm-01/)、[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ext}
 
 ### 环境变量（Environment Variable）
 {: .sec-expl}
 
 **一句话定义**：进程运行时携带的键值对配置，决定命令搜索路径、语言字符集、时区等行为，且会被子进程继承。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - PATH 决定去哪些目录找命令，修改必须用追加写法 `PATH=$PATH:新目录`，直接覆盖会导致所有命令失效。
 - 加载顺序：登录 Shell 走 `/etc/profile` → `/etc/profile.d/*` → `~/.bash_profile` → `~/.bashrc`；非登录交互 Shell 走 `/etc/bashrc` → `~/.bashrc`；脚本两者都不加载。
@@ -717,19 +869,24 @@ man <命令>                              # 再查权威语法
 - 脚本里用不到交互式环境变量，定时任务与脚本必须显式设置 PATH 或用绝对路径。
 
 **常见误区**：
+{: .callout-pit}
 
 - 在当前 Shell export 了变量就以为永久生效：重开会话就没了，必须写入配置文件。
 - 以为脚本会继承 `.bashrc` 里的变量：非交互 Shell 不加载它，这是脚本与手工行为不一致的头号原因。
 
 **相关命令**：`echo $PATH` `export LANG=en_US.UTF-8` `env` `alias` `source /etc/profile`
+{: .callout-cmd}
 
-**延伸阅读**：重要系统文件与运行级别、系统优化实践（下）
+**延伸阅读**：[重要系统文件与运行级别](/posts/linux-system-04/)、[系统优化实践（下）](/posts/linux-system-07/)
+{: .callout-ext}
 
 ### 资源限制与文件描述符（ulimit / File Descriptor）
 
 **一句话定义**：内核对每个进程可使用的资源（文件数、进程数、内存等）设定的上限，文件描述符是最常被打满的一项。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 文件描述符（fd）是进程访问文件与网络连接的句柄，每个 TCP 连接都消耗一个 fd，高并发服务必须调大。
 - 每个 TCP 连接为什么占一个 fd？socket 在 Linux 里就是一类文件，读写它走同一套文件描述符机制，连接数上限因此直接被 fd 限制卡住。
@@ -739,19 +896,24 @@ man <命令>                              # 再查权威语法
 - "too many open files" 报错是典型信号，常见原因是连接泄漏或限制值太小。
 
 **常见误区**：
+{: .callout-pit}
 
 - 只改了 limits.conf 就以为服务生效：systemd 拉起的服务需要单独设置 LimitNOFILE。
 - 一味调大限制掩盖泄漏：连接没正确关闭时，调多大都会被慢慢吃光。
 
 **相关命令**：`ulimit -a` `ulimit -n 65535` `lsof -p PID | wc -l` `cat /proc/sys/fs/file-max` `systemctl show nginx | grep LimitNOFILE`
+{: .callout-cmd}
 
-**延伸阅读**：综合架构开篇与规划、Nginx 网站服务实战
+**延伸阅读**：[综合架构开篇与规划](/posts/linux-arch-01/)、[Nginx 网站服务实战](/posts/linux-arch-15/)
+{: .callout-ext}
 
 ### 日志（Log）
 
 **一句话定义**：系统与应用程序记录运行状态的时序数据，是故障定位、审计与容量分析的第一现场。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 常见位置：`/var/log/messages`（系统综合）、`/var/log/secure`（登录认证）、`/var/log/cron`（定时任务）、应用自有日志目录。
 - CentOS 7 引入 journald，用 `journalctl -u 服务 -f` 实时跟踪，二进制日志与文本日志并存。
@@ -761,19 +923,24 @@ man <命令>                              # 再查权威语法
 - 日志级别（debug/info/warn/error）要按环境区分，生产环境打 debug 会严重影响性能。
 
 **常见误区**：
+{: .callout-pit}
 
 - 只删不切：直接 `rm` 掉正在写的日志文件，空间往往不释放，还可能让进程继续写入已删除的 inode。
 - 认为日志越多越好：无节制的日志会吃掉 IO 与磁盘，反而拖慢业务。
 
 **相关命令**：`journalctl -u nginx -f` `tail -f /var/log/messages` `grep ERROR app.log` `logrotate -f /etc/logrotate.conf`
+{: .callout-cmd}
 
-**延伸阅读**：Nginx 网站服务实战、定时任务与 crond
+**延伸阅读**：[Nginx 网站服务实战](/posts/linux-arch-15/)、[定时任务与 crond](/posts/linux-cron-01/)
+{: .callout-ext}
 
 ### 定时任务（cron / crond）
 
 **一句话定义**：按预设时间自动执行命令或脚本的机制，由 crond 守护进程提供，五段时间字段决定执行时机。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 五段顺序为分、时、日、月、周；`*` 表示每、`*/n` 表示每隔、`n-m` 表示范围、`n,m` 表示枚举。
 - 三条书写原则：间隔写法 `/` 前尽量用 `*`、从左到右不要跳步、日期与星期不要同时出现。
@@ -782,19 +949,24 @@ man <命令>                              # 再查权威语法
 - 系统级入口有 `/etc/crontab`、`/etc/cron.d/` 与 run-parts 触发的 hourly/daily/weekly/monthly；一次性任务用 `at`，关机补跑靠 anacron。
 
 **常见误区**：
+{: .callout-pit}
 
 - 在 crontab 里直接写 `%`：`%` 是特殊符号，必须转义为 `\%` 或写进脚本。
 - 多命令需求硬塞一行：可读性差且难排错，应写成脚本再调度。
 
 **相关命令**：`crontab -e` `crontab -l` `cat /var/log/cron` `systemctl status crond` `at now + 1 hour`
+{: .callout-cmd}
 
-**延伸阅读**：定时任务与 crond、备份项目实战
+**延伸阅读**：[定时任务与 crond](/posts/linux-cron-01/)、[备份项目实战](/posts/linux-arch-03/)
+{: .callout-ext}
 
 ### 用户与组（User / Group）
 
 **一句话定义**：Linux 用 UID 与 GID 标识身份，用户分管理员、虚拟用户与普通用户三类，组用于批量授权。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 管理员 root 的 UID 为 0；虚拟用户 UID 1-999，不能登录，用于运行服务；普通用户 UID 1000+。
 - 为什么要造虚拟用户？服务进程也需要一个身份来落权限，给它配一个不能登录的账号，既限制了权限，又堵死了「拿这个账号进门」的路。
@@ -804,19 +976,24 @@ man <命令>                              # 再查权威语法
 - 登录审计三件套：`last`（历史成功）、`lastb`（历史失败）、`w`（当前在线）。
 
 **常见误区**：
+{: .callout-pit}
 
 - 用 `usermod -G` 加组导致原有附属组全部丢失，正确写法永远是 `-aG`。
 - 让服务以 root 运行：应该用专用虚拟用户，遵循最小权限。
 
 **相关命令**：`useradd` `usermod -aG wheel ops` `userdel -r` `passwd` `chage -l ops` `id`
+{: .callout-cmd}
 
-**延伸阅读**：用户管理、用户权限与提权
+**延伸阅读**：[用户管理](/posts/linux-userperm-01/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ext}
 
 ### sudo 提权（sudo / su）
 
 **一句话定义**：让普通用户以其他身份（通常是 root）执行指定命令的授权机制，相比直接切换用户更安全、更可审计。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - `su` 只切换部分环境变量，`su -` 完整加载目标用户环境；日常更推荐 `sudo -i`（用自己的密码 + 全程留痕）。
 
@@ -832,13 +1009,16 @@ man <命令>                              # 再查权威语法
 - 常见提权风险点：陌生 SUID 文件、sudo 授权了编辑器或 shell、计划任务与服务配置被低权可写。
 
 **常见误区**：
+{: .callout-pit}
 
 - 图省事授权 `ALL=(ALL) NOPASSWD: ALL`：等同于把 root 交出去，属于重大安全隐患。
 - 认为 `su` 之后环境变量会完全切换：不加 `-` 时 PATH 等仍是原用户的。
 
 **相关命令**：`visudo` `sudo -l` `sudo -i` `sudo command` `cat /var/log/secure`
+{: .callout-cmd}
 
-**延伸阅读**：用户权限与提权、用户管理
+**延伸阅读**：[用户权限与提权](/posts/linux-userperm-02/)、[用户管理](/posts/linux-userperm-01/)
+{: .callout-ext}
 
 ---
 
@@ -847,8 +1027,10 @@ man <命令>                              # 再查权威语法
 ### OSI 七层模型（OSI Model）
 
 **一句话定义**：国际化标准组织定义的网络通信分层参考模型，从上到下为应用层、表示层、会话层、传输层、网络层、数据链路层、物理层。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 分层的价值是"各层只关心自己的事"：改应用层不影响物理层，换介质不影响上层协议。
 - 发送方自上而下逐层封装（加头部），接收方自下而上逐层解封装（去头部）。
@@ -856,19 +1038,24 @@ man <命令>                              # 再查权威语法
 - 排障思路天然对应分层：物理层看线、链路层看 MAC 与 VLAN、网络层看 IP 与路由、传输层看端口与连接、应用层看业务报文。
 
 **常见误区**：
+{: .callout-pit}
 
 - 死记七层名称却说不清每层做什么：真正有用的是"哪一层解决什么问题"。
 - 认为实际协议严格按 OSI 七层实现：OSI 是参考模型，真实协议（TCP/IP）层数更少。
 
 **相关命令**：`tcpdump -i eth0 -nn` `ip link` `ss -lntup` `ping`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)
+{: .callout-ext}
 
 ### TCP/IP 模型（TCP/IP Model）
 
 **一句话定义**：实际互联网使用的四层模型（应用层、传输层、网络层、网络接口层），是 OSI 七层的工程化简化。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 应用层对应 OSI 上三层，常见协议有 HTTP、HTTPS、DNS、SSH、FTP、SMTP。
 - 分层的价值落到排障上就是「按层定位」：线断了查物理层，IP 不通查网络层，端口不通查传输层，业务 500 查应用层——一层排除一层。
@@ -877,19 +1064,24 @@ man <命令>                              # 再查权威语法
 - 数据封装单位：应用层报文 → 传输层段（segment）→ 网络层包（packet）→ 链路层帧（frame）→ 比特流。
 
 **常见误区**：
+{: .callout-pit}
 
 - 把 TCP/IP 理解成"只有 TCP 和 IP"：它是一个完整协议族，包含几十个协议。
 - 认为传输层能保证跨网段的可靠送达：可靠是端到端的，中间链路的丢包仍会影响体验。
 
 **相关命令**：`ss -tan` `ip -s link` `netstat -rn`（旧） `ip route`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、运维网络基础（下）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### IP 地址与分类（IP Address）
 
 **一句话定义**：网络层用于标识主机的逻辑地址，IPv4 分 A-E 五类，按用途又分公网地址与私网地址。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - A 类 1-126、B 类 128-191、C 类 192-223，默认掩码分别为 /8、/16、/24；D 类用于组播，E 类保留。
 - 私网三段：10.0.0.0/8、172.16.0.0-172.31.0.0、192.168.0.0/16，配合 NAT 解决 IPv4 地址枯竭。
@@ -899,19 +1091,24 @@ man <命令>                              # 再查权威语法
 - 配置 IP 要同时关注地址、掩码、网关与 DNS，缺一项就是"能 ping 通内网但上不了网"。
 
 **常见误区**：
+{: .callout-pit}
 
 - 把掩码配错导致"同网段却不通"：掩码决定哪些地址算同一网段，比 IP 本身更容易出错。
 - 以为私网地址可以上网：出公网必须经过 NAT 或代理。
 
 **相关命令**：`ip a` `ip addr add 10.0.0.7/24 dev eth0` `nmcli device show` `ping -c 3 10.0.0.1`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、运维网络基础（下）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### 子网划分（Subnetting / CIDR）
 
 **一句话定义**：从主机位借位充当网络位，把一个大网段切成多个小网段的技术，用于减少地址浪费与广播域规模。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 解题三步走：定位数（需要多少子网/主机）→ 定掩码（借几位）→ 列结果（块大小、网络号、可用范围、广播地址）。
 - 关键公式：块大小 = 256 - 掩码对应字节值，可用主机数 = 2^主机位数 - 2，再减去网关占用的一个。
@@ -920,19 +1117,24 @@ man <命令>                              # 再查权威语法
 - 划分子网能缓解广播风暴、缩小故障域、减轻路由表压力，但过度划分会浪费地址并增加管理成本。
 
 **常见误区**：
+{: .callout-pit}
 
 - 忘记减 2：算出来的主机数含网络地址与广播地址，实际可用要减掉。
 - 借位时把网关地址也算进可用地址，导致最后一台主机拿不到网关。
 
 **相关命令**：`ipcalc 10.0.0.0/24` `ip route` `ip a`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（下）、运维网络基础（上）
+**延伸阅读**：[运维网络基础（下）](/posts/linux-network-02/)、[运维网络基础（上）](/posts/linux-network-01/)
+{: .callout-ext}
 
 ### MAC 地址与 ARP（MAC / ARP）
 
 **一句话定义**：MAC 是网卡的物理地址（链路层标识），ARP 是"已知 IP 求 MAC"的解析协议，核心价值是减少广播。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 交换机靠 MAC 地址表在局域网内转发，靠自学习与泛洪建立表项；表项缺失时产生泛洪，规模过大会形成广播风暴。
 - MAC 地址表为什么会「学」：收到一个帧时，交换机把源 MAC 与进来的端口记下来，下次就直接定向转发；没记过的目标 MAC 才向所有端口泛洪。
@@ -942,19 +1144,24 @@ man <命令>                              # 再查权威语法
 - IP 会变（换网络、换租约），MAC 一般不随网络位置改变，二者分工为"逻辑寻址 + 物理寻址"。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 ARP 跨网段工作：ARP 只在二层广播域内有效，跨网段解析的是网关的 MAC。
 - 遇到 ARP 欺骗只想到抓包：正确的应对还包括绑定静态条目与交换机端口安全策略。
 
 **相关命令**：`ip neigh` `arp -n`（旧） `ip link show` `arping -I eth0 10.0.0.1`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（下）、运维网络基础（上）
+**延伸阅读**：[运维网络基础（下）](/posts/linux-network-02/)、[运维网络基础（上）](/posts/linux-network-01/)
+{: .callout-ext}
 
 ### 路由与网关（Route / Gateway）
 
 **一句话定义**：路由表告诉主机"去某个网段该从哪个接口发给谁"，网关就是去往其他网络的必经出口。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 路由信息来源有三类：直连网段自动生成、手工静态配置、路由协议动态生成（含收敛过程）。
 - 不同来源的路由按管理距离（优先级）取舍，同一目的优先选掩码最长的最精确匹配。
@@ -963,19 +1170,24 @@ man <命令>                              # 再查权威语法
 - 三层网络分层：核心层（高速转发与冗余）、汇聚层（策略与三层交换）、接入层（终端接入）。
 
 **常见误区**：
+{: .callout-pit}
 
 - 只配 IP 不配网关，结果"同网段通、跨网段不通"。
 - 多网卡机器配了多条默认路由，导致回包走错接口、连接时好时坏。
 
 **相关命令**：`ip route` `ip route add 172.16.1.0/24 via 172.16.1.1` `ip route get 8.8.8.8` `traceroute`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、运维网络基础（下）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### DNS（域名解析系统）
 
 **一句话定义**：把人类可读的域名解析为 IP 地址的分布式服务，客户端发起递归查询、本地 DNS 服务器完成迭代查询。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 解析流程：本机 hosts → 本地 DNS 缓存 → 本地 DNS 服务器（递归）→ 根域 → 顶级域 → 权威域（迭代）。
 - 递归与迭代的白话区别：递归是「你替我查到底」，迭代是「你告诉我下一步该找谁」。客户端只出一次嘴，本地 DNS 替它跑腿挨家问。
@@ -985,20 +1197,25 @@ man <命令>                              # 再查权威语法
 - 排障顺序：先 `ping 域名` 看能否解析，再 `dig` 逐级跟踪，最后确认 DNS 服务器本身可达。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为能 ping 通 IP 就等于 DNS 正常：DNS 是独立故障域，必须单独验证。
 - 直接改 `/etc/resolv.conf` 然后发现重启网络后失效，正确做法写在网卡配置里。
 
 **相关命令**：`dig www.example.com` `nslookup www.example.com` `host -a example.com` `cat /etc/resolv.conf`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、运维网络基础（下）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### DHCP（动态主机配置协议）
 {: .sec-expl}
 
 **一句话定义**：自动下发 IP、掩码、网关、DNS 等网络参数的协议，客户端通过 DORA 四步完成地址申请。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - DORA 四步：Discover（客户端广播找服务器）→ Offer（服务器回应提供）→ Request（客户端请求）→ Ack（服务器确认）。
 - 服务端用 67 端口、客户端用 68 端口，基于 UDP——此时客户端还没有 IP，没有条件先建立 TCP 连接。
@@ -1006,19 +1223,24 @@ man <命令>                              # 再查权威语法
 - 服务器环境一律用静态 IP，DHCP 只用于办公网与终端接入，避免地址漂移导致服务不可达。
 
 **常见误区**：
+{: .callout-pit}
 
 - 在服务器网段开了 rogue DHCP，导致服务器拿到错误地址与网关，整网中断。
 - 认为 DHCP 一定会分配同一个地址：没有地址绑定（MAC 绑定）时，租约到期后可能换地址。
 
 **相关命令**：`nmcli connection show` `dhclient -r eth0` `cat /var/lib/dhclient/dhclient.leases`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)
+{: .callout-ext}
 
 ### TCP 与 UDP（传输层协议）
 
 **一句话定义**：传输层两大协议，TCP 面向连接、可靠但开销大；UDP 无连接、高效但不保证送达与顺序。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - TCP 提供确认、重传、排序、流量控制与拥塞控制，适合要求不丢不错的业务（HTTP、数据库、SSH）。
 - TCP 头为什么比 UDP 大得多：要兑现确认与重传，就得带上序列号、确认号、窗口这一整套字段，开销全花在「可靠」两个字上。
@@ -1027,19 +1249,24 @@ man <命令>                              # 再查权威语法
 - 选择依据是业务对可靠性与延迟的取舍，不是"哪个更高级"。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为 UDP 一定比 TCP 快很多：在可靠的网络里差距很小，换来的是要自己实现可靠性逻辑。
 - 用 TCP 承载所有业务：短连接频繁建立握手会显著增加延迟与资源消耗。
 
 **相关命令**：`ss -tan` `ss -uan` `tcpdump -nn -i eth0 'tcp or udp'`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、运维网络基础（下）
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### 三次握手与四次挥手（Handshake / Teardown）
 
 **一句话定义**：TCP 建立连接需要三次交互（syn、syn+ack、ack），关闭连接需要四次交互，因为双方要分别关闭自己的发送方向。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 三次握手交换初始序列号（seq X、Y）与确认号（X+1、Y+1），同时协商窗口与选项。
 - 为什么两次握手不够？两次握手下服务端无法确认「客户端能收到自己发的包」，历史残留的失效连接请求迟到后也会直接建连、白白占资源——第三次握手就是让客户端再确认一次。
@@ -1048,19 +1275,24 @@ man <命令>                              # 再查权威语法
 - 短连接业务会不断重复握手与挥手，长连接与连接池是优化的主要方向。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为三次握手是"三次发包确认身份"：本质是双方互相确认初始序列号，为可靠传输打基础。
 - 以为连接关闭只有一方发起：TCP 是全双工，两个方向都要单独关闭，因此需要四次。
 
 **相关命令**：`ss -tan state established` `tcpdump -nn 'tcp[tcpflags] & tcp-syn != 0'` `curl -v http://host`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（下）、HTTP 协议原理
+**延伸阅读**：[运维网络基础（下）](/posts/linux-network-02/)、[HTTP 协议原理](/posts/linux-arch-12/)
+{: .callout-ext}
 
 ### TCP 状态集（TCP States）
 
 **一句话定义**：TCP 连接在生命周期中经历的十一种状态，线上重点关注 TIME_WAIT 堆积与 CLOSE_WAIT 泄漏。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 握手侧：closed → listen / syn_sent → syn_rcvd → established；挥手侧：fin_wait1/2、close_wait、last_ack、time_wait。
 - TIME_WAIT 出现在主动关闭方，持续 2 倍 MSL，作用是防止旧报文污染新连接；短连接服务上容易堆积。
@@ -1077,19 +1309,24 @@ man <命令>                              # 再查权威语法
 | 应对方向 | 长连接化、调大本地端口范围 | 修程序，调内核参数没用 |
 
 **常见误区**：
+{: .callout-pit}
 
 - 一看到 TIME_WAIT 多就去开 `tcp_tw_recycle`：该参数在 NAT 环境下会引发连接失败，新内核已移除，正确做法是长连接或调大端口范围。
 - 认为 CLOSE_WAIT 是内核参数问题：它几乎总是应用程序未关闭 socket 导致的。
 
 **相关命令**：`ss -ant | awk '{print $1}' | sort | uniq -c` `netstat -n | awk '/^tcp/{print $6}' | sort | uniq -c` `ss -s`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（下）
+**延伸阅读**：[运维网络基础（下）](/posts/linux-network-02/)
+{: .callout-ext}
 
 ### 常见协议与端口（Protocol / Port）
 
 **一句话定义**：端口是传输层区分不同服务的 16 位编号，与协议一起构成"服务地址"，熟记常见端口是排障基本功。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 | 端口 | 协议 | 用途 |
 | --- | --- | --- |
@@ -1109,19 +1346,24 @@ man <命令>                              # 再查权威语法
 - 判断服务是否监听，用 `ss -lntup` 看进程与端口的对应关系，比 ps 更直接。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为进程在就等于端口在监听：配置错误或启动失败会导致进程存活但端口没起。
 - 只放行端口不管来源 IP：安全策略应同时限制端口与来源。
 
 **相关命令**：`ss -lntup` `lsof -i :80` `nc -zv host 22` `curl -I http://host`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、附录 · Linux 运维命令速查表
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[附录](/posts/linux-appendix-01/)·[Linux 运维命令速查表](/posts/linux-homework-04/#命令速查表)
+{: .callout-ext}
 
 ### 网卡与 bonding（NIC Bonding）
 
 **一句话定义**：把多块物理网卡绑定成一个逻辑网卡，实现主备冗余或带宽聚合，生产常用 mode 1（主备）与 mode 4（动态聚合）。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 七种模式中最常用：mode 0（轮询，需交换机支持）、mode 1（主备，容错优先）、mode 4（LACP 802.3ad，带宽与冗余兼顾）。
 - 主备模式只有一块网卡工作，切换时会有短暂丢包；聚合模式需要交换机端配合配置。
@@ -1130,19 +1372,24 @@ man <命令>                              # 再查权威语法
 - 旧命令 `ifconfig`、`route`、`arp`、`netstat` 已废弃，统一用 `ip`、`ss`、`ip neigh`。
 
 **常见误区**：
+{: .callout-pit}
 
 - 以为 bonding 一定会叠加带宽：主备模式只提供冗余，只有聚合模式才叠加。
 - 克隆虚拟机不删 UUID 与 MAC 配置，导致两块机器抢同一个网络身份。
 
 **相关命令**：`ip link` `cat /proc/net/bonding/bond0` `nmcli connection show` `ethtool eth0`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（下）、虚拟软件与远程连接
+**延伸阅读**：[运维网络基础（下）](/posts/linux-network-02/)、[虚拟软件与远程连接](/posts/linux-system-01/)
+{: .callout-ext}
 
 ### Socket（套接字）
 
 **一句话定义**：IP 地址 + 端口 + 协议组成的通信端点，是应用程序与网络协议栈之间的编程接口。
+{: .callout-card}
 
 **要点**：
+{: .callout-key}
 
 - 一个 socket 唯一确定一条通信链路的一端，常说的"五元组"还包括源 IP 与源端口。
 - 服务端流程：socket → bind → listen → accept；客户端流程：socket → connect。
@@ -1150,13 +1397,16 @@ man <命令>                              # 再查权威语法
 - 监听地址决定可达性：只监听 127.0.0.1 的服务外部访问不到，这是"服务起了却连不上"的高频原因。
 
 **常见误区**：
+{: .callout-pit}
 
 - 认为端口就是 socket：端口只是编号，socket 是包含地址、端口、协议与状态的完整对象。
 - 只看 `ss -lnt` 不看监听地址：服务绑在错误地址上，端口照样显示正常监听。
 
 **相关命令**：`ss -lntp` `lsof -i` `nc -l 8080` `cat /proc/net/tcp`
+{: .callout-cmd}
 
-**延伸阅读**：运维网络基础（上）、HTTP 协议原理
+**延伸阅读**：[运维网络基础（上）](/posts/linux-network-01/)、[HTTP 协议原理](/posts/linux-arch-12/)
+{: .callout-ext}
 
 PARTMARKER
 

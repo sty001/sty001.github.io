@@ -35,8 +35,10 @@ slug: "linux-homework-21"
 ## 题 1：批量创建用户 stu01..stu10 并设置随机密码
 
 **考察点**：如何生成随机信息、变量设置（含命令替换）、循环语句（for），以及三者如何串成一个幂等可重复执行的批量建号脚本。这一题与 day17 的 user01..user10 是同型题，只是用户名换成 stu 前缀、密码加长到 10 位。
+{: .callout-exam}
 
 **实现思路**：把大题拆成三步分别验证，再合成完整脚本——①先用三种方法真跑随机串生成，选定 `/dev/urandom` + `tr` 作为主力；②用 `seq -w` 补零生成 stu01..stu10；③循环里每次生成一个随机密码并拼成 `用户名:密码` 格式，本环境用 `[DRYRUN]` 干跑验证逻辑，真机上把干跑行换成 `useradd` + `chpasswd` 即可。
+{: .callout-prac}
 
 ### 知识点 1：随机密码的三种生成方法（已实操）
 {: .sec-prac}
@@ -272,15 +274,19 @@ $ wc -l < /tmp/hw/day21/stu_pass.txt
 > - 脚本重复执行会报「用户已存在」，靠 `id "$user" &>/dev/null && continue` 做幂等保护；
 > - 密码清单含口令，必须 `chmod 600` 且交付后删除，绝不入库、不贴群；
 > - `tr ... < /dev/urandom | head -c 10` 在部分系统上 `head` 提前退出会让 `tr` 收到 SIGPIPE（`tr: write error: Broken pipe`），属正常现象可忽略；用 `/dev/urandom`，别用会阻塞的 `/dev/random`。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)、[day17 批量建用户真跑](/posts/linux-homework-17/)
+{: .callout-ref}
 
 ## 题 2：/etc/passwd 与 /etc/shadow 每列含义对照
 {: .sec-expl}
 
 **考察点**：账号体系两大核心文件的结构。`/etc/passwd` 全局可读（任何进程都要靠它把 uid 翻译成用户名），所以密码只留占位符 `x`，真实密文放在仅 root 可读的 `/etc/shadow`——这是「为什么要有两个文件」的标准答案。
+{: .callout-exam}
 
 **实现思路**：先用 awk 对一行标准 passwd 记录做按列解析，直观看到 7 列的分界（A 级），再给出两份逐列对照表（B 级，真机用 `head /etc/passwd` 与 `head /etc/shadow` 核对）。
+{: .callout-prac}
 
 ### awk 按列解析演示（已实操）
 {: .sec-ex}
@@ -359,15 +365,19 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 > - `/etc/passwd` 与 `/etc/group` 全局可读、`/etc/shadow` 与 `/etc/gshadow` 仅 root 可读——密码绝不能出现在全局可读文件里；
 > - 登录不了先查两处：第七列是不是 `/sbin/nologin`、shadow 第二列是不是 `!`（被锁）；
 > - 属主显示为纯数字 uid，说明对应账号被删了（`userdel` 不带 `-r` 的常见后遗症）。
+{: .callout-pit}
 
 > **参见**：[用户管理](/posts/linux-userperm-01/)、[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ## 题 3：给指定用户配置 sudo 权限
 {: .sec-expl}
 
 **考察点**：`visudo` 的语法检查价值、sudoers 行的「用户 主机=(身份) 命令」四段结构、`sudo -l` 验证方式，以及最小权限原则。
+{: .callout-exam}
 
 **实现思路**：以给 ops 用户授权「建用户、删文件」两条命令为例，走「visudo 编辑 → 语法检查 → sudo -l 验证 → 实际执行」四步；再给一份常见写法对照表。真机操作流程如下（B 级）。
+{: .callout-prac}
 
 ### 步骤 1：visudo 编辑授权（B 级）
 {: .sec-prac}
@@ -440,14 +450,18 @@ uid=1011(stu11) gid=1011(stu11) groups=1011(stu11)
 > - 授权目录时必须用 `!` 排除 `visudo`、`su`、`passwd root` 等特权命令，否则等于送出完整 root；
 > - 永远不要授权 shell 类命令（`/bin/bash`、`vi`、`find`），在它们内部都能逃逸出 root shell；
 > - sudo 校验的是**用户自己的密码**，不是 root 密码；校验通过后默认 5 分钟内免密，`sudo -k` 立即作废。
+{: .callout-pit}
 
 > **参见**：[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ## 题 4：su 与 su - 的区别
 
 **考察点**：两者唯一的差别在**环境变量的加载程度**——`su` 只部分切换（HOME 变了，USER、PATH、MAIL 等仍保留原用户），`su -` 完整加载目标用户的登录环境（PATH、USER、MAIL、PWD、HOME 全部切换，工作目录也切到家目录）。日常运维一律用 `su -`。
+{: .callout-exam}
 
 **实现思路**：对比两段 `env` 输出就能说清。以普通用户 ops 切换到 root 为例（B 级）。
+{: .callout-prac}
 
 ### 使用 su 切换（部分切换，B 级）
 
@@ -511,8 +525,10 @@ HOME=/root
 > - `su` 切换后找不到 `useradd` 等命令，不是命令没装，是 PATH 里没有 `/usr/sbin`，改用 `su -` 即可；
 > - `su` 与 `su -` 之间不加用户名默认切 root，但生产环境强烈建议显式写清目标用户；
 > - 排查「su 之后环境不对」统一用 `env | egrep 'USER=|PATH=|PWD='` 对照检查。
+{: .callout-pit}
 
 > **参见**：[用户权限与提权](/posts/linux-userperm-02/)
+{: .callout-ref}
 
 ## 小结
 {: .sec-sum}

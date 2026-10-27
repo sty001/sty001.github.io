@@ -35,8 +35,10 @@ slug: "linux-homework-43"
 {: .sec-sum}
 
 **考察点**：理解反向代理在负载均衡中的角色、`proxy_pass` 的转发写法、`proxy_set_header` 解决的两个经典面试题（站点识别、真实客户端 IP 记录）、`proxy_next_upstream` 的故障切换作用，以及常用超时参数。
+{: .callout-exam}
 
 **实现思路**：反向代理就是「Nginx 以客户端身份，把请求转发给后端真实服务器，再把响应回传给用户」。`ngx_http_proxy_module` 干的就是这件事，最核心的指令是 `proxy_pass`（往哪转）和 `proxy_set_header`（转发时补什么头）。梳理时抓住「一转三头一兜底」：一转 = `proxy_pass`；三头 = Host、X-Forwarded-For、X-Real-IP；一兜底 = `proxy_next_upstream`（后端挂了换一台）。
+{: .callout-prac}
 
 ### 高频指令速查
 {: .sec-iv}
@@ -80,8 +82,10 @@ location /api/ {
 {: .sec-sum}
 
 **考察点**：`upstream` 如何定义后端服务器组、常用 server 参数（weight/backup/down/max_fails/fail_timeout）、六种调度算法（rr/wrr/ip_hash/least_conn/url_hash/fair）的适用场景，以及会话保持方案。
+{: .callout-exam}
 
 **实现思路**：`upstream` 块把「一组后端」抽象成一个名字，再让 `proxy_pass http://名字` 去引用它。调度的「怎么分」由算法决定，调度的「分给谁、分给多少、坏了我怎么办」由 server 参数决定。梳理时按「算法 + 参数 + 健康检查」三条线记忆。
+{: .callout-prac}
 
 ### server 参数速查
 {: .sec-chk}
@@ -108,6 +112,7 @@ location /api/ {
 | fair（第三方） | 需编译 fair 模块 | 按响应时间调度 | 后端性能波动大 |
 
 > **注意**：`ip_hash` 与 `weight` 同时配置时 weight 不生效（转发目标由 IP 决定）；`ip_hash` 的局限是同一 NAT 出口用户都会打到同一台，且后端增减会重算哈希。更彻底的方案是把 Session 集中存到 Redis，从根上消除对「粘某台机器」的依赖。
+{: .callout-note}
 {: .sec-pit}
 
 怎么选算法，按后端与业务的两个特征定：机器性能不齐用 wrr，请求耗时差不多用 rr，耗时差异大（有的接口几毫秒、有的几秒）用 least_conn——因为轮询不管「手里还压着几个慢请求」，快机器闲着慢机器排队；需要会话保持先想 Redis，真没有才上 ip_hash；后端有本地缓存且 URL 集中，url_hash 能明显提高命中率。生产环境最常见的组合是 rr/wrr + Redis Session，ip_hash 反而用得少。
@@ -225,8 +230,10 @@ $ systemctl reload nginx
 {: .sec-expl}
 
 **考察点**：理解高可用要解决「负载均衡器单点故障」的问题、VRRP 协议与 VIP 漂移原理、主备节点的配置差异（state/priority/router_id）、以及「提前克隆 lb02」这一准备动作。
+{: .callout-exam}
 
 **实现思路**：单台负载均衡器一旦宕机，整个网站入口就断了。keepalived 基于 VRRP 协议，让 `linux-node01`（MASTER）与 `linux-node02`（BACKUP）共享一个虚拟 IP（VIP）。平时 VIP 漂在 MASTER 上对外服务；MASTER 宕机，BACKUP 在约 3 个通告周期（3 秒）内收不到心跳，自动把 VIP 抢过来，用户几乎无感知。作业要求「提前克隆好 lb02」，正是为了省去重复部署 Nginx 负载均衡配置的时间。
+{: .callout-prac}
 
 ### 准备架构（B 级）
 {: .sec-expl}
@@ -348,8 +355,10 @@ $ ip a s eth0 | grep 10.0.0.3
 > - `state` 只是初始期望值，最终谁当 MASTER 由 `priority` 竞选决定，不要被 `state MASTER` 字面误导。
 > - VIP 漂移依赖组播心跳（目的地址 224.0.0.18），防火墙要放行 VRRP 协议，否则会「脑裂」（两台都持有 VIP）。
 > - 云环境（如公有云）通常不转发 VRRP 组播，需用 `unicast_src_ip` / `unicast_peer` 改成单播模式，或改用云厂商自带高可用产品。
+{: .callout-pit}
 
 > **参见**：[负载均衡服务](/posts/linux-arch-17/)、[高可用服务keepalived](/posts/linux-arch-18/)
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}

@@ -35,8 +35,10 @@ slug: "linux-homework-30"
 {: .sec-know}
 
 **考察点**：`/etc/fstab` 的六个字段、网络型文件系统（NFS）为什么开机会挂载失败、CentOS 7 的 `remote-fs.target` 与 CentOS 6 的 `netfs` 在启动流程中的位置、`_netdev` 参数的作用。
+{: .callout-exam}
 
 **答案**：**CentOS 7 及以上是 `remote-fs.target` 服务，CentOS 6 是 `netfs` 服务**。fstab 在系统启动的最早期（网络还没就绪时）就被读取，本地的磁盘分区那时已经能挂，但 NFS 这类网络文件系统必须等网络与 rpcbind 就绪之后才能挂载成功——所以需要这个「专门重挂网络文件系统」的特殊服务，在系统启动的后期再把 fstab 里的 NFS 条目挂上来。fstab 条目里同时要给 NFS 加 `_netdev` 参数，声明「这是网络设备」，让系统等网络就绪后再挂。
+{: .callout-answer}
 
 ### 步骤 1：编写 fstab NFS 条目示例（已实操）
 {: .sec-ex}
@@ -112,13 +114,16 @@ df -h | grep /mnt
 > - 忘记 `_netdev` 会让系统在网络未就绪时就去挂 NFS，表现为开机卡住数十秒或挂载失败；
 > - 第 6 列（pass）给 NFS 写 1 或 2 会导致开机对网络文件系统跑 fsck，必须写 0；
 > - 改完 fstab 不要直接重启验证，先 `mount -a` 手动挂一次，条目写错当场就能发现。
+{: .callout-pit}
 
 ## 题 2：研究 user 参数的作用
 {: .sec-expl}
 
 **考察点**：fstab 第 4 列挂载选项中 `user` / `nouser` / `users` 的语义与默认值、`user` 隐含的安全选项（noexec / nosuid / nodev）、它与 NFS 服务端 squash 权限体系（`anonuid` / `anongid`，参数名里也带 user 但完全是两回事）的区分。
+{: .callout-exam}
 
 **实现思路**：`user` 是「允许普通用户挂载/卸载该条目」的开关。默认行为是 `nouser`——只有 root 能执行 mount；加了 `user` 之后，普通用户也能对该条目执行挂载与卸载，但这会带来安全面扩大，所以内核对 `user` 隐含套上 `noexec,nosuid,nodev` 三个保险。先在沙箱里把两种条目写出来并对比校验（A 级），再给普通用户挂载的真机预期效果（B 级）。
+{: .callout-prac}
 
 ### 步骤 1：构造 user 与 nouser 两条目并对比（已实操）
 {: .sec-prac}
@@ -186,12 +191,15 @@ umount: /mnt: umount failed: Operation not permitted   # 普通用户在挂载�
 > - `user` 只对「写进 fstab 的条目」生效，手动 `mount -t nfs ...` 不受它管；
 > - 别把 fstab 的 `user` 参数与服务端 exports 的 `anonuid` / `anongid`（指定匿名映射用户）搞混，后者才是服务端的「用户映射」配置；
 > - 生产环境挂载点应保持默认 nouser，普通用户需要共享目录时用 ACL 或组权限解决，而不是放开挂载权。
+{: .callout-pit}
 
 ## 题 3：NFS 服务部署过程复盘
 
 **考察点**：NFS 依赖 RPC 的原理（rpcbind 注册随机端口）、服务端部署六步的顺序约束（先 rpcbind 后 nfs）、`/etc/exports` 格式与生效方式、客户端挂载全流程（showmount → mount → 写 fstab）、squash 系列与 `anonuid` / `anongid` 用户映射。
+{: .callout-exam}
 
 **实现思路**：按「服务端部署 → 检查注册 → 客户端挂载 → 权限验证」的链路复盘。每一步都给出真机标准命令与预期输出；输出内容（showmount 导出清单、etab 生效参数）在沙箱里还原并真跑解析，把「部署完应该看到什么」变成可逐项核对的清单。
+{: .callout-prac}
 
 ### 步骤 1：服务端部署六步（预期输出，CentOS 7）
 {: .sec-prac}
@@ -383,6 +391,7 @@ squash 系列行为速查：
 > - 挂载成功但写文件 Permission denied：先查三层权限——目录本身权限（属主是否 nfsnobody）、exports 参数（rw 还是 ro、squash 映射成谁）、客户端 mount 参数（ro 会盖过服务端 rw）；
 > - exports 里 `客户端(参数)` 的括号前后**不能有空格**，写成 `/data 172.16.1.0/24 (rw,sync)` 会被解析成两个客户端条目；
 > - 服务端重启后客户端报 Stale file handle：`umount -lf` 强制卸载后重新挂载即可。
+{: .callout-pit}
 
 ### 辨析：sync 与 async
 
@@ -405,6 +414,7 @@ exports 里的 `(rw,sync)` 之 `sync` 管的是**服务端什么时候落盘**�
 7. 共享目录最终权限由三处共同决定：目录自身权限、exports 导出参数、客户端 mount 参数，排查权限问题时按这三层自上而下过一遍。
 
 > **参见**：[存储服务NFS](/posts/linux-arch-04/)、[备份服务rsync](/posts/linux-arch-02/)、[day29 全网备份项目作业实操](/posts/linux-homework-29/)
+{: .callout-ref}
 
 
 {% endraw %}

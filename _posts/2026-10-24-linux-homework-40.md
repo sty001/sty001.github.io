@@ -33,8 +33,10 @@ slug: "linux-homework-40"
 ## 题 1：上传报 413，Nginx 需要加什么指令
 
 **考察点**：理解 413 错误的成因（请求体超过服务端限制）、定位是 Nginx 层还是后端（PHP）层拦截、掌握 `client_max_body_size` 指令的用法与作用域，以及「前端报 413 往往要同步改后端」这一运维常识。
+{: .callout-exam}
 
 **实现思路**：413 的本质是「客户端发来的请求体（上传文件）体积，大于服务端允许的最大值」。在 LNMP 架构里，这条请求会先经过 Nginx，再交给 PHP。Nginx 默认只允许 1M 的请求体，超过就直接返回 413，根本到不了 PHP。所以解题分两步：
+{: .callout-prac}
 
 1. 先确认是哪一层在拦——看返回 413 的响应头/日志，Nginx 层的 413 会体现在 `error.log` 的 `client intended to send too large body`；
 2. 在 Nginx 加 `client_max_body_size` 放大限制，同时别忘了 PHP 的 `upload_max_filesize` 与 `post_max_size` 也要同步放大，否则只改 Nginx 仍会在 PHP 层报错。
@@ -173,14 +175,18 @@ $ systemctl reload php-fpm
 > - `post_max_size` 必须大于等于 `upload_max_filesize`，否则大文件在 PHP 解析表单阶段就被丢弃。
 > - 限制尽量写在具体的 `location`（如 `/upload`）而不是全局 `http`，既满足业务又不过度放开攻击面。
 > - `client_body_buffer_size` 与 `client_max_body_size` 不是一回事：前者是内存缓冲，超过部分会写入磁盘临时目录，受其影响的是性能而非能否上传。
+{: .callout-pit}
 
 > **参见**：[Nginx网站服务实战](/posts/linux-arch-15/)、[负载均衡服务](/posts/linux-arch-17/)
+{: .callout-ref}
 
 ## 题 2：图片存在哪里，如何集中存到存储服务器
 
 **考察点**：确认 Web 服务器上用户上传图片的真实落盘路径、理解单台 Web 存储的局限性（多台 Web 集群时图片不一致）、掌握用 NFS 把图片统一收敛到存储服务器的完整链路（找目录、迁数据、挂 NFS、解决权限 squash 问题）。
+{: .callout-exam}
 
 **实现思路**：图片默认就在 Web 站点的上传目录下（如 WordPress 的 `/wp-content/uploads/`）。当网站从单台 Web 扩展到多台 Web 集群后，用户上传的图片只落在一台机器上，其他机器访问不到，就会出现「图片时有时无」。解决办法是把图片目录挂载到一台统一的 NFS 存储服务器，所有 Web 节点读写同一份数据。流程分四步：找到本地上传目录 → 把已有数据迁到存储服务器 → Web 节点挂载 NFS → 解决 NFS 权限映射（root_squash / all_squash）导致写不进去的问题。
+{: .callout-prac}
 
 ### 步骤 1：定位图片存储目录（B 级）
 {: .sec-prac}
@@ -290,6 +296,7 @@ exporting 172.16.1.0/24:/data/blog
 > - 挂载点必须和站点原来的上传目录路径一致，否则代码里写死的路径会找不到文件。
 > - NFS 权限问题九成出在 squash 映射：记住 `root_squash` → root 变 nobody、`all_squash` → 所有人变 nobody；用 `anonuid/anongid` 把身份锁成 Web 运行用户才能正常写。
 > - 生产建议 NFS 之上有备份与高可用（如 DRBD 或对象存储），单台存储服务器本身也可能成为单点。
+{: .callout-pit}
 
 ## 本篇小结
 {: .sec-sum}

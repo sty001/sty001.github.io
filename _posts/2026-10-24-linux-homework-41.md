@@ -34,8 +34,10 @@ slug: "linux-homework-41"
 ## 题 1：排序去重命令与访问页面 Top10 统计
 
 **考察点**：`awk` 取列、`sort` 排序、`uniq -c` 去重计数、`sort -rn` 数字倒序、`head` 取前 N 行——五条命令串成日志分析最经典的组合拳；以及「uniq 只能合并相邻重复行，必须先 sort」这条最容易踩的规则。
+{: .callout-exam}
 
 **实现思路**：nginx 访问日志（combined 格式）每行用空格分隔，第 7 列（`$7`）就是请求的 URL。统计「哪个页面被访问最多」就是「按 URL 分组计数再倒序取前 10」：
+{: .callout-prac}
 
 1. `awk '{print $7}'` 把所有 URL 单独抽出来；
 2. `sort` 把相同 URL 排到一起（为 uniq 做准备）；
@@ -287,13 +289,16 @@ awk '{print substr($4,2,14)}' access.log | sort | uniq -c | sort -rn | head -3
 > - 列号不是死的：nginx 改过 `log_format`（如加了 `$request_time`、`$http_x_forwarded_for`）后 `$7` 可能不再是 URL，先 `head -1` 确认字段再取列；
 > - URL 带查询串时（`/list?page=2`）会被当成不同页面，必要时先用 `awk -F'?' '{print $1}'` 切掉查询串再统计；
 > - awk 程序体务必用**单引号**包裹，防止 shell 把 `$7`、`$9` 当自己的位置参数吃掉。
+{: .callout-pit}
 
 ## 题 2：如何对网站进行压力测试
 {: .sec-ver}
 
 **考察点**：ab（ApacheBench）与 webbench 两款压测工具的基本用法，以及压测报告里 QPS、平均耗时、百分位耗时等关键指标的读法。
+{: .callout-exam}
 
 **实现思路**：压测说白了就是用受控的并发请求去量服务的吞吐上限。流程四步：装工具 → 选一个轻量目标页（首页或一个静态小文件）→ 以指定并发数发指定总数请求 → 读报告调优。**只允许对自己有权限的测试环境压测**，对生产环境或他人网站压测属于攻击行为，这是底线。
+{: .callout-prac}
 
 ### 工具 1：ab（ApacheBench，B 级）
 
@@ -441,6 +446,7 @@ Requests: 59280 susceed, 0 failed.
 6. 压测纪律：只压自己的测试环境，从低并发逐级加压；Failed requests 不为 0 的报告直接作废；调优前后用相同参数对比才有意义，压测数字要定期重刷。
 
 > **参见**：[Nginx网站服务实战](/posts/linux-arch-15/)、[awk命令详解](/posts/linux-textproc-02/)、[day17 三剑客与批量建用户](/posts/linux-homework-17/)
+{: .callout-ref}
 
 
 {% endraw %}

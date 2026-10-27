@@ -35,8 +35,10 @@ slug: "linux-homework-08"
 {: .sec-sum}
 
 **考察点**：把第 1 天到第 8 天的知识点串成体系，能按主题回忆出每块的"一句话结论"。
+{: .callout-exam}
 
 **实现思路**：总结型作业转化为知识卡片——每张卡片一个主题、一句结论，覆盖虚拟化与远程连接、命令基础、文件操作、目录与挂载、系统文件与运行级别、别名与 history 六大主题。
+{: .callout-prac}
 
 ### 知识卡片：虚拟化与远程连接
 {: .sec-know}
@@ -106,15 +108,19 @@ slug: "linux-homework-08"
 | history | 先进内存缓冲区、退出写 `~/.bash_history`；`HISTTIMEFORMAT` 加时间戳；密码会明文留痕 |
 
 **验证方法**：合上书能按六大主题各复述出三句话结论；对任一主题能说出对应的验证命令（如"挂载生效怎么验证"→ `df -h`；"别名永久生效怎么验证"→ `alias | grep`）。
+{: .callout-verify}
 
 > **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)、[常用文件操作命令](/posts/linux-system-02/)、[系统目录结构与挂载](/posts/linux-system-03/)、[重要系统文件与运行级别](/posts/linux-system-04/)
+{: .callout-ref}
 
 ## 题 2：总结命令与参数
 {: .sec-sum}
 
 **考察点**：把八天课程涉及的命令按功能归类，记住每条命令的最高频用法与关键参数。
+{: .callout-exam}
 
 **实现思路**：按"系统运行 → 目录路径 → 文件操作 → 查看内容 → 重定向与通配符 → 链接 → 快捷方式与别名 → 挂载"归类汇总，每个命令给出最高频用法。
+{: .callout-prac}
 
 ### 命令/参数总结表
 {: .sec-sum}
@@ -150,12 +156,15 @@ slug: "linux-homework-08"
 | 编辑 | `vi` / `vim` | `vim 文件` 打开编辑 | 见题 3 |
 
 > **参见**：[附录-命令速查表](/posts/linux-appendix-01/)
+{: .callout-ref}
 
 ## 题 3：vim 使用技巧
 
 **考察点**：vim 的四种模式与切换、常用编辑命令、非交互用法与异常恢复。
+{: .callout-exam}
 
 **实现思路**：vim 是交互式全屏编辑器，交互按键无法在非终端环境演示，因此交互部分给出模式体系与命令表（B 级说明）；替换类命令用 sed 真跑等价逻辑（A 级），证明对"范围、标志位"的理解正确；最后给出 `vim -es` 非交互标准写法。
+{: .callout-prac}
 
 ### vim 是什么
 {: .sec-know}
@@ -295,6 +304,7 @@ config value 2
 ```
 
 **验证方法**：四组真实输出分别验证四个知识点——全文替换每行都生效；范围替换只动指定行（第 1、4 行保持 `old`）；`:g/模式/d` 精确删除匹配行；忽略大小写标志让大小写混合内容全部命中。行号地址在 vim 与 sed 中一致（都从 1 开始）。
+{: .callout-verify}
 
 ### 非交互写法：vim -es（预期输出）
 
@@ -330,8 +340,10 @@ Swap file ".config.txt.swp" already exists!
 处理前先用 `ls -la .config.txt.swp` 确认没有另一个用户或终端正在编辑同一文件（生产服务器上可能是他人误操作）。平时正常用 `:wq` 退出，交换文件会自动清除。
 
 > **易错点**：一是模式混淆——不知道自己在哪个模式、改错后无法退出，先按 `Esc` 回普通模式再 `:q!`；二是从别处粘贴的代码缩进全乱——autoindent 与粘贴内容缩进叠加，粘贴前 `:set paste`、粘贴后 `:set nopaste`；三是保存报 `E45: 'readonly'`——当前用户没有写权限，换账号或用 `:w !sudo tee %` 借 sudo 保存。
+{: .callout-pit}
 
 > **参见**：[文档编辑软件使用技巧](/posts/linux-system-08/)、[常用文件操作命令](/posts/linux-system-02/)、[sed命令详解](/posts/linux-textproc-01/)
+{: .callout-ref}
 
 ## 自测
 {: .sec-prac}

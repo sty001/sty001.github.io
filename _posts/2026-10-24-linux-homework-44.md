@@ -36,8 +36,10 @@ slug: "linux-homework-44"
 {: .sec-expl}
 
 **考察点**：读懂一份最小可用的 keepalived 高可用配置，搞清楚 `vrrp_instance`、`virtual_ipaddress`、`vrrp_script`、`track_script`、`state`、`priority`、`weight` 各自的作用，以及主备两份配置的差在哪里。
+{: .callout-exam}
 
 **实现思路**：先分别给出主节点（MASTER）与备节点（BACKUP）的配置，再按「全局定义 → 健康检查脚本 → VRRP 实例 → VIP → 脚本绑定」五段逐行拆解，最后用一张差异对照表收口，看清楚「主备配置到底哪里不一样」。
+{: .callout-prac}
 
 ### 步骤 1：主节点 linux-node01 配置（已实操，已脱敏）
 {: .sec-prac}
@@ -152,6 +154,7 @@ vrrp_instance VI_1 {
 | `virtual_ipaddress` | 10.0.0.3 | 10.0.0.3 | 一致才漂移 |
 
 **验证方法**：把两份配置丢给 `keepalived -t -f 配置文件` 做语法检查，输出 `Configuration file ... is OK` 即表示格式正确（CentOS 7 预期输出）；再用 `diff` 比对主备两份 keepalived 配置文件，差异应只落在 `router_id`、`state`、`priority` 三行。
+{: .callout-verify}
 
 > **易错点**：
 >
@@ -159,13 +162,16 @@ vrrp_instance VI_1 {
 > - `virtual_router_id` 与 `auth_pass` 主备必须一致，不一致会导致两端互相收不到通告，各自都把自己当 MASTER，出现「脑裂」（两台同时持有 VIP）；
 > - `state` 写 MASTER 并不代表永远当主，最终由「基础优先级 + weight 实时结果」决定，所以备机 `state BACKUP` 在抢占模式下也会随时反超；
 > - `weight` 为负时是「失败扣分」，为正时是「成功加分」，本题用的是 `-20`，不要写成 `20`（题 2 会专门解释两者差异）。
+{: .callout-pit}
 
 ## 题 2：vrrp_script + weight 实现优先级切换（原理推演）
 {: .sec-know}
 
 **考察点**：理解 `weight` 的正负到底怎么改优先级，以及为什么「nginx 一挂，VIP 就从 linux-node01 漂到 linux-node02」。这是整套高可用方案的理论核心。
+{: .callout-exam}
 
 **实现思路**：把 keepalived 的优先级计算规则翻译成一句话——`weight` 为负时「脚本失败 → 有效优先级 = 基础优先级 + weight；脚本成功 → 维持基础优先级」；`weight` 为正时「脚本成功 → 加 weight；失败 → 维持」。然后列出主健康 / 主故障 / 主恢复三个场景，手算有效优先级，看谁大谁当 MASTER。
+{: .callout-prac}
 
 ### 步骤 1：优先级计算规则（已实操）
 {: .sec-prac}
@@ -192,19 +198,23 @@ vrrp_instance VI_1 {
 负 weight（扣分）的语义链：`nginx 挂 → 脚本失败 → 优先级 100-20=80 < 90 → 备机胜出 → VIP 漂走`。正 weight（加分）的语义链：`nginx 挂 → 失去加分 → 优先级回到 100（无加分）< 110（备机 90+20） → 同样切换`，但可读性差。
 
 **验证方法**：在真机上用 `ip a show eth0 | grep 10.0.0.3` 看 VIP 在哪台；把 linux-node01 的 nginx 停掉，间隔一个 `advert_int` + 探测周期后，VIP 应当出现在 linux-node02 的 `ip a` 里（即题 4 的对比表现象）。
+{: .callout-verify}
 
 > **易错点**：
 >
 > - `weight` 的加减方向只取决于正负号，与 `state` 无关；很多人误以为「MASTER 用减、BACKUP 用加」，其实是两端用同一个 `weight` 值、同一条规则；
 > - `fall 2` 表示要连续失败 2 次才判定异常，单次抖动不会触发切换；`rise 1` 表示恢复 1 次即回血，恢复比故障「宽容」；
 > - 默认 `preempt` 抢占是开启的，所以主恢复后会自动抢回 VIP；若想让备机「接管后不归还」，需显式配置 `nopreempt`（通常用于状态有损的服务，nginx 这种无状态代理一般保留抢占）。
+{: .callout-pit}
 
 ## 题 3：upstream 四种调度算法与故障剔除仿真
 {: .sec-ts}
 
 **考察点**：nginx 的 `upstream` 模块到底怎么把流量分给多台 RS，以及某台 RS 连续失败后如何被自动剔除、恢复后又如何加回。本题用 `sim_upstream.sh` 把 rr / wrr / ip_hash / least_conn 四种算法和 `max_fails`/`fail_timeout` 故障处理全部仿真一遍。
+{: .callout-exam}
 
 **实现思路**：脚本里定义了 3 台 RS（web01/02/03，IP `10.0.0.7/8/9`），分别演示轮询、加权轮询、ip_hash 会话保持、最少连接，最后用时间轴推演「web02 连续失败 3 次被剔除、超时后又恢复」。
+{: .callout-prac}
 
 ### 步骤 1：sim_upstream.sh 核心源码（已实操）
 {: .sec-prac}
@@ -333,12 +343,14 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
 选型的经验值：rr 适合后端配置与请求耗时都均匀的场合，一旦有慢接口就会把快机器闲死；wrr 解决「机器不齐」，但权重是静态拍的；least_conn 看「当下」的负载，耗时差异大的接口用它最合适；ip_hash 只为会话保持，代价见上文易错点。max_fails 的阈值别照抄 3——阈值太小，一次网络抖动就摘节点，容量白白缩水；太大则故障节点一直接请求、用户持续踩坑。常见做法是 `max_fails=2~3` 配 `fail_timeout=10~30s`，再配合上层的应用级健康检查兜底。
 
 **验证方法**：真实 nginx 里把上面四种算法分别写入 `upstream` 块，用 `curl -H "X-Forwarded-For: 客户端IP" http://10.0.0.3/` 多打几次，观察后端 access 日志的分发是否符合预期；停掉其中一台 RS 的 nginx，看 `nginx -T` 与健康检查日志是否在 `max_fails` 次失败后把它摘掉。
+{: .callout-verify}
 
 > **易错点**：
 >
 > - `ip_hash` 在 upstream 里增减节点会改变整个哈希环，导致大量会话重新分布，所以生产上增删 RS 要谨慎，或改用 `hash $remote_addr consistent`（一致性哈希）；
 > - `weight` 在 upstream 里是「加分/加权」语义，与 keepalived 的 `weight` 完全不是一回事，不要混淆；
 > - `max_fails` 与 `fail_timeout` 是「在 fail_timeout 时间窗口内失败 max_fails 次才剔除」，不是「累计失败永远计数的」——超时后计数器会清零，这正是 t=12 恢复的依据。
+{: .callout-pit}
 
 ### 辨析：keepalived 的 weight 与 upstream 的 weight
 
@@ -352,8 +364,10 @@ t=14s  健康池: web01 web02 web03     web02 累计失败=0
 ## 题 4：keepalived 切换前后 ip a 真实输出对比
 
 **考察点**：用最硬的证据——切换前 / 后两台节点各自的 `ip a` 输出——证明 VIP `10.0.0.3` 确实从 linux-node01 漂到了 linux-node02。这四份 `ip_a_*.txt` 是仿真环境的真实产物。
+{: .callout-exam}
 
 **实现思路**：先贴切换前 linux-node01 持有 VIP、linux-node02 无 VIP；再贴切换后（linux-node01 的 nginx 故障触发 weight -20，优先级 80 < 90）linux-node01 失去 VIP、linux-node02 拿到 VIP；最后用一张「VIP 归属变化」对比表收口。
+{: .callout-prac}
 
 ### 步骤 1：切换前 linux-node01（MASTER）持有 VIP（已实操，真实产物）
 {: .sec-prac}
@@ -417,12 +431,14 @@ linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上�
 （预期输出，CentOS 7 真机：切换后可在 linux-node02 上执行 `ip a show eth0 | grep 10.0.0.3` 看到 VIP，在 linux-node01 上执行同样命令应无输出；`ip addr` 中 VIP 以 `secondary` 形式挂在原网卡上，正是 keepalived 调用 `ip addr add` 的效果。）
 
 **验证方法**：在真机切换前后分别跑 `ip a show eth0 | grep -E 'inet .*10.0.0.3|inet .*10.0.0.5|inet .*10.0.0.6'`，对照上表两行输出是否一致；再用 `arping -I eth0 10.0.0.3` 从同网段另一台机器确认 VIP 的 MAC 已经变成 linux-node02 的 `00:0c:29:3a:1b:02`。
+{: .callout-verify}
 
 > **易错点**：
 >
 > - VIP 在 `ip a` 里是 `secondary`（不是独立网卡），它的存在依赖 keepalived 进程存活；keepalived 一停，VIP 随之消失；
 > - 切换有延迟，等于 `advert_int(1s)` + `fall(2)×interval(2s)` 约等于 1+4=5 秒量级，不要刚停 nginx 就立刻查 `ip a`，会误以为没切；
 > - 脑裂时两台都出现 VIP，需用 `arping` 看 MAC 是否冲突，单纯 `ip a` 看不出「两个 VIP 同时存在」的危害。
+{: .callout-pit}
 
 ## 本篇小结
 {: .sec-sum}
@@ -435,6 +451,7 @@ linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上�
 6. 仿真脚本 `sim_upstream.sh` 已在本环境真实运行，`ip_a_*.txt` 四份为真实产物，可直接 `bash /tmp/hw/day43/sim_upstream.sh` 复现全部调度与剔除推演。
 
 > **参见**：[day43 nginx 与 keepalived 联动监控作业实操](/posts/linux-homework-46/)、[keepalived高可用原理](/posts/linux-arch-18/)、[nginxupstream模块](/posts/linux-arch-13/)
+{: .callout-ref}
 
 
 {% endraw %}

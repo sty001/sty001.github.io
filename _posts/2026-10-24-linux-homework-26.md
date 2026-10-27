@@ -42,8 +42,10 @@ slug: "linux-homework-26"
 ## 题 1：文字表示 DNS 的解析过程（dig）
 
 **考察点**：从应用层到网络层的完整域名解析链路、递归查询与迭代查询的区别、各级 DNS 服务器的分工、TTL 与缓存机制、权威应答与非权威应答的判读。
+{: .callout-exam}
 
 **实现思路**：先把「输入网址 → 拿到 IP」拆成 10 个动作，每一段说清「谁在查、查哪里、查不到怎么办」；配一张文字流程图把递归/迭代的分界画出来；再用本机可执行的实验逐段验证（hosts → 本地缓存 → 本地 DNS → 手工三级迭代）；最后补齐 `dig` 的用法与逐层预期输出。
+{: .callout-prac}
 
 ### 步骤 1：DNS 解析的完整 10 步
 {: .sec-prac}
@@ -159,6 +161,7 @@ $ tail -3 /c/Windows/System32/drivers/etc/hosts | sed -e 's/\r$//'
 ```
 
 **验证方法**：非注释行数为 `0`，说明这台机器上 hosts 没有任何生效的自定义映射，因此任何外部域名的解析都会越过第 3 步继续往下走到 DNS 服务器。文件末尾三行是 Windows 自带的注释模板，正好写出「`127.0.0.1 localhost`」这样的条目格式，注意它们全部以 `#` 开头处于注释状态——**这就是 hosts 生效与否的唯一开关：行首有没有 `#`**。
+{: .callout-verify}
 
 #### 实验 2：本地缓存到底有没有在起作用 —— 验证第 2、6 步
 {: .sec-ver}
@@ -182,6 +185,7 @@ $ 再次 www.iana.org: DNS=0.000071s HTTP=200
 ```
 
 **验证方法**：同一个域名第一次 `0.000201s`，第二次降到 `0.000071s`——约 3 倍的差距就是「第一次要跑完整迭代链条、第二次直接命中系统 DNS 缓存」的差值。如果你的环境里第一次耗时几十到几百毫秒而第二次接近 0，结论完全一样，只是基数更大、对比更明显。
+{: .callout-verify}
 
 想强制绕过缓存拿「新鲜」答案，有个实用技巧：给域名加一个随机前缀（如 `abc123.example.com`）再查——随机子域名不可能在任何一层缓存里，这次查询必然走完整迭代链条。测 DNS 故障、验证刚改的解析记录时很好用，比挨个清缓存省事。
 
@@ -208,6 +212,7 @@ $ ping -n 2 127.0.0.1 2>&1 | iconv -f GBK -t UTF-8 | sed -e '/已发送 = 2/,$!d
 ```
 
 **验证方法**：`localhost` 解析出 `127.0.0.1`、`ping` 零丢包零延迟，说明本机 TCP/IP 协议栈正常。**这条结论是排障的分水岭**：本机回环能通但外网域名解析不通 → 问题在 DNS 或出口网络；连 `127.0.0.1` 都不通 → 问题在协议栈本身，别再查 DNS 了。
+{: .callout-verify}
 
 #### 实验 4：权威应答 vs 非权威应答 —— 看懂 nslookup 的第一行
 
@@ -243,6 +248,7 @@ Addresses:  2606:4700:10::6814:179a
 ```
 
 **验证方法**：两次的 IP 列表一致，但**第一次输出开头有「非权威应答:」字样，第二次没有**。这就是判别权威与否的唯一依据——
+{: .callout-verify}
 
 - 「非权威应答」= 这份答案是别人转述的（来自缓存），可能过期；
 - 没有这行 = 直接由该域的权威服务器给出，是一手答案。
@@ -300,6 +306,7 @@ Addresses:  2606:4700:10::ac42:93f3
 ```
 
 **验证方法**：三跳逐一句读——
+{: .callout-verify}
 
 - 第 1 跳：去问的是 `198.41.0.4`（a.root-servers.net 的 IP），它**没给 IP**，只给了 `Served by: l.gtld-servers.net 192.41.162.30`，典型的 referral（推荐）
 - 第 2 跳：去问的是 `192.41.162.30`（上一跳推荐的 l.gtld-servers.net），它还是没给 IP，只给了 `example.com 的 nameserver = hera/elliott.ns.cloudflare.com` 及其 IP
@@ -382,6 +389,7 @@ www.example.com.	300	IN	A	172.66.147.243
 | 尾部 | `Query time: 12 msec` / `SERVER: 223.5.5.5#53` | 耗时与实际应答的服务器地址，判断走没走本机配置时有用到 |
 
 **验证方法**：`ANSWER SECTION` 里的 IP 与上一步 nslookup 得到的列表应一致；重复执行一次 `dig`，就会发现 `Query time` 从十几毫秒降到接近 `0 msec` —— 这就是本地 DNS 缓存生效的证据，与实验 2 的结论互相印证。
+{: .callout-verify}
 
 #### `dig +trace` 逐层输出
 
@@ -416,8 +424,10 @@ www.example.com.	300	IN	A	172.66.147.243
 ```
 
 **验证方法**：看每一段末尾的 `Received N bytes from <IP>#53(<服务器名>)`——四段的来源依次是「本机配置的 DNS」→「根服务器」→「顶级域服务器」→「权威服务器」，正好对应第 7~10 步。`+trace` 里出现的都是 NS 记录（权威服务器名单），只有在最末一段才出现你要的 A 记录，这与步骤 5 手工三跳得到的结论逐条吻合。
+{: .callout-verify}
 
 > **易错点**：`dig` 默认输出的答案**绝大多数是「非权威」**——因为它是从本机 `resolv.conf` 里的 DNS 拿的二手答案。判断是否权威只看 HEADER 的 `flags` 里有没有 `aa`（Authoritative Answer）。另外 `dig` 不查 `/etc/hosts`，所以「hosts 配了映射但 `dig` 查不到」是正常行为，别误判成故障。
+{: .callout-pit}
 
 ### 步骤 7：常见 DNS 记录类型对照
 {: .sec-prac}
@@ -466,6 +476,7 @@ Address:  8.8.8.8
 ```
 
 **验证方法**：`-type=NS` 得到的两台服务器与步骤 5 第 2 跳 TLD 给出的 NS 清单一致；`-type=TXT` 里的 `v=spf1 -all` 是标准的 SPF 反垃圾邮件策略记录；不带 `-type` 直接查询一个 IP 时，`nslookup` 会自动识别成反向查询并返回 PTR（`8.8.8.8 → dns.google`）。
+{: .callout-verify}
 
 实际业务里最常打交道的两个记录是 A 与 CNAME，区别一句话说清：A 直接给 IP，CNAME 给「另一个域名」。做 CDN 接入时域名几乎都 CNAME 到厂商分配的调度域名，由调度系统按线路返回就近节点 IP；好处是厂商换节点、扩容你完全无感，代价是解析多了一跳、故障排查时多问一层。用 `dig` 看到答案段先出现 CNAME 行再出现 A 行，就是这个链路。
 
@@ -500,19 +511,24 @@ ipconfig /flushdns                  # Windows 清缓存（PowerShell/cmd）
 ```
 
 **验证方法**：`dig @223.5.5.5 域名 +short` 有结果而本机默认解析失败 → 本机 DNS 配置问题；换权威服务器 `dig @a.iana-servers.net 域名` 仍无结果 → 域名侧没配或没生效；两者都有结果但本机还是失败 → 本机 hosts 或缓存问题，清缓存后重试。
+{: .callout-verify}
 
 生产上还有一条铁律：DNS 变更要挑窗口、先降 TTL。把 TTL 从 3600 降到 60，等一个旧 TTL 周期让全网缓存过期，再改记录，观察无误后把 TTL 调回——跳过这个流程，一旦配错，错误答案会在运营商缓存里挂上几个小时，你想回滚都推不动。
 
 > **易错点**：改了 DNS 记录后要等 TTL 过期才能全局生效，「改了没生效」绝大多数是缓存，不是没配好——所以改之前**先把 TTL 调小**（如改成 60 秒），改完再调回来，这是运维上线 DNS 变更的标准动作；`/etc/resolv.conf` 最多写 3 个 nameserver，且 CentOS 7 里它由 NetworkManager 管理，手工改完重启网络会被覆盖，正确做法是在网卡配置里加 `DNS1=`/`DNS2=`；`dig` 与 `ping` 是两个独立协议，防火墙禁了 ICMP 会出现「ping 不通但 dig 正常、网站照样能开」，不能只用 ping 判断网络。
+{: .callout-pit}
 
 > **参见**：[运维网络基础-上](/posts/linux-network-01/)、[运维网络基础-下](/posts/linux-network-02/)
+{: .callout-ref}
 
 ## 题 2：总结命令
 {: .sec-sum}
 
 **考察点**：网络命令的归类与参数记忆，以及与前面章节串起来的「一条命令解决一类问题」的能力。
+{: .callout-exam}
 
 **实现思路**：网络类做一张完整速查表并在本机真跑几条；前面章节按「模块 → 高频命令 → 一句话用法」回顾，详细展开见 day24 阶段复习。
+{: .callout-prac}
 
 ### 2.1 网络类命令速查表
 {: .sec-chk}
@@ -559,8 +575,10 @@ Content-Type: text/html; charset=UTF-8
 ```
 
 **验证方法**：`-w` 里四个时间段的大小关系必然成立：DNS 解析 < 建连 < 首字节 < 总耗时。看到 `DNS解析=0.0000xxs` 说明命中本地缓存（与题 1 实验 2 结论一致）；看到 `HTTP=200` 说明 DNS、TCP、TLS、HTTP 四层全通。注意几次执行的耗时数值会漂移（取决于出口网络与是否命中缓存），但**大小次序不变**，看次序比看绝对值可靠。若本机走了 HTTP 代理，`curl -sI` 的头部里会多出 `HTTP/1.1 200 Connection Established` 一行，属正常。
+{: .callout-verify}
 
 > **易错点**：`curl -v` 是排障利器但在脚本里要用 `-s`；`-w` 里的变量区分大小写，`%{http_code}` 写错成 `%{HTTP_CODE}` 会原样输出；不加 `--max-time` 时 curl 可能长时间挂住，放进脚本必须限制超时。
+{: .callout-pit}
 
 ### 2.2 前面章节核心命令回顾
 {: .sec-sum}
@@ -579,11 +597,13 @@ Content-Type: text/html; charset=UTF-8
 | 软件包 | `rpm -qa/-ql/-qf`、`yum install/provides/remove` | `yum provides '*/命令'` 反查该装哪个包 |
 
 > **参见**：[day24 阶段复习：命令总汇](/posts/linux-homework-24/)、[附录-命令速查表](/posts/linux-appendix-01/)
+{: .callout-ref}
 
 ## 题 3：复习之前测验（文件属性 / 定时任务 / 三剑客 / 权限）
 {: .sec-prac}
 
 **考察点**：四个模块的高频考点再现。每题都给出「答案 + 一条可以在本机立刻验证的命令」，不要只看结论，跑一遍才算过。
+{: .callout-exam}
 
 ### 3.1 文件属性（5 题）
 
@@ -591,26 +611,36 @@ Content-Type: text/html; charset=UTF-8
 
 **答案**：`-` 普通文件；`rwxr-xr--` 权限九位（属主 rwx=7、属组 r-x=5、其它 r--=4）；`.` 无 ACL/SELinux 标记（有 ACL 时为 `+`）；`2` 硬链接数；第一个 `root` 属主；第二个 `root` 属组；`4096` 大小（字节，目录固定 4096）；`Oct 24 10:00` mtime 修改时间；`test` 文件名。若用 `ls -li`，行首还会多一列 inode 号。
 **验证**：`stat -c 'type=%F perm=%a(%A) links=%h owner=%U group=%G size=%s mtime=%y inode=%i' 文件名`
+{: .callout-answer}
+{: .callout-verify}
 
 **第 2 题**：文件的三种时间 atime / mtime / ctime 分别在什么动作下变化？
 
 **答案**：atime 在读取文件内容时变（`cat`、`grep`）；mtime 在内容变化时变（`echo >>`、`vim` 保存）；ctime 在 inode 信息变化时变（改权限、改属主、改名、移动）。注意 ctime **不是**创建时间。
 **验证**：参照 day24 卡片 1 的三时间实验：`stat -c 'atime=%x mtime=%y ctime=%z' f` → 读一次 → 写一次 → 分别再 stat，观察哪一列跳变。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 3 题**：硬链接与软链接的区别？为什么跨分区不能建硬链接？
 
 **答案**：硬链接是同一个 inode 的第二个文件名（删一个另一个仍在，inode 不变）；软链接是独立 inode，文件内容存的是目标路径（目标删了就变成红色失效链接）。inode 号只在同一个文件系统内唯一，所以硬链接不能跨分区；软链接存的是路径字符串，可以跨。
 **验证**：`ln f hard; ln -s f soft; ls -li` 对比 inode 列；`rm -f f` 后 `cat hard` 仍能读、`cat soft` 报错。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 4 题**：磁盘还剩空间却写不进文件，可能是什么原因？
 
 **答案**：三种可能——① inode 耗尽（`df -i` 的 IUse% 到 100%，典型场景是海量小文件）；② 容量确实满了（`df -h` Use% 100%）；③ 文件被删但句柄仍被进程占用导致空间未释放（`lsof | grep deleted`）。三者报错文案都是 `No space left on device`。
 **验证**：`df -h; df -i; lsof | grep deleted`
+{: .callout-answer}
+{: .callout-verify}
 
 **第 5 题**：如何真正统计一个目录占用的磁盘空间？为什么不用 `ls -lh`？
 
 **答案**：`du -sh 目录`（只看一层子项用 `du -h --max-depth=1 目录`）。因为 `ls -lh` 显示的是文件**表观字节数**，`du` 统计的是**实际占用的磁盘块数**，小文件多时二者差异很大（185 字节的文件 `du` 计 1.0K）。
 **验证**：`du -sh /var/log; du -h --max-depth=1 /var/log | sort -hr | head -5`
+{: .callout-answer}
+{: .callout-verify}
 
 ### 3.2 定时任务（4 题）
 
@@ -618,21 +648,29 @@ Content-Type: text/html; charset=UTF-8
 
 **答案**：每天 8 点到 20 点之间，每 10 分钟执行一次。五个字段依次是分/时/日/月/周：`*/10` 每 10 分、`8-20` 小时区间、`*` 每天、`*` 每月、`*` 每周不限。
 **验证**：`crontab -l` 落盘后 `tail -f /var/log/cron` 观察触发记录。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 7 题**：写好的脚本手动执行没问题，放进 crontab 却不执行，最可能的三个原因是什么？
 
 **答案**：① crond 没启动（`systemctl status crond`）；② 脚本里的命令没写**绝对路径**（cron 的 PATH 通常只有 `/usr/bin:/bin`）；③ 命令里用了 `%` 而没转义（cron 里 `%` 表示换行）。此外输出没重定向会堆积邮件。
 **验证**：`systemctl status crond`；脚本头部加 `source /etc/profile`；任务写成 `... >> /tmp/x.log 2>&1` 后看日志。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 8 题**：如何把脚本里的时间戳改成「年月日-时分秒」，并保证同一分钟内多次执行不互相覆盖？
 
 **答案**：用 `$(date +%F-%H%M%S)`，必须带上秒（`%S`），否则同一分钟生成的两个备份包会同名互相覆盖。
 **验证**：`NOW=$(date +%F-%H%M%S); echo "backup_$NOW.tar.gz"`，连续执行两次看文件名不同（见 day24 卡片 6 的实测）。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 9 题**：如何定时清理 7 天前的日志？
 
 **答案**：`find /var/log -type f -name "*.log" -mtime +7 -delete`（先用 `-exec ls -lh {} \;` 干跑确认清单）。写成 cron：`0 1 * * * /bin/find /var/log -type f -name "*.log" -mtime +7 -delete`。
 **验证**：`touch -d "10 days ago" /tmp/hw/day26/old.log` 造一个旧文件，再执行 `find` 看它是否被列出/删除。
+{: .callout-answer}
+{: .callout-verify}
 
 ### 3.3 三剑客（5 题）
 
@@ -640,26 +678,36 @@ Content-Type: text/html; charset=UTF-8
 
 **答案**：`awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10`；或一步到位 `awk '{c[$1]++} END{for(i in c) print c[i], i}' access.log | sort -rn | head -10`。
 **验证**：两条命令得到的 IP 与次数应完全一致，且总次数之和等于 `wc -l access.log`。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 11 题**：显示第 5 到第 10 行，有几种写法？
 
 **答案**：三种常用写法——`sed -n '5,10p' f`、`awk 'NR>=5 && NR<=10' f`、`head -10 f | tail -6`。
 **验证**：三种写法输出应逐行一致，用 `diff <(sed -n '5,10p' f) <(awk 'NR>=5 && NR<=10' f)` 比对无差异。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 12 题**：把文件中所有的 `old` 替换成 `new`，并保留原文件备份。
 
 **答案**：`sed -i.bak 's/old/new/g' 文件`（`-i.bak` 会先生成 `文件.bak`），或先 `cp 文件 文件.bak` 再 `sed -i 's/old/new/g' 文件`。**必须带 `g`**，否则每行只换第一个。
 **验证**：`grep -c 'new' 文件` 计数、`diff 文件.bak 文件` 查看改动。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 13 题**：`grep -E` 和默认 `grep` 的区别是什么？`grep -v` 与 `-o` 又是什么作用？
 
 **答案**：默认 grep 是 BRE，`{}`/`()`/`+?|` 需要反斜杠转义；`grep -E`（等价 `egrep`）是 ERE，这些符号直接写。`-v` 是反向筛选（输出不匹配的行，三剑客里做「排除」）；`-o` 只输出匹配到的那一小段，常用于抠字段。
 **验证**：`grep -c 'a\{3\}' f` 与 `grep -cE 'a{3}' f` 计数相同，说明二者等价。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 14 题**：取出 nginx 日志中状态码为 5xx 的请求的 URI 并去重计数。
 
 **答案**：`awk '$9 ~ /^5[0-9][0-9]$/ {print $7}' access.log | sort | uniq -c | sort -rn`。要点是先按列做正则匹配再取 `URL` 列。
 **验证**：把 `$9` 换成 `$0` 用 `grep -E ' 5[0-9]{2} '` 交叉验证，两种方式的 URI 列表应一致。
+{: .callout-answer}
+{: .callout-verify}
 
 ### 3.4 权限（4 题）
 
@@ -667,21 +715,29 @@ Content-Type: text/html; charset=UTF-8
 
 **答案**：`r=4 w=2 x=1`，三段依次属主/属组/其它。644=`rw-r--r--`（普通文件默认）；755=`rwxr-xr-x`（目录与可执行程序默认）；600=`rw-------`（私钥文件标准权限）；400=`r--------`（只读，比 600 更严格，防误改）。
 **验证**：`chmod 600 f && stat -c '%a %A' f`，四个数字各试一遍记下 `%A` 的字符串形态。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 16 题**：一个用户对某文件没有任何权限，却能把它删掉，为什么？如何避免？
 
 **答案**：因为删除文件看的是**父目录的 w 权限**，与文件自身权限无关。想要「大家都能新增但只能删自己的」，给共享目录加粘滞位 `chmod +t /共享目录`（权限串末尾变成 `t`，如 `/tmp` 的 `drwxrwxrwt`）。
 **验证**：`ls -ld /tmp` 观察最后的 `t`；`chmod o+w /共享目录` 前后分别用不同用户试删。
+{: .callout-answer}
+{: .callout-verify}
 
 **第 17 题**：`umask 0022` 时新建文件和目录的默认权限是多少？换成 `umask 077` 呢？
 
 **答案**：`0022` → 文件 666-022=`644`、目录 777-022=`755`；`077` → 文件 `600`、目录 `700`（最安全，适合存私钥的目录）。算法重要记住：起始权限是文件 666、目录 777（都不含 x，由 umask 补），且是「减」而不是「加」。
 **验证**：`umask 077; touch a; mkdir d; stat -c '%n %a' a d`
+{: .callout-answer}
+{: .callout-verify}
 
 **第 18 题**：想让普通用户 ops01 只能执行 `systemctl restart nginx` 这一条特权命令，怎么做？
 
 **答案**：用 `visudo` 追加一行：`ops01 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx`。要点：命令必须写**绝对路径**、不要图省事写 `ALL`、不要把 `vim`/`less`/`awk` 这类能起子 shell 的命令授出去（等于送 root）。
 **验证**：`su - ops01` 后执行 `sudo -l` 查看授权清单，`sudo systemctl restart nginx` 成功而 `sudo useradd x` 被拒。
+{: .callout-answer}
+{: .callout-verify}
 
 ## 本篇小结
 {: .sec-sum}

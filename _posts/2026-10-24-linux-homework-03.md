@@ -31,10 +31,13 @@ mkdir -p /tmp/hw/day3 && cd /tmp/hw/day3
 ## 题 1：编写系统安装过程文档
 
 **考察点**：CentOS 7 的安装过程要能整理成一份拿来就能用的装机文档。
+{: .callout-exam}
 
 **实现思路**：按安装向导实际走过的顺序拆成四步清单，每步标注关键决策点和完成标志。装机时对着清单逐项打勾，不容易漏。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：安装前准备。
 
@@ -88,6 +91,7 @@ CentOS Linux release 7.9.2009 (Core)
 步骤 4：把清单存档为模板。建议把上述四步清单 + 分区方案 + 网络参数固化成装机 checklist，每装一台逐项打勾，避免批量装机时遗漏网络激活这类高频失误。
 
 **验证方法**：重启后能用 root 从 Xshell 登录；`ip a` 显示的 IP 与规划一致；`lsblk` 分区与所选方案一致；`cat /etc/redhat-release` 显示预期版本。四项全过即安装成功。
+{: .callout-verify}
 
 > **易错点**：
 > - 忘记激活网卡：安装时不打开网卡开关，装完系统没有 IP，无法远程连接。
@@ -95,17 +99,22 @@ CentOS Linux release 7.9.2009 (Core)
 > - 虚拟机磁盘接口选错：CentOS 7 选 LSI Logic SAS 兼容性好；模式不对会出现找不到硬盘。
 > - UEFI 模式装老系统异常：找不到硬盘或引导失败时，尝试关闭 Secure Boot 或切 Legacy。
 > - 误操作清空磁盘：生产装机前确认磁盘上无业务数据，重要数据先备份。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 全文（完整图文流程与 CentOS 7 / Rocky 9 差异）。
+{: .callout-ref}
 
 ## 题 2：总结系统分区方案（3 种）
 {: .sec-sum}
 
 **考察点**：三种分区方案各自的挂载点怎么划、适合什么场景、代价是什么，都要说得清。
+{: .callout-exam}
 
 **实现思路**：一张对比表摆出三种方案的完整划分，本地真跑一份分区规划单生成脚本，再补真机验证命令。方案、规划单、验证三样凑齐。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：三种分区方案对比。
 
@@ -183,6 +192,7 @@ sda      8:0    0  100G  0 disk
 `df -h` 输出中各挂载点独立成行（如 /boot、/data 各自一行），即证明分区按方案落实。
 
 **验证方法**：`lsblk` 的分区数量与挂载点和所选方案逐项对应；`df -h` 能看到 /boot 与 /data 独立行；写入大文件到 /data 后 `/` 的使用率不增长，证明数据与系统已隔离。
+{: .callout-verify}
 
 > **易错点**：
 > - 只分一个 /：某天日志或数据把根分区写满，系统服务直接受影响，恢复要进救援模式。
@@ -190,17 +200,22 @@ sda      8:0    0  100G  0 disk
 > - /boot 给太小：多个内核升级后 /boot 写满，更新失败，200M 是经验下限，装多系统的酌情加大。
 > - 装机时误删原有数据分区：生产环境操作前用 lsblk 确认盘符，重要数据先备份再动手。
 > - LVM 与传统分区混装不清：方案三后续加 LVM 时，先把剩余空间建成 PV，再建 VG、LV，顺序别反。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 的"系统的分区配置"。
+{: .callout-ref}
 
 ## 题 3：总结网络配置方法（IP 地址、网关、主机名）
 {: .sec-sum}
 
 **考察点**：能否说清 CentOS 7 网络配置的三个层次——网卡 ifcfg 文件、主机名、DNS，并给出每种的配置写法与生效方式。
+{: .callout-exam}
 
 **实现思路**：先在本地真写出一份标准 ifcfg 配置（A 级），逐行讲每个参数是干嘛的；主机名三种设置方法、DNS 配置各给一张对比表，收尾补真机验证命令。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：写出标准网卡配置文件（CentOS 7 路径为 /etc/sysconfig/network-scripts/ifcfg-ens33，此处先在实操目录生成样例再逐行讲解）。
 
@@ -333,6 +348,7 @@ hostnamectl status
 ```
 
 **验证方法**：ip a 显示 ens33 拿到 10.0.0.100/24；ping 网关 4 个包全通；hostnamectl status 的 Static hostname 为设置值且重启后仍在。三项全过即配置正确。
+{: .callout-verify}
 
 > **易错点**：
 > - ONBOOT=no：配置文件写了但开机不激活，表现是"配置都对就是没网"。
@@ -340,17 +356,22 @@ hostnamectl status
 > - 直接改 /etc/resolv.conf：重启或被 DHCP 覆盖后失效，要从 ifcfg 或 nmcli 改。
 > - 网关填错：本机 ping 得通、外网 ping 不通，先核对 GATEWAY。
 > - 子网掩码与 IP 不配套：用 ipcalc 或 PREFIX 写法核对网段，别凭记忆写 255.255.255.0。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 的[网卡配置文件逐行详解](/posts/linux-basics-03/#网卡配置文件逐行详解)[三种设置主机名的方法](/posts/linux-basics-03/#三种设置主机名的方法)[DNS 配置](/posts/linux-basics-03/#dns-配置)。
+{: .callout-ref}
 
 ## 题 4：网络异常排错方法
 {: .sec-ts}
 
 **考察点**：能否按"由近及远"的顺序系统性定位网络故障，而不是盲目乱试。
+{: .callout-exam}
 
 **实现思路**：四步固定流程——看本机网卡（ip a）→ ping 网关 → ping 外网 → 查 DNS，每步配正常、异常两种输出样例和处置办法，当成排错剧本来用。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：记住标准排错流程。
 
@@ -468,6 +489,7 @@ example.com.		60	IN	A	93.184.216.34
 排错结论模板：把四步结果记录下来（如"网卡 UP 有 IP → 网关通 → 外网 IP 通 → dig 超时"），结论即 DNS 故障，处置即修正 nameserver。
 
 **验证方法**：在正常主机上按四步走一遍，四步全过说明网络健康；故意把 DNS 改成不可用地址，前三步通过、第四步失败，证明该流程能把故障精确定位到 DNS 层。
+{: .callout-verify}
 
 > **易错点**：
 > - 跳过 ip a 直接 ping：网卡没起来、IP 没拿到，ping 什么都白费。
@@ -475,8 +497,10 @@ example.com.		60	IN	A	93.184.216.34
 > - 忽略防火墙：本机 firewall / 云平台安全组禁 ICMP 时，ping 不通不代表网络断，要换端口测试（如 curl 或 telnet）。
 > - 只在客户机排查：路由对端、上级网关、DNS 服务端的状态也要会看，排错是双向的。
 > - 虚拟机网络模式搞错：NAT / 桥接 / 仅主机模式选错，表现为"虚拟机有 IP 但上不了网"。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 的[网络检查确认工作](/posts/linux-basics-03/#网络检查确认工作)[网络常见问题分析](/posts/linux-basics-03/#网络常见问题分析)。
+{: .callout-ref}
 
 ### 辨析：NAT 与桥接
 
@@ -486,10 +510,13 @@ example.com.		60	IN	A	93.184.216.34
 {: .sec-ts}
 
 **考察点**：能否说清救援模式（Rescue Mode）重置 root 密码的完整步骤与安全含义。
+{: .callout-exam}
 
 **实现思路**：按 B 级给出 CentOS 7 救援模式的八步标准流程，附上 RHEL 8 / Rocky 9 的等价做法，最后是验证方法和安全提醒。
+{: .callout-prac}
 
 **实操过程**：
+{: .callout-prac}
 
 步骤 1：进入救援模式。开机，在引导界面选择 Troubleshooting → Rescue a CentOS system，按回车进入。
 
@@ -557,6 +584,7 @@ RHEL 8 / Rocky 9 的等价做法（引导流程不同，原理一致）：
 ```
 
 **验证方法**：重启后使用新密码登录成功即验证通过；若登录被拒且系统没有重打标签，检查是否遗漏 touch /.autorelabel（SELinux 标签不匹配会导致认证失败）。
+{: .callout-verify}
 
 > **易错点**：
 > - 跳过 SELinux 重打标签：CentOS 7 开启 SELinux 时不做 touch /.autorelabel，重启后可能无法登录。
@@ -564,8 +592,10 @@ RHEL 8 / Rocky 9 的等价做法（引导流程不同，原理一致）：
 > - 以为此操作能找回原密码：救援模式是"重置"不是"找回"，旧密码无法恢复。
 > - 忽略物理安全前提：整个过程是本地物理操作，安全设计上就假定"能摸到机器"即拥有最高权限；机房托管机器需联系机房人员或用 iDRAC / iLO 重定向完成。
 > - 在共享 / 生产环境练习：重置 root 前先确认授权与变更窗口，避免影响他人业务。
+{: .callout-pit}
 
 > **参见**：[系统安装部署](/posts/linux-basics-03/) 的[救援模式重置 root 密码](/posts/linux-basics-03/#救援模式重置-root-密码)。
+{: .callout-ref}
 
 ## 本篇小结
 {: .sec-sum}
