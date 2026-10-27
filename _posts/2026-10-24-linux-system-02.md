@@ -34,6 +34,7 @@ shell 处理一条命令的完整流程：
 `ls` 查看文件是否存在，`ls -l` 查看文件的详细属性信息：
 
 ```bash
+# 提示符 [root@主机名 当前目录]# 表示以 root 身份在该目录，命令执行后的下一行是输出
 [root@linux-node1 test02]# ls /etc/services
 /etc/services
 [root@linux-node1 test02]# ls -l /etc/services
@@ -84,6 +85,7 @@ touch /data/test.txt
 ```
 
 ```bash
+# touch 新建的空文件大小为 0，ls -l 才能看到属性
 [root@linux-node1 test02]# ls /data/test.txt
 /data/test.txt
 [root@linux-node1 test02]# ls -l /data/test.txt
@@ -153,6 +155,7 @@ echo 的参数建议加引号：`echo hello world` 碰巧能输出，但遇到 `
 写多行内容还有更整洁的方式——here-document：`cat > file <<EOF` 回车后逐行输入，单独一行 `EOF` 结束，不用反复 echo 追加。
 
 ```bash
+# echo 只是把文本打到屏幕，> 是重定向：先清空 test.txt 再写入
 [root@linux-node1 data]# echo "hello world" >  test.txt
 [root@linux-node1 data]# vi test.txt
 hello world
@@ -161,6 +164,7 @@ hello world
 追加内容：
 
 ```bash
+# >> 是追加重定向：不清空原内容，在最后一行往后接着写
 [root@linux-node1 data]# echo "hello linux 02" >>  test.txt
 [root@linux-node1 data]# vi test.txt
 hello world
@@ -183,6 +187,7 @@ hello linux 02
 ## 查看文件内容：`cat`
 
 ```bash
+# cat 一次性输出全文；/etc/hosts 是本机域名解析表，127.0.0.1 与 ::1 是环回地址
 [root@linux-node1 data]# cat test.txt
 hello world
 hello linux 01
@@ -285,6 +290,7 @@ tail -f /var/log/secure    # 一直追踪查看文件内容的变化，查看日
 ### 文件备份方法
 
 ```bash
+# cp 复制文件；复制后两份文件各有独立 inode，修改互不影响
 [root@linux-node1 data]# cp /data/test.txt /tmp
 [root@linux-node1 data]# ls -l /tmp/test.txt
 -rw-r--r--. 1 root root 50 Apr  1 10:36 /tmp/test.txt
@@ -297,6 +303,7 @@ tail -f /var/log/secure    # 一直追踪查看文件内容的变化，查看日
 ### 目录备份方法
 
 ```bash
+# 复制目录必须加 -r；ls -d 只看目录本身，不展开里面的内容
 [root@linux-node1 data]# cp -r /data/test01/ /tmp
 [root@linux-node1 data]# ls /tmp/test01
 test02
@@ -312,6 +319,7 @@ test02
 {: .sec-pit}
 
 ```bash
+# 目标已有同名文件时逐个询问，输入 y 覆盖；想跳过提示用 \cp 绕过别名
 [root@linux-node1 test01]# cp -r /data/test01/ /tmp/
 cp: overwrite '/tmp/test01/test.txt'? y
 cp: overwrite '/tmp/test01/test01.txt'? y
@@ -357,12 +365,14 @@ cp: overwrite '/tmp/test01/test03.txt'? y
 ### 删除文件
 
 ```bash
+# 默认别名 rm='rm -i'，删除前会询问确认；^C 表示按 Ctrl + C 中断
 [root@linux-node1 test01]# rm /tmp/test.txt
 rm: remove regular file '/tmp/test.txt'? ^C      # 输入 n 或 Ctrl + C 取消
 [root@linux-node1 test01]# \rm /tmp/test.txt     # 加反斜杠绕过别名，不提示
 [root@linux-node1 test01]# ls -l /tmp/test.txt
 ls: cannot access /tmp/test.txt: No such file or directory
 
+# 重新建一个空文件再试，注意空文件同样会触发确认提示
 [root@linux-node1 test01]# touch /tmp/test.txt
 [root@linux-node1 test01]# ls -l /tmp/test.txt
 -rw-r--r--. 1 root root 0 Apr  1 11:09 /tmp/test.txt
@@ -376,6 +386,7 @@ ls: cannot access /tmp/test.txt: No such file or directory
 ### 删除目录
 
 ```bash
+# rm 不带 -r 不删目录；-f 只能压制确认，对目录无效
 [root@linux-node1 test01]# rm /tmp/test01/
 rm: cannot remove '/tmp/test01/': Is a directory
 [root@linux-node1 test01]# rm -f /tmp/test01/
@@ -407,6 +418,7 @@ ls: cannot access /tmp/test01: No such file or directory
 ### 移动剪切文件数据
 
 ```bash
+# mv 移动后源文件就没了，ls 报 No such file 属正常
 [root@linux-node1 ~]# mv /data/test.txt /tmp/
 [root@linux-node1 ~]# ls -l /tmp/test.txt
 -rw-r--r--. 1 root root 50 Apr  1 10:24 /tmp/test.txt
@@ -417,6 +429,7 @@ ls: cannot access /data/test.txt: No such file or directory
 ### 移动剪切目录数据
 
 ```bash
+# 目录同理，mv 走的是改名，源目录随即消失
 [root@linux-node1 ~]# mv /data/test01/ /tmp
 [root@linux-node1 ~]# ls -d /tmp/test01
 /tmp/test01
@@ -429,6 +442,7 @@ ls: cannot access /data/test01: No such file or directory
 ### 用 `mv` 实现重命名
 
 ```bash
+# 同一目录下 mv 等于改名，只是换了个文件名
 [root@linux-node1 ~]# cd /data
 [root@linux-node1 data]# ls
 [root@linux-node1 data]# touch test.txt
@@ -448,6 +462,7 @@ hello linux
 {: .sec-pit}
 
 ```bash
+# 目标存在同名文件时同样会询问确认
 [root@linux-node1 data]# ls -l /tmp/test.txt
 -rw-r--r--. 1 root root 50 Apr  1 10:24 /tmp/test.txt
 [root@linux-node1 data]# touch test.txt
@@ -491,6 +506,7 @@ rmdir /data/test01              # 失败，因为目录里还有文件
 ### `tree`：树形浏览目录
 
 ```bash
+# tree 不是 CentOS 7 默认安装的软件，用前先 yum install -y tree
 tree /data                 # 树形展示目录结构
 tree -L 2 /data            # 只看两层
 tree -d /data              # 只显示目录，不显示文件

@@ -300,6 +300,7 @@ dd if=/dev/zero of=/tmp/test.txt bs=10M count=100
 `source` 常见加载的配置文件：
 
 ```bash
+# 加载顺序有别：登录 Shell 走 /etc/profile → ~/.bash_profile，非登录交互 Shell 走 /etc/bashrc → ~/.bashrc
 /etc/profile
 /etc/bashrc
 ~/.bashrc

@@ -263,8 +263,11 @@ Router(config-if)#  接口模式提示符
 进入配置的典型流程：
 
 ```bash
+# 从用户模式进入特权模式，才能执行配置命令
 Router> en
+# conf t 进入全局配置模式
 Router# conf t
+# interface 切入接口模式，下一条命令只作用于该接口
 Router(config)# interface g0/0
 Router(config-if)#
 ```
@@ -273,7 +276,9 @@ R1 的接口配置：
 
 ```bash
 # g0/0 接口配置
+# 语法：ip address <IP> <掩码>；掩码写错会导致同网段判断出错
 ip address 192.168.1.254 255.255.255.0
+# 接口默认是 shutdown 状态，必须手工开启才能收发报文
 no shutdown
 
 # g0/1 接口配置
@@ -395,6 +400,7 @@ L       192.168.4.254/32 is directly connected, GigabitEthernet0/1
 
 ```bash
 # R1 取消静态路由
+# 在原命令前加 no 即可撤销，参数需与配置时完全一致
 no ip route 192.168.4.0 255.255.255.0 192.168.2.2
 
 # R2 取消静态路由
@@ -816,6 +822,7 @@ DNS（Domain Name System，域名系统）负责把域名解析为 IP 地址，�
 验证解析的 `dig` 命令：
 
 ```bash
+# dig 默认输出各段应答内容，排查解析问题先看这一段
 dig www.example.com                  # 查询 A 记录，看 ANSWER SECTION
 dig +trace www.example.com           # 从根服务器开始完整追踪迭代过程
 dig @8.8.8.8 www.example.com         # 指定 DNS 服务器查询

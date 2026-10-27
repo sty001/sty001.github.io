@@ -312,7 +312,9 @@ C 类 /24  2 的 8 次方  - 2 → 253
 ```bash
 # a 编写网卡配置文件
 # b 利用命令临时配置
+# gw 后面是下一跳网关地址，必须与本机网卡在同一网段
 route add default gw 10.0.0.2(网关地址)
+# 撤销默认路由，参数与添加时保持一致
 route del default gw 10.0.0.2
 ```
 
@@ -347,6 +349,7 @@ route del -host 10.0.3.201 dev eth1
 ```bash
 # a 编写网卡配置文件
 # b 利用命令临时配置
+# via 表示下一跳网关地址，与 CentOS 6 的 gw 含义相同
 ip route add default via 10.0.0.2
 ip route del default via 10.0.0.2
 ```
@@ -413,11 +416,13 @@ ip route del -host 10.0.3.201 via 10.0.1.2
 
 ```bash
 # 旧方式（CentOS 6，net-tools 时代）
+# 复制配置文件并改名，冒号后的 0 是别名序号
 cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0:0
 vim /etc/sysconfig/network-scripts/ifcfg-eth0:0
 # 修改 DEVICE=eth0:0 与 IPADDR=xxx，然后重启网络
 
 # 新方式（CentOS 7+，iproute2，立即生效）
+# /24 是前缀长度，比 NETMASK 写法更直观
 ip addr add 172.16.1.100/24 dev eth0
 ip addr del 172.16.1.100/24 dev eth0
 ip addr show
@@ -451,15 +456,20 @@ CentOS 6 / 7 的网卡配置文件位于 `/etc/sysconfig/network-scripts/ifcfg-<
 一份典型静态配置：
 
 ```ini
+# BOOTPROTO=none 表示不用 DHCP，改用下面手工指定的静态地址
 TYPE=Ethernet
 BOOTPROTO=none
 NAME=eth0
+# DEVICE 必须与实际接口名一致，写错这条配置不会被加载
 DEVICE=eth0
+# ONBOOT=yes 表示开机自动启用该网卡
 ONBOOT=yes
 IPADDR=172.16.1.7
 NETMASK=255.255.255.0
+# 多网卡时只能有一个配置文件写默认网关
 GATEWAY=172.16.1.1
 DNS1=114.114.114.114
+# NM_CONTROLLED=no 表示交由传统 network 服务管理
 NM_CONTROLLED=no
 ```
 
@@ -551,6 +561,7 @@ telnet 172.16.1.7 80
 # nc 方式：-z 只探测不发送数据，-v 输出结果，-w 超时秒数
 nc -zv 172.16.1.7 80
 nc -zv 172.16.1.7 22 80 443     # 一次探测多个端口
+# -w 3 给 3 秒超时，否则探测不通的端口会一直等待
 nc -z -w 3 172.16.1.7 3306
 ```
 
@@ -582,8 +593,10 @@ CentOS 7 起系统默认带 NetworkManager 网络管理服务，负责统一管�
 nmcli device status                  # 查看网卡状态（connected / disconnected）
 nmcli connection show                # 查看所有连接配置
 nmcli connection show eth0           # 查看某连接的详细配置
+# con add 新建连接，ifname 绑网卡，ip4 指定地址与网关
 nmcli con add type ethernet con-name eth1 ifname eth1 \
   ip4 172.16.1.7/24 gw4 172.16.1.1   # 新建静态连接
+# con mod 修改已有连接的属性
 nmcli con mod eth1 ipv4.dns "114.114.114.114"
 nmcli con up eth1                    # 启用连接
 nmcli con down eth1                  # 停用连接

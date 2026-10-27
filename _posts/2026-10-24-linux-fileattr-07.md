@@ -74,6 +74,8 @@ test-linux test01
 test-python-linux
 test-linux
 EOF
+# <<EOF 是 heredoc，把后面到 EOF 结束标记之间的内容原样写进文件
+# EOF 必须顶格且独占一行，写成缩进的 EOF 不会被识别为结束标记
 ```
 
 `^` 匹配行首，三种工具写法一致：
@@ -124,6 +126,8 @@ not 12300000456.
 my god, i am not tam, but TOM!
 my god, i am not taom, but TOM!
 EOF
+# 后面所有示例都基于这份数据；空行是特意留的，用来演示 ^$ 过滤空行
+# > 会先清空原文件再写入，重复执行结果一致
 ```
 
 ## 基础正则符号要点
@@ -377,6 +381,7 @@ cat >id.txt<<EOF
 赵六   unknown
 王五   104105********7631
 EOF
+# 用星星遮住中间位数的测试数据；"赵六 unknown"是待排查的异常行
 ```
 
 ```console
@@ -638,6 +643,7 @@ good
 goood
 gooood
 EOF
+# 用 o 的个数递增作样本，用来对比 o*、o+、o? 三种量词的匹配结果
 ```
 
 ```console
@@ -832,6 +838,8 @@ cat >access.log<<EOF
 192.168.1.10 - - [24/Oct/2026:10:00:03 +0800] "POST /login HTTP/1.1" 200 89 "-" "Mozilla/5.0"
 172.16.0.8 - - [24/Oct/2026:10:00:04 +0800] "GET /static/logo.png HTTP/1.1" 200 2048 "-" "Mozilla/5.0"
 EOF
+# 标准组合日志格式：IP、日期时间、请求行、状态码、字节数、Referer、UA
+# 192.168.1.10 出现两次，用来演示 Top N 统计
 ```
 
 ### 案例一：统计访问来源 IP Top N
@@ -861,6 +869,7 @@ test.user@mail.example.org
 无效邮箱：no-at-sign
 someone+tag@example.com
 EOF
+# 第三行故意没有 @ 和顶级域名，用来验证正则能否把它过滤掉
 ```
 
 ```console
@@ -918,9 +927,11 @@ someone+tag@example.com
 grep -rn --include="*.log" "ERROR" /var/log
 
 # 场景二：只搜最近 7 天修改过的日志，find 更擅长
+# -mtime -7 表示 7 天内修改过；{} 代表当前找到的文件，+ 表示批量传参
 find /var/log -name "*.log" -mtime -7 -exec grep -H "ERROR" {} +
 
 # 场景三：对找到的每个文件执行带行号的搜索（\; 形式逐个执行）
+# -Hn 让 grep 输出文件名与行号，\; 每文件起一个进程，慢但便于观察
 find /etc -name "*.conf" -exec grep -Hn "Listen" {} \;
 ```
 
@@ -937,9 +948,11 @@ find /etc -name "*.conf" -exec grep -Hn "Listen" {} \;
 
 ```bash
 # 匹配"user=" 后面的单词（正向环视，标准 grep -E 写不了）
+# (?<=...) 是零宽断言，只做位置判断不消耗字符
 pcregrep '(?<=user=)\w+' config.txt
 
 # 非贪婪匹配：一行里取最短的引号内容
+# " 后面接 *? 表示懒惰匹配，遇到第一个引号就停
 pcregrep -o '"[^"]*?"' log.txt
 ```
 
@@ -958,12 +971,14 @@ ripgrep（`rg`）是近年最流行的 grep 替代品，特点：
 rg 'TODO' .
 
 # 只搜 Python 文件
+# -t py 按语言类型过滤，比 --glob '*.py' 更智能（能识别文件里的语法）
 rg -t py 'import os'
 
 # 查看统计信息
 rg --stats 'password' .
 
 # 强制搜索所有文件（包括被 .gitignore 忽略的）
+# -u 解除忽略规则，-uu 连隐藏文件一起搜，审计场景常用
 rg -uu 'secret' .
 ```
 

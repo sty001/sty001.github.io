@@ -81,6 +81,7 @@ mkdir -p /data/{a..c}
 touch /data/{a..c}/{1..3}.txt
 
 # 归档复制，保留属主属组权限与时间属性
+# $(date +%F) 是命令替换，每次执行得到当天日期，多次备份不会互相覆盖
 cp -a /etc /tmp/etc_$(date +%F)
 
 # 强制覆盖，绕过 cp -i 的别名提示
@@ -94,6 +95,7 @@ file /data/app
 ls -l /data/app
 
 # 批量修改时间戳，配合 find 使用
+# -exec 对每个匹配结果执行一次命令，{} 是占位符，\; 是被转义的分号
 find /data -type f -exec touch {} \;
 
 # 安全删除：先确认清单，再执行删除
@@ -112,6 +114,7 @@ rm -rf /tmp/olddata
 cp /etc/hosts /tmp/hosts_$(date +%F_%H%M).bak
 
 # 清理目录时连隐藏文件一起删，先列后删
+# -mindepth 1 表示跳过起始目录本身，只处理它下面的内容
 find /tmp/olddata -mindepth 1 -delete
 ```
 
@@ -151,6 +154,7 @@ head -5 /etc/passwd
 tail -5 /etc/passwd
 
 # 实时追踪日志，且日志被切割后仍能继续追踪
+# -F 等于 --follow=name --retry，文件被改名重建后会重新打开新文件
 tail -F /var/log/nginx/access.log
 
 # 过滤含有关键字的行并显示行号，忽略大小写
@@ -169,10 +173,12 @@ grep -c "404" /var/log/nginx/access.log
 grep -rl "DB_PASSWORD" /data/www
 
 # 查找 7 天前修改过的普通文件并删除（先 -ls 确认再 -delete）
+# -mtime +7 表示修改时间在 7 天之前，-ls 先列出详情再逐个确认
 find /data -type f -mtime +7 -ls
 find /data -type f -mtime +7 -delete
 
 # 查找大于 100M 的文件，按大小排序
+# +100M 是"大于 100MB"，-exec ls -lh 逐个查看再用 sort -k5 -h 排序
 find / -type f -size +100M -exec ls -lh {} \; | sort -k5 -h
 
 # 查找指定权限的文件（如 777 高危权限）
@@ -202,9 +208,11 @@ whereis -b nginx
 
 ```bash
 # 全盘定位最大的 10 个目录，一层一层往下钻
+# --max-depth=1 只统计到一级子目录，2>/dev/null 屏蔽权限不足的报错
 du -h --max-depth=1 /var 2>/dev/null | sort -rh | head -10
 
 # 找出最近 1 天内被改过的配置文件，排查「谁动了配置」
+# -mtime -1 是"24 小时以内"，与 -mtime +7 的语义方向相反
 find /etc -type f -mtime -1 -name "*.conf" -ls
 ```
 
@@ -239,12 +247,15 @@ find /etc -type f -mtime -1 -name "*.conf" -ls
 awk -F ":" '{print $1,$3}' /etc/passwd
 
 # 取某一列的数值求和，并加上表头
+# BEGIN 在读入前执行一次（打印表头），END 在读完所有行后执行一次（输出合计）
 awk -F ":" 'BEGIN{print "第一次总额","第三次总额"}{a=a+$2;b=b+$4}END{print a,b}' awk_test.txt | column -t
 
 # 输出行号与列数，做条件过滤
+# NR 是行号、$3 是第 3 列，跳过 NR<2 可避开表头行
 awk -F ":" 'NR>=2 && $3>=1000 {print NR, $1, $3}' /etc/passwd
 
 # 统计访问日志中来源 IP 的前 10 名
+# $1 是客户端 IP；sort 后 uniq -c 计数，再按次数倒序取前 10
 awk '{print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head -10
 
 # 统计被访问页面次数的前 10 名
@@ -254,6 +265,7 @@ awk '{print $7}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head -1
 grep -vE "^#|^$" /etc/nginx/nginx.conf | wc -l
 
 # 全局替换，先用备份方式测试再落地
+# -n 取消自动输出只保留 p 的结果；去掉 -i 先在屏幕上看，确认无误再加 -i.bak
 sed -n 's#/old/path#/new/path#gp' file.txt
 sed -i.bak 's#/old/path#/new/path#g' file.txt
 
@@ -278,12 +290,14 @@ tr -s " " < file.txt | cut -d " " -f 2
 xargs -n1 < ip.txt
 
 # 批量创建用户：把用户名文件转成 useradd 参数
+# -n1 每次只传一个参数，-I{} 指定占位符，替换后面的 {}
 cat user.txt | xargs -n1 -I{} useradd {}
 
 # 处理含空格的文件名，必须加 -print0 与 -0
 find /data -type f -name "*.log" -print0 | xargs -0 rm -f
 
 # 既在屏幕看到结果，又写入文件留痕
+# tee 不加 -a 会覆盖文件，加 -a 才是追加
 df -h | tee -a /tmp/disk_check.log
 ```
 
@@ -297,9 +311,11 @@ df -h | tee -a /tmp/disk_check.log
 
 ```bash
 # 统计访问日志中各状态码出现的次数
+# $9 是默认 combined 格式里的响应状态码列
 awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c | sort -rn
 
 # 切割后的压缩日志一样能分析，不用先解压
+# zcat 只输出不落盘，直接接管道即可
 zcat /var/log/nginx/access.log-20261020.gz | awk '{print $1}' | sort | uniq -c | sort -rn | head -10
 ```
 
@@ -328,6 +344,7 @@ zcat /var/log/nginx/access.log-20261020.gz | awk '{print $1}' | sort | uniq -c |
 
 ```bash
 # 数字法与符号法互转练习
+# 数字法 761 = rwxrw--x；符号法更直观，适合微调某一类用户的某个权限位
 chmod 761 test.txt
 chmod a=x test.txt
 chmod u+r,g-w,o=r file.txt
@@ -337,6 +354,7 @@ chown -R www.www /data/www
 chmod -R 750 /data/www
 
 # 查看并显示八进制权限、属主属组
+# -c 指定格式串，%n 文件名、%a 八进制权限、%U 属主、%G 属组
 stat -c "%n %a %U:%G" /etc/hosts
 
 # 查看文件的三个时间：访问、内容修改、属性修改
@@ -351,6 +369,7 @@ chattr -i /etc/passwd
 chattr +a /var/log/secure
 
 # 给单个用户单独授权，不影响其他用户
+# u:ops:rw 指定用户 ops 的读写权限，不给 x 就不能执行
 setfacl -m u:ops:rw /data/report.txt
 getfacl /data/report.txt
 
@@ -364,6 +383,7 @@ setfacl -b /data/report.txt
 # 查看与临时关闭 SELinux
 getenforce
 setenforce 0
+# 分隔符用 #，避免与路径里的 / 冲突；^SELINUX=.* 只匹配 SELINUX 开头的那一行
 sed -i 's#^SELINUX=.*#SELINUX=disabled#g' /etc/selinux/config
 
 # umask 计算：文件 666-022=644，目录 777-022=755
@@ -410,10 +430,12 @@ touch new.txt && mkdir newdir && ls -l new.txt && ls -ld newdir
 
 ```bash
 # 创建普通用户与虚拟用户
+# -M 不建家目录，-s /sbin/nologin 让账号无法登录，服务账号的标准写法
 useradd ops
 useradd www -u 1002 -M -s /sbin/nologin
 
 # 创建带注释、指定 uid 与所属组的用户
+# -g 指定主要组、-G 指定附加组，-c 写进 passwd 的注释字段
 useradd mysql -s /sbin/nologin -M -c "manager database"
 useradd dev -u 2001 -g devops -G wheel
 
@@ -423,9 +445,11 @@ grep ops /etc/passwd
 
 # 交互式与非交互式设置密码
 passwd ops
+# --stdin 从标准输入读密码，适合脚本批处理
 echo '你的密码' | passwd --stdin ops
 
 # 查看与设置密码策略
+# -M 最长有效期天数、-W 到期前警告天数、-I 过期后宽限天数
 chage -l ops
 chage -M 90 -W 7 -I 7 ops
 chage -d 0 ops
@@ -442,6 +466,7 @@ passwd -u ops
 userdel -r ops
 
 # 家目录配置文件丢失导致提示符变成 -bash-4.2$ 时的修复
+# 从 /etc/skel 模板补回默认的 dot 文件，再把属主改回该用户
 cp /etc/skel/.b* /home/new01/
 chown -R new01.new01 /home/new01
 
@@ -453,6 +478,7 @@ lastlog
 
 # 配置 sudo 授权（必须用 visudo 检查语法）
 visudo
+# 格式：用户 主机=(可切换身份) 命令列表；NOPASSWD 表示免密
 ops     ALL=(ALL)       NOPASSWD: /usr/bin/systemctl, /usr/bin/yum
 
 # 以其他用户身份执行命令
@@ -505,6 +531,7 @@ for i in $(seq -w 1 20); do useradd -m test$i; echo "test$i:你的密码" | chpa
 
 ```bash
 # 查看磁盘挂载与使用情况（block 视角与 inode 视角）
+# df 看的是文件系统整体容量，du 看的是目录明细，两数对不上不一定有问题
 df -h
 df -i
 df -hT
@@ -514,6 +541,7 @@ du -sh --max-depth=1 /var
 du -sh /var/log/*
 
 # 查看块设备与 UUID
+# -f 同时显示文件系统类型与 UUID，写 fstab 时优先用 UUID 而不是 /dev/sdb1
 lsblk -f
 blkid /dev/sdb1
 
@@ -525,6 +553,7 @@ fdisk /dev/sdb
 partprobe /dev/sdb
 
 # 创建文件系统
+# 格式化会清空该分区上的全部数据，务必确认设备名没写错
 mkfs.xfs /dev/sdb1
 mkfs -t xfs /dev/sdb2
 mkfs.ext4 /dev/sdb3
@@ -538,15 +567,18 @@ findmnt /dev/sdb1
 # 写入 fstab 实现开机自动挂载（推荐用 UUID）
 blkid /dev/sdb1
 # UUID=xxxx-xxxx  /mount01  xfs  defaults  0 0
+# 最后两个 0：dump 设为 0 不用 dump 备份，pass 设为 0 不做 fsck 检查
 mount -a
 
 # 卸载设备（设备繁忙时先查占用进程）
 lsof /mount01
 fuser -mv /mount01
 umount /mount01
+# -l 是延迟卸载，等设备不再被占用后再真正卸载
 umount -l /mount01
 
 # LVM 标准扩容流程
+# 三步顺序固定：物理卷 → 卷组 → 逻辑卷
 pvcreate /dev/sdb1
 vgcreate vg_data /dev/sdb1
 lvcreate -L 10G -n lv_data vg_data
@@ -557,13 +589,16 @@ mount /dev/vg_data/lv_data /data
 pvcreate /dev/sdc1
 vgextend vg_data /dev/sdc1
 lvextend -L +5G /dev/vg_data/lv_data
+# 扩完逻辑卷还要扩文件系统，否则 df 看到的容量没变
 xfs_growfs /data            # xfs 文件系统扩容
 resize2fs /dev/vg_data/lv_data   # ext4 文件系统扩容
 
 # 一条命令完成扩容并同步文件系统
+# -r 表示自动执行 resizefs，-l +100%FREE 用尽卷组剩余空间
 lvextend -r -l +100%FREE /dev/vg_data/lv_data
 
 # 用文件方式增加 swap（临时应急）
+# bs=1M count=1024 即 1G；swap 文件权限必须是 600，否则 swapon 会拒绝
 dd if=/dev/zero of=/swapfile bs=1M count=1024
 chmod 600 /swapfile
 mkswap /swapfile
@@ -572,6 +607,7 @@ swapon -s
 swapoff /swapfile
 
 # 用 dd 测试磁盘写入性能
+# oflag=direct 绕过页缓存直接写盘，测出来的才是真实磁盘速度
 dd if=/dev/zero of=/tmp/test.txt bs=10M count=100 oflag=direct
 ```
 
@@ -584,9 +620,11 @@ dd if=/dev/zero of=/tmp/test.txt bs=10M count=100 oflag=direct
 
 ```bash
 # 一行找出使用率超过 80% 的分区，常放进巡检脚本
+# $5 是使用率（带 % 号），+0 转成数值再比较；NR>1 跳过表头行
 df -h | awk 'NR>1 && $5+0>=80 {print $6, $5}'
 
 # 定位某目录下占空间最大的 10 个文件
+# {} + 会把一批结果一次传给 du，比逐个 \; 高效得多
 find /data -type f -exec du -h {} + 2>/dev/null | sort -rh | head -10
 ```
 
@@ -614,6 +652,7 @@ find /data -type f -exec du -h {} + 2>/dev/null | sort -rh | head -10
 
 ```bash
 # 查看软件是否安装、包内有哪些文件、某文件属于哪个包
+# -qa 列出全部已安装包，输出很长，配 grep 才有意义
 rpm -qa | grep rsync
 rpm -ql nginx
 rpm -qf /etc/nginx/nginx.conf
@@ -621,6 +660,7 @@ rpm -qc nginx
 
 # 反查某个命令属于哪个软件包
 yum provides locate
+# 通配符要加引号，否则会被 Shell 先展开
 yum provides */ifconfig
 
 # 安装、卸载与重装
@@ -639,6 +679,7 @@ yum makecache
 
 # 查看与回滚 yum 操作历史
 yum history list
+# undo 按操作 ID 回滚，ID 从上一条列表里取
 yum history undo 12
 
 # 只下载不安装（离线部署常用）
@@ -654,6 +695,7 @@ vim /etc/yum.repos.d/nginx.repo
 # enabled=1
 
 # 手动安装本地或远程 RPM 包
+# -i 安装、-v 显示过程、-h 显示进度条
 rpm -ivh /tmp/zabbix-agent-4.0.0-2.el7.x86_64.rpm
 rpm -ivh http://example.com/packages/zabbix-release-4.0-1.el7.noarch.rpm
 
@@ -665,15 +707,18 @@ cd nginx-1.16.0
 ./configure --prefix=/usr/local/nginx --user=www --group=www \
 --with-http_ssl_module --with-http_stub_status_module \
 --with-http_gzip_static_module --with-pcre-jit
+# -j 按 CPU 核数并行编译，$(nproc) 取本机核数
 make -j $(nproc)
 make install
 
 # 编译安装后刷新动态库缓存
+# 把自定义库目录写进 ld.so 搜索路径，再执行 ldconfig 生效
 echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
 ldconfig
 
 # dnf 与 yum 语法一致，模块流管理是它的特色
 dnf module list
+# module enable 会切换模块流，同一时间只能启用一个流
 dnf module enable nginx:1.20
 dnf install -y nginx
 ```
@@ -686,6 +731,7 @@ dnf install -y nginx
 
 ```bash
 # 离线部署三件套：连依赖一起下载、传过去、本地安装
+# --resolve 会连同依赖包一起下载，localinstall 再让 yum 自动理顺安装顺序
 yumdownloader --resolve --destdir=/tmp/pkg nginx
 scp -r /tmp/pkg 10.0.0.7:/tmp
 yum localinstall -y /tmp/pkg/*.rpm
@@ -727,11 +773,13 @@ uptime
 
 # 查看进程树与指定服务进程
 ps -ef | grep nginx
+# 方括号写法让 grep 匹配不到自身那一行，避免统计结果多一个
 ps -ef | grep -c [n]ginx
 pstree -p | head -20
 
 # 实时查看资源占用，按 P 排 CPU、按 M 排内存、按 1 展开核心
 top
+# -p 只监控指定 PID，这里取 nginx 第一个进程的 PID
 top -p $(pgrep nginx | head -1)
 
 # 查看内存，重点关注 available 与 buff/cache
@@ -748,12 +796,14 @@ mpstat -P ALL 1
 
 # 查看网卡流量与历史数据
 sar -n DEV 1 5
+# -f 指定历史文件，sa20 表示当月 20 号的采样数据
 sar -u -f /var/log/sa/sa20
 
 # 查端口占用与查进程打开了哪些文件
 lsof -i :80
 lsof -i :22
 lsof -p 1234
+# +D 递归查目录，目录很大时会很慢
 lsof +D /data
 
 # 查文件被谁占用导致无法卸载
@@ -773,6 +823,7 @@ killall -9 nginx
 kill -1 $(cat /var/run/nginx.pid)
 
 # 备份任务降优先级运行，避免拖垮业务
+# nice 值越小优先级越高，普通用户只能调低
 nice -n 10 tar zcf /tmp/bak.tgz /data
 renice -n 5 -p 1234
 
@@ -790,6 +841,7 @@ ps aux --sort=-%mem | head -10
 
 ```bash
 # 连续观察内存走势，判断是否存在持续泄漏
+# -s 5 每 5 秒刷新一次，-c 6 共输出 6 轮
 free -h -s 5 -c 6
 
 # 排查单核打满：看哪个核心利用率异常
@@ -837,30 +889,36 @@ ip route show
 ip neigh show
 
 # 查看端口监听与连接状态（新方式，替代 netstat）
+# -l 只看监听、-n 不反查服务名、-t TCP、-u UDP、-p 显示进程
 ss -lntup
 ss -lntup | grep 80
 ss -tan | grep -c ':80 '
 
 # 统计各种状态的 TCP 连接数
+# $1 是连接状态列，NR>1 跳过表头
 ss -ant | awk 'NR>1{print $1}' | sort | uniq -c | sort -rn
 
 # 连通性测试
+# -c 指定发送次数，-W 是单包超时秒数（Linux 上单位是秒）
 ping -c 4 223.5.5.5
 ping -c 4 -W 1 10.0.0.7
 
 # 追踪链路与持续观察丢包
 traceroute -n www.example.com
+# -r 报告模式输出一次结果，-c 指定探测包数
 mtr -n -r -c 10 223.5.5.5
 
 # DNS 解析排查
 dig www.example.com
 dig +short www.example.com
+# @ 后面指定本次查询使用的 DNS 服务器，可对比不同解析结果
 dig @223.5.5.5 www.example.com
 nslookup www.example.com
 
 # 验证 Web 服务：指定 Host 头访问后端
 curl -I -H "host:www.example.com" 10.0.0.7/test.html
 curl -L -o /tmp/page.html http://www.example.com
+# -w 输出自定义指标，%{http_code} 取状态码，%{time_total} 取总耗时
 curl -w "状态码:%{http_code} 总耗时:%{time_total}\n" -o /dev/null -s http://www.example.com
 
 # 下载文件与断点续传
@@ -868,24 +926,29 @@ wget -O /tmp/nginx.tar.gz http://nginx.org/download/nginx-1.16.0.tar.gz
 wget -c http://example.com/bigfile.iso
 
 # 端口连通性探测（telnet 的现代替代）
+# -z 只探测不发数据，-v 打印结果，端口通会显示 succeeded
 nc -z -v 10.0.0.7 80
 nc -z -v 10.0.0.7 22
 ssh -v -p 22 ops@10.0.0.7
 
 # 配置 SSH 免密登录
+# -N '' 设置空口令，-f 指定密钥文件名
 ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa
 ssh-copy-id -i ~/.ssh/id_rsa.pub ops@10.0.0.7
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.16.1.31 "-o StrictHostKeyChecking=no"
 
 # 批量分发公钥（无 ssh-copy-id 时）
+# sshpass 会把密码留在历史里，仅限一次性批量场景
 sshpass -p'你的密码' ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.16.1.31 "-o StrictHostKeyChecking=no"
 
 # 远程复制文件与目录
 scp /tmp/web_back.sql 10.0.0.7:/tmp
 scp -rp /data/www 10.0.0.7:/data/
+# scp 的端口是大写 -P，小写 -p 是保留属性，写反了端口不会生效
 scp -P 52113 -rp /data ops@10.0.0.7:/data
 
 # rsync 本地与远程同步
+# 源路径结尾带 / 表示同步目录内容，不带则连目录本身一起搬
 rsync -av /data/ /backup/data/
 rsync -avz /data/ rsync_backup@172.16.1.31::backup --password-file=/etc/rsync.password
 rsync -avz rsync_backup@172.16.1.31::backup/10.0.0.7/ /backup/ --password-file=/etc/rsync.password
@@ -896,6 +959,7 @@ rsync -avz --dry-run /data --exclude=b/1.txt --exclude=c/ rsync_backup@172.16.1.
 rsync -avz /data --exclude-from=/data/exclude.txt rsync_backup@172.16.1.31::backup
 
 # 查看备份服务器的模块列表
+# 冒号后什么都不写表示列出该用户可用的所有模块
 rsync rsync_backup@172.16.1.31::
 ```
 
@@ -909,9 +973,11 @@ rsync rsync_backup@172.16.1.31::
 
 ```bash
 # 统计当前 ESTABLISHED 并发连接数
+# 匹配不到时 c 为空，c+0 兜底输出 0 而不是空行
 ss -tan | awk '/ESTAB/{c++} END{print c+0}'
 
 # 找出连到本机 80 端口连接数最多的前 10 个来源 IP
+# $4 是本地地址、$5 是对端地址，cut -d: -f1-4 取出不含端口的 IP
 ss -tan | awk '$4 ~ /:80$/ {print $5}' | cut -d: -f1-4 | sort | uniq -c | sort -rn | head -10
 
 # 验证解析结果是否一致，排查 DNS 劫持
@@ -957,11 +1023,13 @@ systemctl stop nginx
 systemctl restart nginx
 systemctl reload nginx
 systemctl enable nginx
+# --now 表示同时立即启动，等于 enable + start 一步到位
 systemctl enable --now nginx
 systemctl disable nginx
 
 # 检查服务状态
 systemctl status nginx
+# is-active / is-enabled 只返回状态，适合写进脚本做判断
 systemctl is-active nginx
 systemctl is-enabled nginx
 systemctl list-unit-files | grep nginx
@@ -987,8 +1055,10 @@ localectl set-locale LANG=en_US.UTF-8
 journalctl -u nginx -f
 journalctl -u nginx -n 50
 journalctl -u nginx --since "1 hour ago"
+# -p 指定级别门槛，err 及以上；-b 只看本次开机的日志
 journalctl -p err -b
 journalctl --disk-usage
+# --vacuum-size 按总量上限清理历史日志
 journalctl --vacuum-size=500M
 
 # 定时任务：先确认命令能跑通，再写进 crontab
@@ -1011,6 +1081,7 @@ at -l
 at -d 3
 
 # 计划关机与重启（推荐，可取消）
+# 会提前广播通知在线用户，shutdown -c 可撤销计划
 shutdown -h 5
 shutdown -r 5
 shutdown -c
@@ -1028,6 +1099,7 @@ free -h
 # 时间查看与设置
 date
 date "+%F_%T"
+# -s 设置系统时间需要 root 权限，-d 可解析相对时间
 date -s "2026-10-24 12:00:00"
 date -d "-1 day" "+%F"
 ```
@@ -1044,6 +1116,7 @@ date -d "-1 day" "+%F"
 ```bash
 # 服务起不来时按顺序查三处：状态、日志、端口
 systemctl status nginx
+# --no-pager 禁止分页输出，便于在脚本里直接取结果
 journalctl -u nginx -n 50 --no-pager
 ss -lntp | grep nginx
 ```
@@ -1070,9 +1143,11 @@ ss -lntp | grep nginx
 
 ```bash
 # 打包压缩与解包（gzip 方式，最常用）
+# z 是 gzip、c 是创建、f 指定包名且必须放在最后
 tar zcf /tmp/web_$(date +%F).tar.gz /data/www
 tar zcf /tmp/etc.tar.gz /etc
 tar xf /tmp/web_2026-10-24.tar.gz
+# -C 指定解压到的目录
 tar xf /tmp/web_2026-10-24.tar.gz -C /data/
 
 # 不解压查看压缩包内容
@@ -1090,12 +1165,14 @@ tar jcf /tmp/data.tar.bz2 /data
 tar Jcf /tmp/data.tar.xz /data
 
 # 单文件压缩与解压，保留原文件
+# -k 保留原文件，-9 压缩比最高但速度最慢
 gzip -9 -k access.log
 gunzip access.log.gz
 gzip -d access.log.gz
 
 # 不解压直接查看压缩日志
 zcat access.log.gz | head -20
+# 管道直接灌进数据库，无需先落盘解压
 zcat /usr/share/doc/zabbix-server-mysql-4.0.0/create.sql.gz | mysql -uzabbix -p'你的密码' zabbix
 
 # zip 与 unzip（与 Windows 交互时使用）
@@ -1103,13 +1180,16 @@ yum install -y zip unzip
 zip -r www.zip /data/www
 unzip -l www.zip
 unzip -d /data www.zip
+# -o 覆盖已有文件不再询问
 unzip -o -d /data www.zip
 
 # 批量压缩查找到的日志文件
 find /data -type f -name "*.log" -mtime +7 -exec gzip {} \;
 
 # 分割大压缩包，便于邮件或网盘传输
+# - 表示输出到标准输出，再由 split 按 500M 切片，-d 用数字后缀
 tar zcf - /data | split -b 500M -d - /tmp/data_part.tar.gz.
+# 合并后再解开，顺序必须是 part.0、part.1……
 cat /tmp/data_part.tar.gz.* | tar zxf -
 ```
 
@@ -1122,6 +1202,7 @@ cat /tmp/data_part.tar.gz.* | tar zxf -
 ```bash
 # 每日备份并保留最近 7 天的滚动清理
 tar zcf /backup/etc_$(date +%F).tar.gz /etc
+# -mtime +7 表示 7 天以前的文件，删的都是历史备份
 find /backup -name "etc_*.tar.gz" -mtime +7 -delete
 ```
 
@@ -1176,6 +1257,7 @@ find /backup -name "etc_*.tar.gz" -mtime +7 -delete
 nginx -t                       # 改配置前必做语法检查
 nginx -s reload                # 平滑重载
 nginx -v && nginx -V           # 版本与编译参数
+# -n 总请求数，-c 并发数，结果只在同环境下有可比性
 ab -n 1000 -c 100 http://www.example.com/
 logrotate -f /etc/logrotate.d/nginx
 
@@ -1193,9 +1275,11 @@ php -m | grep -i mysql
 systemctl start mariadb
 mysql -uroot -p'你的密码' -e "show databases;"
 mysql -uroot -p'你的密码' -e "select user,host from mysql.user;"
+# 用输入重定向导入 SQL 文件
 mysql -uroot -p'你的密码' < /tmp/web_back.sql
 
 # 备份与恢复
+# --all-databases 备份所有库；大库务必加 --single-transaction，否则默认锁表
 mysqldump -uroot -p'你的密码' --all-databases >/tmp/web_back.sql
 mysqldump -uroot -p'你的密码' --single-transaction -B wordpress >/tmp/wp.sql
 mysqladmin -uroot -p'你的密码' status
@@ -1213,9 +1297,12 @@ redis-cli set site_status ok
 
 # --- Ansible ---
 ansible all -a "hostname"
+# --list-hosts 只列出目标主机不执行，确认范围后再动手
 ansible web -i /etc/ansible/hosts --list-hosts
+# --check 预演，只报告会做什么而不真正执行
 ansible all -m yum -a "name=iotop state=installed" --check
 ansible 172.16.1.31 -m command -a "chdir=/tmp touch test.txt"
+# creates 参数让命令在文件已存在时跳过，保证重复执行是幂等的
 ansible 172.16.1.31 -m shell -a "creates=/tmp/hosts touch test.txt"
 ansible 172.16.1.31 -m copy -a "src=/etc/hosts dest=/etc/ backup=yes"
 ansible 172.16.1.31 -m copy -a "src=/data/ dest=/data"
@@ -1224,6 +1311,7 @@ ansible 172.16.1.31 -m file -a "src=/data/test.txt dest=/data/test_link.txt stat
 ansible 172.16.1.31 -m service -a "name=nfs state=started enabled=yes"
 ansible 172.16.1.31 -m cron -a "name='time sync' minute=0 hour=2 job='/usr/sbin/ntpdate ntp1.example.com >/dev/null 2>&1'"
 ansible 172.16.1.31 -m user -a "name=user02 uid=6666"
+# -u 指定连接用户，-b 表示以特权方式执行
 ansible all -u deploy -b -m service -a "name=nginx state=restarted"
 ansible-doc -l
 ansible-doc -s fetch
@@ -1238,6 +1326,7 @@ systemctl restart zabbix-agent
 zabbix_agentd -p | head -20
 zabbix_agentd -t agent.ping
 zabbix_get -s 10.0.0.7 -k 'web_state'
+# 键名带方括号表示带参数的自定义监控项
 zabbix_get -s 10.0.0.7 -k 'server_state[22]'
 ss -lntup | grep 10050
 
@@ -1248,6 +1337,7 @@ ss -lntup | grep 10050
 
 # --- NFS 与实时同步 ---
 showmount -e 172.16.1.31
+# 改完 /etc/exports 后用 -rv 重新导出，无需重启服务
 exportfs -rv
 inotifywait -mrq --timefmt '%F %T' --format '%T %w%f %e' -e create,delete,modify /data/blog
 ```

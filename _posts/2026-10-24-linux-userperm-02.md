@@ -61,6 +61,7 @@ chmod 644 xxx              # 全部用户统一设置权限（更加灵活）
 umask 是内置命令，可以影响系统数据的默认权限。永久设置方式：
 
 ```bash
+# $UID 是 shell 内置变量，不需要额外声明；-gt 是数值比较
 if [ $UID -gt 199 ] && [ "`/usr/bin/id -gn`" = "`/usr/bin/id -un`" ]
         条件一                      条件二
 then
@@ -108,6 +109,7 @@ $UID              显示当前登录系统用户的 uid 数值
 # 编写人: ops
 # 编写时间: 2019
 # 脚本作用:
+# 模板说明：首行 shebang 决定解释器，必须放在文件第一行，否则脚本无法直接执行
 ```
 
 ## 二、权限模型原理解析
@@ -157,8 +159,10 @@ umask 是 shell 内置命令，作用于当前 shell 及其子进程。要点：
 ### 3.1 setuid：4
 
 ```bash
+# 字母写法 u+s 与数字写法 4755 等价，二选一即可
 chmod u+s  文件信息
 chmod 4755 文件信息
+# ls -l 中属主位显示小写 s，说明该位同时带执行位；显示大写 S 则说明没有执行位
 [root@linux-node1 ~]# ll /bin/cat
 -rwsr-xr-x. 1 root root 54080 Apr 11  2018 /bin/cat
 ```
@@ -177,6 +181,7 @@ chmod 4755 文件信息
 ### 3.2 setgid：2
 
 ```bash
+# 数字写法的首位表示特殊位：2=SGID、4=SUID、6=两者兼具
 [root@linux-node1 ~]# chmod g+s /bin/cat
 [root@linux-node1 ~]# ll /bin/cat
 -rwsr-sr-x. 1 root root 54080 Apr 11  2018 /bin/cat
@@ -252,6 +257,7 @@ getcap 程序                    # 查看单个文件已授予的能力位
 
 ```bash
 # 加锁方法
+# +i 加不可变属性，ll 输出的权限位看不到它，得用 lsattr 才看得到
 chattr +i /etc/passwd
 ll /etc/passwd
 -rw-r--r--. 1 root root 4820 Apr 25 11:01 /etc/passwd
@@ -260,6 +266,7 @@ ll /etc/passwd
 chattr -i /etc/passwd
 
 # 检查方法
+# lsattr 输出第二列就是属性列表，全是 - 表示当前没有任何扩展属性
 [root@linux-node1 ~]# lsattr /etc/passwd
 ---------------- /etc/passwd
 ```
@@ -279,6 +286,7 @@ chattr -i /etc/passwd
 ### 5.1 /etc/passwd 七列含义
 
 ```bash
+# head 默认只输出前 10 行
 [root@linux-node1 test]# head /etc/passwd
 root    :x  :0  :0  :root    :/root          :/bin/bash
 bin     :x  :1  :1  :bin     :/bin           :/sbin/nologin
@@ -306,6 +314,7 @@ lp      :x  :4  :7  :lp      :/var/spool/lpd :/sbin/nologin
 /usr/bin/bash
 /sbin/nologin      # 无法登录系统
 /usr/sbin/nologin
+# 提示：nologin 类 shell 只接受"能执行命令"的场景，不接受交互式登录
 ```
 
 ### 5.2 /etc/shadow 字段速查
@@ -352,11 +361,14 @@ useradd ops01 -M -s /sbin/nologin        # 虚拟用户被创建出来
 | `-r` | 创建系统用户（不建家目录，uid 取系统区间） |
 
 ```bash
+# -M 不建家目录，-s 指定登录 shell；uid 由系统按规则自动分配
 [root@linux-node1 test]# useradd Alex01 -M -s /sbin/nologin
 [root@linux-node1 test]# id Alex01
 uid=1067(Alex01) gid=1067(Alex01) groups=1067(Alex01)
+# grep 到 /etc/passwd 里看该用户的七列信息
 [root@linux-node1 test]# grep Alex01 /etc/passwd
 Alex01:x:1067:1067::/home/Alex01:/sbin/nologin
+# 因为加了 -M，家目录并不存在
 [root@linux-node1 test]# ll /home/Alex01 -d
 ls: cannot access /home/Alex01: No such file or directory
 ```
@@ -372,6 +384,7 @@ uid=2000(Alex03) gid=2000(Alex03) groups=2000(Alex03)
 指定主要组（可以用组名，也可以用 gid）：
 
 ```bash
+# -g 后面既可写组名也可写 gid，最终都指向同一个组
 useradd Alex04 -u 2001 -g Alex02
 [root@linux-node1 test]# id Alex04
 uid=2001(Alex04) gid=1068(Alex02) groups=1068(Alex02)
@@ -408,11 +421,13 @@ mysql:x:2005:2005:manager database:/home/mysql:/sbin/nologin
 
 ```bash
 # 修改用户 shell 信息
+# usermod 改的是 /etc/passwd，改完用户需重新登录才生效
 [root@linux-node1 test]# usermod Alex02 -s /sbin/nologin
 [root@linux-node1 test]# grep Alex02 /etc/passwd
 Alex02:x:1068:1068::/home/Alex02:/sbin/nologin
 
 # 修改用户 uid 信息
+# 改 uid 不会自动带上该用户原有的文件属主
 [root@linux-node1 test]# usermod Alex02 -u 3000
 [root@linux-node1 test]# id Alex02
 uid=3000(Alex02) gid=1068(Alex02) groups=1068(Alex02)
@@ -425,8 +440,10 @@ uid=3000(Alex02) gid=1068(Alex02) groups=1068(Alex02)
 
 ```bash
 userdel -r Alex04     # -r 彻底删除用户以及用户的家目录
+# 家目录一并被删，所以再查就是不存在
 [root@linux-node1 test]# ll /home/Alex04 -d
 ls: cannot access /home/Alex04: No such file or directory
+# 同名 uid 可以重新分配
 [root@linux-node1 test]# useradd Alex04
 ```
 
@@ -434,9 +451,11 @@ ls: cannot access /home/Alex04: No such file or directory
 
 ```bash
 # 交互式设置密码
+# 不带用户名时改的是当前用户自己的密码
 passwd ops
 
 # 非交互设置密码（示例密码一律用占位符表示）
+# --stdin 从标准输入读口令，RHEL 系专有；口令会留在 shell 历史里
 echo '<your-password>' | passwd --stdin ops
 ```
 
@@ -457,6 +476,7 @@ echo '<your-password>' | passwd --stdin ops
 
 ```bash
 # groupadd 创建用户组
+# 建组后用 -g 把该组指定为用户的主要组
 [root@linux-node1 test]# groupadd python
 [root@linux-node1 test]# useradd python -g python
 [root@linux-node1 test]# id python
@@ -479,8 +499,10 @@ uid=3003(python) gid=3003(python) groups=3003(python)
 ## 八、属主属组设置：chown
 
 ```bash
+# 第二列是链接数；第三、四列是属主与属组
 [root@linux-node1 test]# ll /etc/hosts
 -rw-r--r--. 2 root root 192 Apr 15 12:19 /etc/hosts
+# 属主:属组 用冒号分隔（用点号也可以），只有 root 能改属主
 [root@linux-node1 test]# chown ops.root /etc/hosts
 [root@linux-node1 test]# ll /etc/hosts
 -rw-r--r--. 2 ops root 192 Apr 15 12:19 /etc/hosts
@@ -489,13 +511,17 @@ uid=3003(python) gid=3003(python) groups=3003(python)
 `-R` 递归修改目录及其内容的属主和属组：
 
 ```bash
+# ll -d 只看目录本身的属性，不列出目录内容
 [root@linux-node1 test]# ll test_dir -d
 dr-xr-xr-x. 2 ops dev 24 Apr 23 10:36 test_dir
+# 目录没有写权限（无 w 位），普通用户在里面建文件会失败
 [root@linux-node1 test]# touch test_dir/root.txt
 [root@linux-node1 test]# ll test_dir/root.txt
 -rw-r--r--. 1 root root 0 Apr 24 11:29 test_dir/root.txt
+# 确认目标用户 Alex01 的 uid
 [root@linux-node1 test]# id Alex01
 uid=1067(Alex01) gid=1067(Alex01) groups=1067(Alex01)
+# 不加 -R 只改目录本身，里面的文件属主不变
 [root@linux-node1 test]# chown Alex01.Alex01 test_dir
 [root@linux-node1 test]# ll test_dir -d
 dr-xr-xr-x. 2 Alex01 Alex01 40 Apr 24 11:29 test_dir
@@ -503,6 +529,7 @@ dr-xr-xr-x. 2 Alex01 Alex01 40 Apr 24 11:29 test_dir
 total 0
 -rw-r--r--. 1 root root 0 Apr 23 10:36 test.txt
 -rw-r--r--. 1 root root 0 Apr 24 11:29 root.txt
+# 加 -R 才会连目录内的所有文件一起改
 [root@linux-node1 test]# chown -R Alex01.Alex01 test_dir
 [root@linux-node1 test]# ll test_dir -d
 dr-xr-xr-x. 2 Alex01 Alex01 40 Apr 24 11:29 test_dir
@@ -532,6 +559,7 @@ id -nG 用户名      # 只看所属组名列表
 显示正在登录系统的用户信息：
 
 ```bash
+# w 显示当前登录用户；第一行是开机时间、在线人数与三个负载值
 [root@linux-node1 test]# w
  11:33:31 up  6:33,  1 user,  load average: 0.00, 0.01, 0.05
 USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
@@ -578,6 +606,7 @@ su -    全部环境变量切换用户有变化
 当前登录用户为 ops 时的环境变量：
 
 ```bash
+# env 打印全部环境变量，grep ops 只筛出与 ops 相关的行
 [ops@linux-node1 ~]$ env|grep ops
 HOSTNAME=linux-node1
 USER=ops
@@ -593,6 +622,7 @@ LOGNAME=ops
 使用 `su` 切换（部分切换）：
 
 ```bash
+# 不带 - 的 su 只切换部分变量，提示符里的当前目录仍是原用户的家目录
 [ops@linux-node1 ~]$ su root
 Password:
 [root@linux-node1 ops]# env|grep root
@@ -611,6 +641,7 @@ LOGNAME=ops
 使用 `su -` 切换（完全切换）：
 
 ```bash
+# 带 - 的 su 以登录 shell 启动，完整加载目标用户的环境
 [ops@linux-node1 ~]$ su - root
 Password:
 Last login: Thu Apr 25 08:51:40 CST 2019 on pts/0
@@ -689,17 +720,22 @@ sudoers 每行的基本格式为：
 
 ```bash
 # 用户别名
+# 说明：一组用户的集合名，方便批量授权
 User_Alias  OPSGRP  = ops, dev, test
 
 # 主机别名
+# 说明：一组主机的集合名
 Host_Alias  DBSRV   = db01, db02
 
 # 命令别名
+# 说明：一组命令路径的集合名，路径必须是绝对路径
 Cmnd_Alias  SOFTADM = /usr/sbin/useradd, /usr/sbin/usermod, /usr/bin/passwd
 
 # 身份别名
+# 说明：可以切换到的目标身份集合
 Runas_Alias DBADM   = oracle, mysql
 
+# 引用别名写规则：用户别名 主机=(身份别名) 命令别名
 OPSGRP  ALL=(root) SOFTADM
 ```
 
@@ -736,12 +772,15 @@ visudo                 # 推荐使用，自带语法检查功能，等价于 vi 
 
 ```bash
 # 1) 授权单个命令或多个命令
+# 命令之间用逗号分隔，末尾多余的逗号可以省略
 /usr/sbin/useradd, /usr/bin/rm, ,
 
 # 2) 授权单个命令目录或多个命令目录（需要排除部分特权命令）
+# 通配符授权目录时必须用 ! 排除 visudo，否则被授权者能反向提权
 /usr/sbin/*, !/usr/sbin/visudo , /usr/bin/*
 
 # 3) 不需要输入用户密码，可以直接 sudo 方式执行命令
+# NOPASSWD: 只能给受控的自动化账号用，交互式人工账号不要加
 NOPASSWD: /usr/sbin/*, !/usr/sbin/visudo , /usr/bin/*
 ```
 
@@ -759,6 +798,7 @@ NOPASSWD 的风险边界要划清楚。它省掉的只是"输自己密码"这一
 **b. 如何验证已经获取了 root 用户的能力：**
 
 ```bash
+# sudo -l 列出当前用户被授权的命令，验证授权是否生效
 [ops@linux-node1 ~]$ sudo -l
 We trust you have received the usual lecture from the local System
 Administrator. It usually boils down to these three things:
@@ -774,6 +814,7 @@ User ops may run the following commands on linux-node1:
 **c. 执行 root 用户可以执行的命令：**
 
 ```bash
+# sudo 执行的是被授权的那条命令，命令不在白名单里就会直接拒绝
 [ops@linux-node1 ~]$ sudo useradd Alex06
 useradd: user 'Alex06' already exists
 [ops@linux-node1 ~]$ sudo useradd Alex07

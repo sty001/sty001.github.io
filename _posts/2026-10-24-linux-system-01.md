@@ -302,6 +302,7 @@ Shutdown scheduled for Fri 2019-03-29 11:36:45 CST, use 'shutdown -c' to cancel.
 定义一个关机方案 = 定义什么时间进行关机，使用 `shutdown -c` 取消关机计划。
 
 ```bash
+# 关机前的广播信息会送到所有登录用户的终端上
 [root@linux-node1 test04]#
 Broadcast message from root@linux-node1 (Fri 2019-03-29 11:35:45 CST):
 
@@ -319,6 +320,7 @@ shutdown -h 5
 **系统重启：**
 
 ```bash
+# -r 表示重启，5 表示 5 分钟后执行；这条命令只是预约，不立刻重启
 [root@linux-node1 ~]# shutdown -r 5
 Shutdown scheduled for Fri 2019-03-29 12:02:41 CST, use 'shutdown -c' to cancel.
 [root@linux-node1 ~]#
@@ -356,8 +358,10 @@ reboot
 检查文件是否存在：
 
 ```bash
+# 列出存在的文件，输出就是路径本身
 [root@linux-node1 ~]# ls /etc/hosts
 /etc/hosts
+# 路径不存在时 ls 返回非 0 退出码并打印错误信息
 [root@linux-node1 ~]# ls /etc/hosts01
 ls: cannot access /etc/hosts01: No such file or directory
 ```
@@ -365,6 +369,7 @@ ls: cannot access /etc/hosts01: No such file or directory
 检查目录是否存在：
 
 ```bash
+# 不带选项时 ls 按列多行排列输出，适合人看
 [root@linux-node1 ~]# ls /etc/
 abrt                     environment         krb5.conf.d               pki             shadow
 adjtime                  ethertypes          latrace.d                 plymouth        shadow-
@@ -385,8 +390,11 @@ alternatives             filesystems         ld.so.conf.d              popt.d   
 #### 创建新的目录：`mkdir`（make directory）
 
 ```bash
+# 不带 -p 时父目录不存在会直接报错
 [root@linux-node1 ~]# mkdir /data
+# -p 会自动创建缺失的父目录，且目录已存在也不报错，脚本里建目录首选
 [root@linux-node1 ~]# mkdir -p /data/test01/test02/test03/test04    # 创建多级目录
+# -d 只显示目录本身而不是列出目录内容
 [root@linux-node1 ~]# ls -d /data/test01/test02/test03/test04
 /data/test01/test02/test03/test04
 ```
@@ -402,6 +410,7 @@ alternatives             filesystems         ld.so.conf.d              popt.d   
 相对路径切换（相对于当前路径找它下面的路径信息）：
 
 ```bash
+# 相对路径以当前目录为起点
 [root@linux-node1 test03]# cd test04/
 [root@linux-node1 test04]# cd ..          # 返回到上一级目录
 [root@linux-node1 test04]# cd ../../      # 返回到上两级目录
@@ -411,6 +420,7 @@ alternatives             filesystems         ld.so.conf.d              popt.d   
 两个目录之间快速切换：
 
 ```bash
+# cd - 切回上一个目录，并把切回的路径打印出来
 [root@linux-node1 test05]# cd /tmp/
 [root@linux-node1 tmp]# cd -
 /data/test01/test02/test03/test05
@@ -423,6 +433,7 @@ alternatives             filesystems         ld.so.conf.d              popt.d   
 快速返回到家目录：
 
 ```bash
+# ~ 代表当前用户的家目录
 [root@linux-node1 test05]# cd ~
 [root@linux-node1 ~]# cd -
 /data/test01/test02/test03/test05
@@ -433,6 +444,7 @@ alternatives             filesystems         ld.so.conf.d              popt.d   
 #### 查看当前所在路径：`pwd`（print work directory）
 
 ```bash
+# pwd 打印当前所在路径，路径会随 cd 变化
 [root@linux-node1 test05]# pwd
 /data/test01/test02/test03/test05
 [root@linux-node1 test05]# cd /data/test01/

@@ -33,6 +33,8 @@ slug: "linux-fileattr-03"
 假设文件中已经是被 `sed` 替换过的 `python*` 内容，想把 `python` 改回 `server`，但第二个字符集写短了：
 
 ```bash
+# tr 的替换是按字符位置一对一映射，两个字符集长度不一致时会补齐或保留
+# 所以 tr 只适合做大小写转换这类逐字符操作，不能用来做整词替换
 [root@linux-node1 ~]# cat /test/test.txt
 python01
 dev01
@@ -62,6 +64,8 @@ ops02
 | 极特殊情况（字符重复出现） | `echo abcba\|tr "abcba" "12345"` | `54345` | 同一个字符出现多次时，以最后一个映射为准：`a→5`、`b→4`、`c→3` |
 
 ```bash
+# 四种情况覆盖了字符集长短不一与字符重复出现时的映射规则
+# 字符集中同一个字符出现多次时，以最后一个映射为准
 [root@linux-node1 ~]# echo abcd|tr "abcd" "123"
 1233
 [root@linux-node1 ~]# echo abcd|tr "abc" "1234"
@@ -75,6 +79,8 @@ ops02
 **大小写转换是 tr 最典型的正确用法：**
 
 ```bash
+# tr "a-z" "A-Z" 是最典型的正确用法：两个字符集等长，一一对应
+# 文件被重定向读入，原文件内容不变
 [root@linux-node1 ~]# cat /test/test2.txt
 server01
 server02
@@ -110,6 +116,8 @@ cat /etc/redhat-release
 3. 利用 shell 脚本的循环语句：
 
 ```bash
+# {01..20} 是 bash 花括号展开，useradd 会自动建同名主要组
+# 同名用户会报 user exists，批量脚本通常先判断再创建
 [root@linux-node1 ~]# for num in {01..20};do useradd test$num;done
 [root@linux-node1 ~]# for num in {01..20};do id test$num;done
 uid=1021(test01) gid=1021(test01) groups=1021(test01)
@@ -125,9 +133,11 @@ uid=1040(test20) gid=1040(test20) groups=1040(test20)
 
 ```bash
 # 交互式设置密码
+# --stdin 从标准输入读密码，是 RHEL 系特有选项，Debian/Ubuntu 要用 chpasswd
 passwd 用户名        # 需要输入两次密码
 
 # 免交互设置密码
+# 密码写在命令行会留在 shell 历史里，批量建完号记得 history -c 清理
 [root@linux-node1 ~]# echo '<your-password>'|passwd --stdin test02
 Changing password for user test02.
 passwd: all authentication tokens updated successfully.
@@ -142,6 +152,8 @@ useradd test01 ;echo '<your-password>'|passwd --stdin test01
 {: .sec-know}
 
 ```bash
+# -i 显示 inode 号，输出分两段：左边是文件属性，右边是文件名
+# 首列 d/-/l 分别表示目录/普通文件/软链接，权限位后的 . 是 SELinux 标记
 [root@linux-node1 ~]# ls -li /etc/
 total 1092
                       第一个部分：文件属性                        第二个部分：文件名称
@@ -258,6 +270,8 @@ total 1092
 本篇课后练习问过"如何利用 `/dev/urandom` 产生随机字符信息"（例如新员工批量建账号时生成初始密码），标准做法是用 `tr` 从随机流中过滤出可见字符：
 
 ```bash
+# tr -dc 'A-Za-z0-9' 表示"删掉不在集合里的字符"，只保留字母和数字
+# head -c 12 取前 12 个字符；末尾的 echo 是为了补换行，否则提示符会粘在密码后面
 # 生成一个 12 位随机密码（大小写字母 + 数字）
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12; echo
 
@@ -291,6 +305,8 @@ Linux 判断文件类型不看扩展名的根源在于：类型信息写在 inod
 **② 利用属性信息区分**
 
 ```bash
+# ls -l 的首字符是文件类型，扩展名不参与判断
+# d 目录、- 普通文件、l 软链接、b/c 设备、p 管道、s socket
 ls -l
 d rwxr-xr-x. 3 root root 100 Apr  1 11:00 test01
 d rwxr-xr-x. 2 root root   6 Apr 12 11:19 test.jpg
@@ -303,6 +319,7 @@ d rwxr-xr-x. 2 root root   6 Apr 12 11:19 test.jpg
 **③ 利用特殊命令区分**
 
 ```bash
+# file 靠读取文件头部魔数判断类型，不看扩展名
 [root@linux-node1 ~]# file /test/test.jpg
 /test/test.jpg: directory
 [root@linux-node1 ~]# file /test/test.txt
@@ -339,6 +356,8 @@ d rwxr-xr-x. 2 root root   6 Apr 12 11:19 test.jpg
 | 改变时间 | Change time（ctime） | 文件属性发生变化（权限、属主、重命名、硬链接数变化） | `stat` 的 Change 行 |
 
 ```bash
+# stat 一次输出完整属性：inode、占用块、权限八进制、属主属组、三种时间
+# Blocks 的单位固定是 512 字节，与 df 的口径不同，对比时要留意
 [root@linux-node1 ~]# stat /test/test.txt
   File: '/test/test.txt'
   Size: 50          Blocks: 8          IO Block: 4096   regular file
@@ -428,6 +447,8 @@ find 找寻的路径范围 -type 类型信息 -name "文件名称"
 ```
 
 ```bash
+# 路径范围在前，测试条件在后；-type f 限定普通文件，-name 做通配匹配
+# 通配符要用引号包住，否则会被 shell 先展开
 [root@linux-node1 etc]# find /etc -type f -name "ifcfg-eth0"
 /etc/sysconfig/network-scripts/ifcfg-eth0
 

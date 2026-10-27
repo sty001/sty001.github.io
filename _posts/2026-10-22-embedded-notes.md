@@ -41,11 +41,14 @@ GPIOA->ODR ^= (1u << 5);   // 取反一次 = 翻转一次电平
 **实际示例**（FreeRTOS 用队列解耦生产者与消费者）：
 
 ```c
+// 队列长度 10、元素类型 int：满了之后发送端是阻塞还是直接失败，取决于下面 xQueueSend 的超时参数
 QueueHandle_t q = xQueueCreate(10, sizeof(int));
 // 中断 / 任务里发送
 xQueueSend(q, &val, 0);
+// 第三个参数是等待的 tick 数，0 表示队列满时立刻返回失败而不阻塞——在中断里必须这样写
 // 任务里接收（阻塞等待，不占用 CPU 忙等）
 xQueueReceive(q, &val, portMAX_DELAY);
+// portMAX_DELAY 表示无限期等待：数据没来就把当前任务挂起，不占用 CPU
 ```
 
 🔍 辨析：`轮询`是「不断问你忙不忙」，`事件驱动`是「你忙完了叫我」——后者在等待期间 CPU 可以去干别的，效率和响应都更好。

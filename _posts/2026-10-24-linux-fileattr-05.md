@@ -18,6 +18,7 @@ slug: "linux-fileattr-05"
 ### find 根据权限查找
 
 ```bash
+# -maxdepth 1 只在当前层查找，-type f 限定普通文件，-perm 644 表示权限恰好等于 644
 [root@linux-node1 test]# find /test -maxdepth 1 -type f -perm 644
 /test/services
 /test/test.txt
@@ -30,6 +31,8 @@ slug: "linux-fileattr-05"
 ### tar 命令三件套
 
 ```bash
+# zcvf 四个参数：z=gzip 压缩、c=创建、v=显示过程、f=指定归档文件名
+# 解压用 xf（-C 指定解压目录），tf 只查看包内内容不解压
 # 如何压缩数据
 tar zcvf /tmp/test.tar.gz  /etc/ /test/ /test/test.txt
 
@@ -64,6 +67,8 @@ tar tf /tmp/test.tar.gz
 | 查看方法 | `df -i` |
 
 ```bash
+# df -i 专门看 inode 使用率，IUse% 就是 inode 已用百分比
+# 这一列接近 100% 说明 inode 快用光了，与 block 剩余量无关
 [root@linux-node1 test]# df -i
 Filesystem       Inodes IUsed    IFree IUse% Mounted on
 /dev/sda3      25587200 61342 25525858    1% /
@@ -99,6 +104,8 @@ Filesystem       Inodes IUsed    IFree IUse% Mounted on
 | 查看方法 | `df` |
 
 ```bash
+# df 看的是 block（数据空间），1K-blocks 是以 1K 块为单位的总容量
+# 用% 是已用比例，与 df -i 的 inode 使用率是两套独立指标
 [root@linux-node1 test]# df
 Filesystem     1K-blocks    Used Available Use% Mounted on
 /dev/sda3       51149416 1752080  49397336   4% /
@@ -116,6 +123,7 @@ Filesystem     1K-blocks    Used Available Use% Mounted on
 课堂练习中问过"如何查看默认 block 大小、如何调整"，标准做法如下：
 
 ```bash
+# dumpe2fs 只适用于 ext 系列；xfs 用 xfs_info；stat -f 则是跨文件系统的通用查法
 dumpe2fs -h /dev/sda3 | grep "Block size"     # ext2/3/4 查看块大小
 stat -f /test                                  # 任何文件系统都可查看块大小等信息
 xfs_info /mnt/point                            # xfs 文件系统用 xfs_info
@@ -150,16 +158,19 @@ mkfs.xfs -b size=2048 /dev/sdb1                # xfs 指定块大小
 
 ```bash
 # 第一步：先核对，看清楚当前都有什么
+# head -20 只抽样前 20 条，防止输出刷屏
 find /data/wwwroot -type d | head -20
 find /data/wwwroot -type f | head -20
 
 # 第二步：目录统一 755（必须有 x，否则进不去）
+# {} + 表示把所有结果合并成一条命令执行，比 \; 逐个执行快
 find /data/wwwroot -type d -exec chmod 755 {} +
 
 # 第三步：文件统一 644（普通文件不需要执行位）
 find /data/wwwroot -type f -exec chmod 644 {} +
 
 # 第四步：统一属主与属组
+# -R 递归处理，属主与属组一次写全
 chown -R www:www /data/wwwroot
 
 # 第五步：抽查验证
@@ -185,6 +196,7 @@ ls -ld /data/wwwroot
 
 ```bash
 # 全量按天备份：备份最近 1 天修改过的文件
+# -print0 用空字符分隔，tar 的 --null -T - 从标准输入读这份列表，整条链路对空格换行免疫
 find /data -type f -mtime -1 -size -100M ! -name "*.log" -print0 \
   | tar czf /backup/data-$(date +%F).tar.gz --null -T -
 ```
@@ -201,6 +213,7 @@ find /data -type f -mtime -1 -size -100M ! -name "*.log" -print0 \
 
 ```bash
 # 只备份比标记文件新的文件，备份成功后更新标记
+# && 保证 tar 成功后才 touch 标记，顺序反了会漏备份这批文件
 find /data -type f -newer /backup/last.marker -print0 \
   | tar czf /backup/incr-$(date +%F).tar.gz --null -T - \
   && touch /backup/last.marker
@@ -219,6 +232,7 @@ find /data -type f -newer /backup/last.marker -print0 \
 
 ```bash
 # 第一步：逐级查看路径上每一段的权限，一眼定位断点
+# namei -l 会把路径按层级拆开，比一层层 ls -ld 高效得多
 namei -l /data/wwwroot/app/index.html
 
 # 第二步：查看文件自身属性与属主
@@ -226,9 +240,11 @@ ls -l /data/wwwroot/app/index.html
 id nginx                                   # 确认 Nginx 实际以哪个用户运行
 
 # 第三步：确认有没有 ACL 在作怪
+# getfacl 看不到条目就说明没有额外 ACL
 getfacl /data/wwwroot/app/index.html
 
 # 第四步：确认 SELinux 上下文是否被打破
+# ls -Z 看上下文，restorecon 按策略重置
 ls -Z /data/wwwroot/app/index.html
 
 # 第五步：常见修复手段
@@ -266,11 +282,13 @@ df -i
 df -h                                       # 对照：block 明明还有剩余
 
 # 第二步：定位小文件重灾区（按目录统计文件数，找最大的）
+# find | wc -l 逐个目录数文件数，循环里只做统计不做修改
 for d in /var/spool /var/lib /tmp /data; do
     echo "$d: $(find $d -type f | wc -l)"
 done
 
 # 第三步：缩小范围，找出具体目录
+# -printf '%h\n' 输出每个文件所在的目录名，再排序计数排出重灾区
 find /var/spool -type f -printf '%h\n' | sort | uniq -c | sort -rn | head
 
 # 第四步：先核对再清理（不带 -delete 跑一遍，人工确认列表）
@@ -298,6 +316,7 @@ df -i
 {: .callout-card}
 
 ```bash
+# ln 不带 -s 建硬链接，两个路径指向同一个 inode，所以链接数显示为 2
 [root@linux-node1 test]# ln /test/test.txt /test/test_hard_link.txt
 [root@linux-node1 test]# ll
 total 8
@@ -308,6 +327,7 @@ total 8
 利用 `find` 命令找到所有硬链接文件（按 inode 号码查找）：
 
 ```bash
+# find -inum 按 inode 号反查，能列出同一份数据的所有入口
 [root@linux-node1 test]# find / -type f -inum 33584339
 /etc/hosts
 /tmp/hosts
@@ -321,6 +341,7 @@ total 8
 统计 `/etc` 目录中有多少个目录文件：
 
 ```bash
+# grep -c "^d" 直接数行数；grep "^d" | wc -l 是先过滤再数，两种写法等价
 [root@linux-node1 ~]# ll /etc/|grep -c "^d"
 78
 [root@linux-node1 ~]# ll /etc/|grep  "^d"|wc -l
@@ -333,6 +354,8 @@ total 8
 {: .callout-card}
 
 ```bash
+# ln -s 建软链接，它本身是个独立的小文件，内容是目标路径字符串
+# 所以类型位是 l，权限恒为 rwxrwxrwx，实际权限取决于目标文件
 [root@linux-node1 test]# ln -s /test/test.txt /test/test_soft_link.txt
 [root@linux-node1 test]# ll
 total 8
@@ -361,6 +384,8 @@ lrwxrwxrwx. 1 root root 18 Apr 16 10:50 test_soft_link.txt -> /test/test.txt
 ### 查看时间信息与调整显示格式
 
 ```bash
+# %F 是 %Y-%m-%d 的简写，%T 是 %H:%M:%S 的简写，这两个最常用
+# 带格式串时整体加引号，避免被 shell 拆成多个参数
 [root@linux-node1 ~]# date
 Tue Apr 16 11:49:51 CST 2019
 
@@ -391,6 +416,7 @@ Tue Apr 16 11:49:51 CST 2019
 时间戳与日期的互转（脚本里常用）：
 
 ```bash
+# date -d @时间戳 是把 Unix 时间戳转成日期；反向转换用 -d "日期" +%s
 date +%s                            # 当前时间戳
 date -d @1729755174 "+%F %T"        # 时间戳转日期
 date -d "2024-10-24 11:52:54" +%s   # 日期转时间戳
@@ -399,6 +425,7 @@ date -d "2024-10-24 11:52:54" +%s   # 日期转时间戳
 **利用日期给备份文件命名：**
 
 ```bash
+# $(date +%F) 是命令替换，等价于反引号但可嵌套、可读性更好，脚本里统一用 $()
 cp app.log app.log-$(date "+%F_%T")
 ```
 
@@ -408,6 +435,7 @@ cp app.log app.log-$(date "+%F_%T")
 
 ```bash
 # 显示历史时间信息
+# -d 后跟相对时间表达式，date 能解析 "2 days ago"、"next monday" 这类写法
 # date +%F -d "-2day"
 # date +%F -d "1 day ago"
 
@@ -431,6 +459,8 @@ cp /test/app.log /log/app.log.$(date +%F -d "-1day")
 ### 实际修改系统时间
 
 ```bash
+# date -s 直接改系统时间会造成时间跳变，只适合应急
+# 改完要 hwclock -w 把时间写回硬件时钟，否则重启后被覆盖
 [root@linux-node1 test]# date -s "2020-04-17"
 Fri Apr 17 00:00:00 CST 2020
 [root@linux-node1 test]# date
@@ -447,6 +477,7 @@ Fri Apr 17 14:00:00 CST 2020
 ### 时间同步方法
 
 ```bash
+# ntpdate 是一次性对表，时间差大时直接跳变；现代系统改用 chronyd 持续平滑校时
 yum install -y ntpdate
 ntpdate
 

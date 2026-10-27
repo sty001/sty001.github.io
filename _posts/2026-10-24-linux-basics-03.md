@@ -326,6 +326,11 @@ GATEWAY=10.0.0.1
 DNS1=10.0.0.1
 DNS2=114.114.114.114
 NM_CONTROLLED=yes
+# BOOTPROTO=static 表示地址手工指定，改成 dhcp 则由 DHCP 服务器下发
+# DEVICE 必须与 ip addr 看到的真实网卡名一致，写错这条配置不生效
+# ONBOOT=yes 决定网卡是否随系统开机激活，漏掉它重启后网卡不会自动起来
+# NETMASK 也可以用 PREFIX=24 替代，两者作用相同
+# NM_CONTROLLED=yes 表示交由 NetworkManager 统一管理
 ```
 
 | 配置项 | 含义 | 说明 |

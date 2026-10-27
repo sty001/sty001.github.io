@@ -26,6 +26,8 @@ slug: "linux-fileattr-02"
 四者对比示例：
 
 ```bash
+# which 只看 PATH，whereis 连 man 页一起给，type 判断命令身份，locate 查的是数据库
+# locate 依赖 updatedb 定时生成的数据库，不是实时的，刚建的文件查不到
 [root@linux-node1 ~]# which cat
 /usr/bin/cat
 [root@linux-node1 ~]# whereis cat
@@ -67,6 +69,8 @@ find [查找的路径范围] [测试条件] [动作]
 | `-regex "正则"` | 用正则表达式匹配完整路径 | `find /etc -regex ".*ifcfg.*"` |
 
 ```bash
+# -name 支持通配符，模式要用引号包住，避免被 shell 提前展开
+# 模糊匹配用 * ? []，-iname 则在匹配时忽略大小写
 # 精确查找
 find /etc -type f -name "ifcfg-eth0"
 # 模糊查找
@@ -127,6 +131,8 @@ find /test -type f -ctime +30                # 30 天以前属性改变过的文
 | `G` | Gigabytes（1073741824 bytes） | 推荐 |
 
 ```bash
+# -size 不带单位时默认是 512 字节块，不是 KB，别看错口径
+# + 表示大于，- 表示小于，不带符号表示恰好等于
 find /test -type f -size +100     # 大于 100 个 512 字节块的文件
 find /test -type f -size -100c    # 小于 100 字节的文件
 find /test -type f -size +1M      # 大于 1M 的文件
@@ -208,6 +214,8 @@ find /test -maxdepth 2 -type f -name "Test*"    # 最多下探 2 层
 生产事故里相当一部分批量误删就是通配符惹的祸。经典翻车：想删 `/app/logs/*`，多敲一个空格写成 `rm -rf /app/logs/ *`；更狠的是变量为空时 `rm -rf $dir/*` 展开成 `rm -rf /*`。防范三招：删除前先 `ls` 同样条件的列表核对；路径变量加引号并判空；高危操作前 `pwd` 确认自己在哪。`-delete` 的好处是只删 find 匹配到的结果，不容易被空格拆歪。
 
 ```bash
+# 删除是不可逆的，先用同样的条件 list 一遍确认范围，再上 -delete
+# -exec 的 {} 是结果占位符，结尾的 \; 必须转义，否则会被当成 shell 分隔符
 # 删除 /test 下所有 .txt 文件：先核对，再删除
 find /test -type f -name "*.txt"                 # 第一步：确认范围
 find /test -type f -name "*.txt" -delete         # 第二步：确认无误再删
@@ -215,7 +223,7 @@ find /test -type f -name "*.txt" -delete         # 第二步：确认无误再�
 # 把找到的文件复制到 /tmp
 find /test -name "*.txt" -exec cp {} /tmp/ \;
 
-# 对每个结果执行多条命令时，写成 sh -c
+# 对每个结果执行多条命令时，写成 sh -c，{} 作为参数传入需放在 sh -c 的参数位
 find /test -name "*.txt" -exec sh -c 'echo "$1" >> /tmp/list.txt' _ {} \;
 ```
 
@@ -231,6 +239,8 @@ find /test -name "*.txt" | xargs ls -lh          # 效果类似 -exec ls -lh {} 
 `xargs` 与 `find` 的经典组合是处理"文件名带空格"的场景。xargs 默认按空白字符（空格、换行）分割输入，遇到 `my file.txt` 会被拆成两个参数，导致误操作：
 
 ```bash
+# xargs 默认按空白切分输入，文件名含空格会被拆成多个参数
+# -print0 用空字符（\0）分隔，xargs -0 用空字符解析，这一对必须配套使用
 # 错误示范：文件名含空格时会被拆错
 find /data -name "*.txt" | xargs rm -f
 
@@ -251,6 +261,8 @@ find /data -name "*.txt" -print0 | xargs -0 rm -f
 | `-P 数量` | 并行执行多个进程，加速批量处理 |
 
 ```bash
+# -I{} 指定替换字符串，适合参数要插在命令中间的场景
+# -P 4 表示开 4 个进程并行处理，-t 会先打印将执行的命令便于确认
 find /test -name "*.txt" -print0 | xargs -0 -I{} cp {} /tmp/backup/
 find /test -name "*.log" -print0 | xargs -0 -P 4 gzip          # 4 进程并行压缩
 find /test -name "*.txt" | xargs -t rm -f                      # 先打印将执行的命令，确认无误再回车
@@ -336,18 +348,22 @@ net.ifnames=0 biosdevname=0
 **修改方式二：在系统中进行修改**
 
 ```bash
+# 网卡命名由内核的 udev 规则决定，改名要同时动三个地方，缺一个就弹回原名
 # ① 编辑网卡配置文件中的网卡名称信息
+# NAME/DEVICE 决定接口名，net.ifnames=0 关掉可预测命名，biosdevname=0 关掉 BIOS 命名
 vim /etc/sysconfig/network-scripts/ifcfg-ens33
 NAME=eth0        # net.ifnames=0
 DEVICE=eth0      # biosdevname=0
 
 # ② 重命名网卡配置文件名称
+# 文件名必须与配置里的 NAME/DEVICE 一致
 mv ifcfg-ens33 ifcfg-eth0
 
 # ③ 修改网卡名称规则内核文件：把 net.ifnames=0 biosdevname=0 追加到 GRUB_CMDLINE_LINUX 变量后
 /etc/default/grub
 
 # ④ 使系统重新加载 grub 配置文件
+# 重新生成 grub.cfg 后必须重启才生效
 grub2-mkconfig -o /boot/grub2/grub.cfg
 ```
 
@@ -401,6 +417,8 @@ rm -f /test/.test.txt.swp
 ## 查看文件属性信息
 
 ```bash
+# -l 长格式看属性，-ld 看目录自身属性，-la 连隐藏文件一起列出
+# 权限位末尾的 . 是 SELinux 上下文标记，+ 表示带 ACL
 [root@linux-node1 ~]# ls /test                  # 查看目录中有什么数据信息
 test01  test.txt  test2.txt
 
@@ -435,6 +453,8 @@ ls -ltr /etc/      # 按照时间进行排序显示数据信息，并且是反�
 ### cat
 
 ```bash
+# cat 可一次读多个文件，-n 给每行加行号方便定位
+# -b 与 -n 类似但空行不编号，-A 会显示行尾 $ 与制表符 ^I 等不可见字符
 [root@linux-node1 ~]# cat /test/test.txt              # 查看单个文件
 hello world
 test data 01
@@ -479,6 +499,8 @@ less /etc/services     # 类似于看书，一点点查看文件内容
 | 结束查看 | 按 `q` |
 
 ```bash
+# less 只按屏加载内容，几 G 的日志也能秒开；-N 显示行号
+# 空格下翻、b 上翻、/ 搜索、q 退出
 [root@linux-node1 ~]# less -N /etc/services      # -N 显示行号
       1 # /etc/services:
       2 # $Id: services,v 1.55 2013/04/14 ovasik Exp $
@@ -538,6 +560,8 @@ echo "test" >> /test/test.txt
 **输出连续序列：**
 
 ```bash
+# {1..100} 是 bash 的花括号展开，{01..100} 补零保证文件名宽度一致
+# 花括号展开发生在变量展开之前，{} 里不能直接放变量
 [root@linux-node1 ~]# echo {1..100}
 1 2 3 4 5 6 7 8 9 10 ... 98 99 100
 
@@ -550,6 +574,8 @@ echo "test" >> /test/test.txt
 **输出不连续序列：**
 
 ```bash
+# {01..10..2} 的第三个数字是步长，{02..10..2} 同理表示偶数序列
+# mkdir -p 一次建出多级目录，不加 -p 时父目录不存在会报错
 # 不连续但有规律：显示 1..10 的奇数 / 偶数
 [root@linux-node1 ~]# echo {01..10..2}
 01 03 05 07 09
@@ -565,6 +591,8 @@ mkdir -p /test/test01/test02/{www,bbs,blog}
 ### 添加多行内容
 
 ```bash
+# <<EOF 是 here document，把多行内容作为标准输入喂给 cat
+# 结束符必须顶格单独一行，前面不能有空格，否则会被当成正文读进来
 [root@linux-node1 ~]# cat /test/test.txt
 hello world
 test data 01
@@ -588,6 +616,8 @@ test03
 结束符可以换成任意字符串，只要前后一致：
 
 ```bash
+# 结束符可以换成任意字符串，只要与开头一致且顶格书写
+# 用 "<<\"EOF\"" 这种带引号的写法可禁止内容中的 $变量 被展开
 [root@linux-node1 ~]# cat >> /test/test.txt <<end
 > test04
 > test05
@@ -620,6 +650,8 @@ test05
 先准备一个测试文件：
 
 ```bash
+# 同样的 here document 写法，用来往测试文件里追加带注释的记录
+# >> 是追加，> 会清空原内容，写之前想清楚用哪个
 [root@linux-node1 ~]# cat >> /test/test.txt <<EOF
 > server01
 > dev01
@@ -647,6 +679,8 @@ ops02
 | 统计 `dev` 在文件中出现了几次 | `grep -c "dev" /test/test.txt` | `-c` count |
 
 ```bash
+# grep 的 -B/-A/-C 分别显示匹配行的前/后/前后上下文，-- 是上下文分隔符
+# -c 只输出匹配行数，-n 显示行号，配合 column -t 可以排成对齐的表格
 [root@linux-node1 ~]# grep "server" /test/test.txt
 server01
 server02
@@ -704,6 +738,8 @@ awk 括号里的模式省略 action 时默认打印整行，相当于 grep，`aw
 Vim 中的等价写法是 `:%s#server#python#g`，命令行中用 sed：
 
 ```bash
+# s#server#python#g 中 # 是分隔符，g 表示一行内全部替换
+# 不加 -i 只把结果打到屏幕，原文件不变；-i 才真正写回，-i.bak 会留一份备份
 sed 's#server#python#g' /test/test.txt
 ```
 
@@ -745,6 +781,8 @@ ops02
 需求：把 `test.txt` 中所有 `python` 修改替换为 `server`。
 
 ```bash
+# tr 只能从标准输入读数据，所以要用 < 重定向喂文件，不能把文件名当参数
+# 它是按字符位置一对一替换，原文件不会被改动
 [root@linux-node1 ~]# tr "python" "server" </test/test.txt
 server01
 dev01
@@ -774,6 +812,8 @@ abc
 配合标准输入重定向：
 
 ```bash
+# tr 同样只吃标准输入，< 后面才是数据来源
+# -d 删除指定字符，-s 把连续重复字符压成一个
 [root@linux-node1 ~]# tr "123" "abc" < /test/test01.txt
 abc
 [root@linux-node1 ~]# cat /test/test01.txt

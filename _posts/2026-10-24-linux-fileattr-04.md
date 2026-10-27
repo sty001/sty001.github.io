@@ -28,14 +28,17 @@ slug: "linux-fileattr-04"
 
 ```bash
 # 精确查找
+# -name 区分大小写，模式要用引号包住，防止被 shell 提前展开
 find 路径信息 -type 文件类型 -name "文件名"
 
 # 模糊查找
+# * 可以出现在任意位置，前后都行
 find 路径信息 -type 文件类型 -name "文件名*"
 find 路径信息 -type 文件类型 -name "*文件名"
 find 路径信息 -type 文件类型 -name "文*件名"
 
 # 忽略大小写查找
+# -iname 与 -name 的唯一差别就是忽略大小写
 find 路径信息 -type 文件类型 -iname "文件名*"
 ```
 
@@ -63,10 +66,12 @@ find /test -type f -size +1M      # 找出大于 1M 的文件
 ### 根据目录层级查找
 
 ```bash
+# 不加 -maxdepth 会递归整棵目录树，层级越深结果越多
 [root@linux-node1 test01]# find /test -type f -name "Test*"
 /test/test01/Test.txt
 /test/Test.txt
 
+# -maxdepth 1 只看当前层；-maxdepth 2 多进一层
 [root@linux-node1 test01]# find /test -maxdepth 1 -type f -name "Test*"
 /test/Test.txt
 
@@ -165,8 +170,10 @@ tar: Removing leading `/' from member names     # 默认将压缩时绝对路径
 使用相对路径压缩就不会有这条提示：
 
 ```bash
+# 用相对路径压缩，不会出现 Removing leading `/' 提示
 [root@linux-node1 test]# tar zcvf test.tar.gz ./services
 ./services
+# t 参数只列出压缩包内容不解压，用来核对打包结果
 [root@linux-node1 test]# tar tf test.tar.gz
 ./services
 ```
@@ -195,6 +202,7 @@ tar: Removing leading `/' from member names     # 默认将压缩时绝对路径
 **批量排除的第一个步骤：编写排除文件**
 
 ```bash
+# 排除列表里一行一条路径，写法（绝对/相对）必须与压缩命令保持一致
 [root@linux-node1 test]# vim /tmp/exclude.txt
 /test/test.txt
 /test/test.avi
@@ -205,6 +213,7 @@ tar: Removing leading `/' from member names     # 默认将压缩时绝对路径
 **第二个步骤：执行命令进行批量排除**
 
 ```bash
+# --exclude-from 从文件读排除规则；输出里没有 test.txt，说明排除生效
 [root@linux-node1 test]# tar zcvf /tmp/test05.tar.gz /test --exclude-from=/tmp/exclude.txt
 tar: Removing leading `/' from member names
 /test/
@@ -219,6 +228,7 @@ tar: Removing leading `/' from member names
 
 ```bash
 # 全部采用绝对路径
+# --exclude 直接跟一条排除规则，多条就写多个 --exclude
 [root@linux-node1 /]# tar zcvf /tmp/test03.tar.gz /test --exclude=/test/test.txt
 tar: Removing leading `/' from member names
 /test/
@@ -274,6 +284,7 @@ r(4)w(2)-(0)=6  r(4)--=4 r(4)--=4
 `chmod` 用三位八进制数字分别指定属主、属组、其他用户的权限，是脚本和批量处理中最常用的写法：
 
 ```bash
+# 八进制三位分别对应属主、属组、其他用户；数字法适合写进脚本
 chmod 644 /test/test.txt          # 属主读写，属组和其他用户只读
 chmod 755 /test/script.sh         # 属主读写执行，属组和其他用户读和执行
 chmod 600 ~/.ssh/id_rsa           # 私钥文件必须收紧权限，否则 ssh 拒绝使用
@@ -293,6 +304,7 @@ chmod -R 755 /data/www            # -R 递归修改目录下所有内容
 | 权限 | `r`、`w`、`x`、`X`、`s`、`t` | 改哪些位 |
 
 ```bash
+# 字母法：对象 + 操作符 + 权限三段，逗号分隔表示对多个对象同时操作
 chmod u+x /test/script.sh                  # 只给属主加执行权限
 chmod g-w,o=r /test/test.txt               # 属组去掉写，其他人精确设为只读
 chmod a-x /test/test.txt                   # 去掉所有人的执行权限（等价 chmod -x）
@@ -349,6 +361,7 @@ chmod 640 /data        # 等价于 chmod u=rw,g=r,o= /data
 umask 的查看与设置：
 
 ```bash
+# umask 是 shell 内置命令，只影响当前 shell 及其子进程新建的文件
 umask                 # 查看当前 umask，如 0022
 umask -S              # 符号方式显示，如 u=rwx,g=rx,o=rx
 umask 022             # 设置当前 shell 的 umask
@@ -401,13 +414,16 @@ drwxr-xr-x. 2 www www 60 Oct 24 09:00 /data/wwwroot
 设置与查看：
 
 ```bash
+# 四位八进制：首位是特殊位（4=SUID 2=SGID 1=Sticky），后三位是常规 rwx
 chmod 4755 /usr/bin/myapp        # SUID + 755，ls -l 显示 -rwsr-xr-x
 chmod 2755 /data/project         # SGID 目录：drwxr-sr-x，组内共享协作
 chmod 1777 /tmp                  # Sticky：drwxrwxrwt，人人可写但只能删自己的
+# 字母写法与数字写法等价，便于按需只加单个特殊位
 chmod u+s /usr/bin/myapp         # 等价的字母写法
 chmod g+s /data/project
 chmod +t /data/public
 
+# 审计用 find：-perm 前的负号表示"必须包含这些位"
 find / -type f -perm -4000       # 审计全系统 SUID 文件
 find / -type d -perm -2000       # 审计 SGID 目录
 find / -type d -perm -1000       # 审计 Sticky 目录
@@ -444,6 +460,7 @@ SUID 加在目录上没有意义（会被忽略），SGID 要加在目录上才�
 | `+S` | 同步写入，立即落盘 | 数据库类关键数据 |
 
 ```bash
+# +i 是不可变属性，文件系统的 ext4 / xfs 都支持，连 root 都改不动
 chattr +i /etc/important.conf      # 上锁
 lsattr /etc/important.conf         # 查看属性，输出第二列即为属性列表
 chattr -i /etc/important.conf      # 解锁后才能删除
@@ -464,6 +481,7 @@ rm: cannot remove 'important.conf': Operation not permitted
 传统权限只有"属主 / 属组 / 其他人"三档，当需要单独给某个用户授权时（如让 `audit` 用户读 `/data/app.log`，但不想让它进 `app` 组），就要用 ACL：
 
 ```bash
+# -m 是 modify：u/g/o 后接冒号再接权限，权限位为 rwx 的组合
 setfacl -m u:audit:r /data/app.log          # 给用户 audit 加读权限
 setfacl -m g:dev:rx /data/wwwroot           # 给 dev 组加读和执行（进入目录）权限
 setfacl -m u:audit:rwx,g:dev:rx /data/dir   # 多条规则一次写
@@ -511,6 +529,7 @@ other::---
 利用用户的数值编号进行识别，即 **uid**：
 
 ```bash
+# id 输出三段：uid、gid、groups，权限判定用的就是这个数值身份
 [root@linux-node1 ~]# id root
 uid=0(root) gid=0(root) groups=0(root)
 [root@linux-node1 ~]# id test

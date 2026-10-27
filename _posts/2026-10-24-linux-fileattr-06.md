@@ -86,9 +86,11 @@ find /test -type f -mtime 7      # 正好前面第 7 天
 
 ```bash
 # 方式一：将找到的信息放到 cp 和最终目录中间
+# -i 是交互模式，{} 代表 find 查到的每一个文件；文件太多时可能超长命令限制
 find /test -type f -name "*.txt"|xargs -i cp {} /backup
 
 # 方式二：利用 cp 的 -t 参数指明谁是数据最终保存的目录
+# -t 把目标目录放在最后，写法更简洁
 find /test -type f -name "*.txt"|xargs  cp -t /backup
 ```
 
@@ -96,6 +98,7 @@ find /test -type f -name "*.txt"|xargs  cp -t /backup
 
 ```bash
 # 方式一
+# mv 不可逆，批量移动前先用 ls 确认匹配结果
 find /test -type f -name "*.txt"|xargs -i mv {} /backup
 
 # 方式二
@@ -112,8 +115,10 @@ find /test -type f -name "*.txt"|xargs mv -t /backup
 | 没有引号 | 和双引号功能类似，但是可以直接识别通配符信息 |
 
 ```bash
+# 单引号内一切按字面输出，$ 不做变量展开
 [root@linux-node1 test]# echo 'test $LANG $var'
 test $LANG $var
+# 双引号内 $ 会被展开成变量实际值
 [root@linux-node1 test]# echo "test $LANG $var"
 test en_US.UTF-8 123        # $var 此前已被赋值为 123
 ```
@@ -134,6 +139,7 @@ test en_US.UTF-8 123        # $var 此前已被赋值为 123
 `<<EOF` 结束符必须顶格这个坑上篇已提；再补一句：想输出"既上屏又落盘"，重定向做不到分流，要用 tee（见上篇"管道与 tee"）。
 
 ```bash
+# > 重定向标准输出，2> 重定向错误输出；两个文件互不干扰
 [root@linux-node1 test]# cho test >/test/ok.txt 2>/test/error.txt
 [root@linux-node1 test]# cat /test/error.txt
 -bash: cho: command not found
@@ -147,6 +153,7 @@ test
 
 ```bash
 # 方法一：分别追加到同一个文件
+# >> 是追加，>>file 2>>file 让正常输出与错误输出都追加进同一文件
 [root@linux-node1 test]# echo test >>/test/info.log 2>>/test/info.log
 [root@linux-node1 test]# cho test >>/test/info.log 2>>/test/info.log
 [root@linux-node1 test]# cat /test/info.log
@@ -154,6 +161,7 @@ test
 -bash: cho: command not found
 
 # 方法二：&>
+# &> 是 bash 的简写，等价于 >file 2>&1
 [root@linux-node1 test]# echo test &>/test/info.log
 [root@linux-node1 test]# cat /test/info.log
 test
@@ -162,6 +170,7 @@ test
 -bash: cho: command not found
 
 # 方法三：2>&1
+# 2>&1 表示把错误输出指向标准输出当前指向的同一个文件
 [root@linux-node1 test]# echo test >/test/info.log 2>&1
 [root@linux-node1 test]# cat /test/info.log
 test
@@ -173,6 +182,7 @@ test
 **标准输入追加重定向（`<<`）的典型用法：**
 
 ```bash
+# <<EOF 把后面几行当作标准输入喂给 cat，实现多行写入
 cat >>/test.txt<<EOF
 XXX
 XXX
@@ -191,6 +201,7 @@ EOF
 `cd -` 只在最近两个目录间来回切；多次切换的历史可以用 `pushd` / `popd` 管理一个目录栈，`dirs -v` 查看栈内容。
 
 ```bash
+# $OLDPWD 保存上一个所在目录，cd $OLDPWD 与 cd - 等价
 [root@linux-node1 tmp]# cd $OLDPWD
 [root@linux-node1 test]# cd $OLDPWD
 [root@linux-node1 tmp]# cd $OLDPWD
@@ -210,10 +221,12 @@ EOF
 
 ```bash
 [root@linux-node1 tmp]# # 需求：创建一个 /alex 目录，并在目录中创建 test.txt，一条命令搞定
+# ; 只是顺序执行，前一条失败后一条照样跑
 [root@linux-node1 tmp]# mkdi /alex ; touch /alex/test.txt
 -bash: mkdi: command not found
 touch: cannot touch '/alex/test.txt': No such file or directory
 
+# && 要求前一条成功才执行后一条
 [root@linux-node1 tmp]# mkdi /alex && touch /alex/test.txt
 -bash: mkdi: command not found
 
@@ -224,6 +237,7 @@ touch: cannot touch '/alex/test.txt': No such file or directory
 
 ```bash
 [root@linux-node1 tmp]# # 需求：删除 /alex/test.txt 失败时，在 /alex/error.txt 中生成失败信息
+# || 前一条失败才执行后一条；rm 成功时就不会生成 error.txt
 [root@linux-node1 tmp]# rmx /alex/test.txt || echo "failed" >>/alex/error.txt
 -bash: rmx: command not found
 [root@linux-node1 tmp]# cat /alex/error.txt
@@ -254,12 +268,14 @@ failed
 
 ```bash
 # 生成连续序列
+# {起..止} 是连续序列，{01..100} 会补零对齐
 echo {1..10}
 echo {01..100}
 echo {a..z}
 echo {A..Z}
 
 # 生成不连续序列
+# {起..止..步长} 用步长控制间隔
 echo {1..10..2}          # 奇数序列
 echo {2..10..2}          # 偶数序列
 echo {www,bbs,blog}      # 无规律序列
@@ -270,10 +286,13 @@ echo {www,bbs,blog}      # 无规律序列
 ### 生成组合序列
 
 ```bash
+# 两个大括号组合会做笛卡尔积，前一个取 A/B，后一个取 01/02
 [root@linux-node1 tmp]# echo {A,B}{01,02}
 A01 A02 B01 B02
+# 只有一个大括号时就是简单的列举
 [root@linux-node1 tmp]# echo A{01,02}
 A01 A02
+# 逗号前留空表示"空字符串"这一项
 [root@linux-node1 tmp]# echo A{,02}
 A A02
 ```
@@ -285,8 +304,10 @@ A A02
 
 ```bash
 [root@linux-node1 tmp]# # cp /test/test.txt /test/test.txt.bak
+# 不带点的 {,} 展开成 test.txtbak，中间的点会丢
 [root@linux-node1 tmp]# echo test.txt{,bak}
 test.txt test.txtbak
+# 写成 {,.bak} 才带点，这是备份命令的标准写法
 [root@linux-node1 tmp]# echo test.txt{,.bak}
 test.txt test.txt.bak
 [root@linux-node1 tmp]# echo /test/test.txt{,.bak}
@@ -340,11 +361,13 @@ mv /test/alex.txt{.ori,}      # 快速还原，等价于 mv /test/alex.txt.ori /
 
 ```bash
 # 通配符：Shell 在展开，操作的是文件名
+# 通配符通常不能加引号，加了会被当成字面量
 ls *.txt                 # 列出所有 txt 文件
 ls ?.txt                 # 列出文件名只有 1 个字符的 txt 文件
 ls [ab].txt              # 列出 a.txt 或 b.txt
 
 # 正则：grep 在匹配，操作的是文件内容
+# 正则必须加引号，否则 $ 和 * 会被 Shell 先解释掉
 grep 'a*c' test.txt      # 匹配 ac、abc、aabc……（c 前面有 0 个或多个 a）
 grep -E 'colou?r' test.txt   # 匹配 color 和 colour
 grep '[Tt]om' test.txt   # 匹配 Tom 或 tom
@@ -401,6 +424,7 @@ grep '[Tt]om' test.txt   # 匹配 Tom 或 tom
 **创建测试环境：**
 
 ```bash
+# >> 是追加，heredoc 里可以写多行；EOF 顶格结束
 cat >>/test/test.txt<<EOF
 # test-group-01
 test-linux
@@ -420,6 +444,7 @@ EOF
 ```
 
 ```bash
+# 用 cat 回显刚写入的内容，核对 heredoc 是否按预期落盘
 [root@linux-node1 tmp]# cat /test/test.txt
 # test-group-01
 test-linux
@@ -464,6 +489,7 @@ grep -v "^$" /test/test.txt
 下面的示例基于 `/test/test.txt` 与一份模拟的 `/test/passwd.txt`（演示词边界时用）：
 
 ```bash
+# > 是覆盖写（不是追加），三行内容按 passwd 格式：用户名:密码占位:uid:gid:注释:家目录:shell
 cat >/test/passwd.txt<<EOF
 root:x:0:0:root:/root:/bin/bash
 operator:x:11:0:operator:/root:/sbin/nologin
@@ -516,6 +542,7 @@ EOF
 准备一份混合内容的测试文件：
 
 ```bash
+# 准备一份混合内容：既有数字又有字母，正好用来演示字符类
 cat >/test/mix.txt<<EOF
 ID:1001 name:zhangsan score:95
 ID:1002 name:lisi score:88
@@ -525,6 +552,7 @@ EOF
 
 ```bash
 # 把文件里的数字片段逐个抠出来
+# -o 只输出匹配到的片段；\+ 表示前一个元素重复 1 次以上（BRE 中需转义）
 grep -o '[[:digit:]]\+' /test/mix.txt
 # 输出：1001 95 1002 88 1003 76
 
@@ -533,6 +561,7 @@ grep '[[:upper:]]' /test/mix.txt
 # 输出：三行都命中（ID 中含有大写字母）
 
 # 找出只含字母和数字的行（alnum 的典型用法：过滤掉带标点的异常行）
+# 方括号内并列多个字符类表示"满足其中之一即可"，^ $ 锚定整行
 grep '^[[:alnum:][:space:]:]\+$' /test/mix.txt
 ```
 
@@ -577,6 +606,7 @@ grep 的参数非常多，先把运维最高频的一组记住：
 
 ```bash
 # 统计文件里有多少行以 # 开头（注释行）
+# -c 统计的是命中行数，不是出现次数
 grep -c '^#' /test/test.txt
 # 输出：3
 
@@ -589,12 +619,14 @@ grep -n 'python$' /test/test.txt
 # 输出：14:python
 
 # 整词匹配：test-linux 出现 3 次；linux 作为独立单词出现 5 次
+# -w 要求单词边界成立，配合 wc -l 统计总行数
 grep -w 'test-linux' /test/test.txt | wc -l
 # 输出：3
 grep -w 'linux' /test/test.txt | wc -l
 # 输出：5（test-linux、test-python-linux 中的 linux 都算独立单词）
 
 # 递归找出 /var/log 下所有含 ERROR 的日志文件名
+# -r 递归目录，-l 只列文件名不打印内容
 grep -rl 'ERROR' /var/log
 ```
 
@@ -611,6 +643,7 @@ grep 是与 Shell 脚本配合最紧密的命令之一，核心原因就是它�
 最典型的用法是 `-q`（quiet）：只关心"有没有"，不关心内容：
 
 ```bash
+# -q 是 quiet，只设置退出码不输出内容，脚本里靠 if 判断执行结果
 if grep -q "ERROR" /var/log/app.log; then
     echo "发现错误，发送告警"
 else
@@ -622,9 +655,11 @@ fi
 
 ```bash
 # 坑一：set -e 脚本中，grep 没匹配到（退出码 1）会让整个脚本直接退出
+# -e 遇错即停、-u 未定义变量报错、-o pipefail 管道中任一环失败即算失败
 set -euo pipefail
 grep -q "ERROR" /var/log/app.log    # 没匹配到 → 脚本在这里就终止了
 # 解决：明确允许"没找到"这种情况
+# || true 把退出码强行变成 0，"没找到"就不再是错误
 grep -q "ERROR" /var/log/app.log || true
 
 # 坑二：grep -q 一旦命中就会立刻退出，大文件效率高

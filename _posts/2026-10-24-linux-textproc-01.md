@@ -63,6 +63,7 @@ sed  命令识别扩展正则: sed -r
 **问题一：文件中有 `\` 撬棍信息，如何进行过滤？**
 
 ```bash
+# 单引号内的 \\ 表示匹配一个字面的反斜杠，grep 默认按基础正则解析
 [root@linux-node1 ~]# grep '\\' test.txt
 I \teach \linux.
 ```
@@ -112,6 +113,7 @@ sed 的作用特点：
 
 ```bash
 # 第一个步骤：修改地址
+# 分隔符用 # 而非 /，避免与路径中的斜杠冲突；-i 表示直接改文件
 sed -i "s#10.0.0.200#10.0.0.201#g" ifcfg-eth0
 
 # 第二个步骤：重启网络服务
@@ -193,6 +195,8 @@ printf 'a\nb\n' | sed G
 {: .sec-ver}
 
 ```bash
+# heredoc 写入：<<EOF 表示后续内容作为标准输入，单独一行 EOF 结束
+# 不加引号的 EOF 允许变量展开，内容里有 $ 时要改成 <<'EOF'
 cat >person.txt<<EOF
 101,zhangsan,CEO
 102,lisi,CTO
@@ -203,6 +207,7 @@ EOF
 ```
 
 ```bash
+# 测试文件的三列分别是编号、姓名、职位，后面的示例都基于这份数据
 [root@linux-node1 ~]# cat person.txt
 101,zhangsan,CEO
 102,lisi,CTO
@@ -234,6 +239,7 @@ EOF
 步进定址的实例（GNU sed）：
 
 ```bash
+# ~step 是 GNU sed 扩展的步进定址，first~step 表示从第 first 行起每 step 行命中一次
 seq 4 | sed -n '1~2p'
 # 输出：1 3（奇数行）
 seq 4 | sed -n '0~2p'
@@ -252,6 +258,7 @@ seq 8 | sed -n '2~3p'
 **测试 1：显示单行信息**
 
 ```bash
+# 定址 3 指定第 3 行，p 指令打印该行；-n 取消自动输出避免重复
 [root@linux-node1 ~]# sed -n '3p' person.txt
 103,Alex,COO
 ```
@@ -259,6 +266,7 @@ seq 8 | sed -n '2~3p'
 **测试 2：根据行号信息，输出多行内容（连续）**
 
 ```bash
+# 逗号表示行号范围，含首尾两端
 [root@linux-node1 ~]# sed -n '1,3p' person.txt
 101,zhangsan,CEO
 102,lisi,CTO
@@ -268,6 +276,7 @@ seq 8 | sed -n '2~3p'
 **测试 3：根据行号信息，输出多行内容（不连续）**
 
 ```bash
+# 分号分隔两组定址，两组都会执行 p 指令
 [root@linux-node1 ~]# sed -n '1p;3p' person.txt
 101,zhangsan,CEO
 103,Alex,COO
@@ -287,6 +296,7 @@ seq 8 | sed -n '2~3p'
 
 ```bash
 # 将 zhangsan 到 Alex 之间的行都输出出来
+# 两个正则定址组成范围，起点与终点都包含在内
 [root@linux-node1 ~]# sed -n '/zhangsan/,/Alex/p' person.txt
 101,zhangsan,CEO
 102,lisi,CTO
@@ -297,6 +307,7 @@ seq 8 | sed -n '2~3p'
 
 ```bash
 # 将 zhangsan 和 Alex 的行都输出出来
+# 分号分隔两个正则定址，命中的行分别打印
 [root@linux-node1 ~]# sed -n '/zhangsan/p;/Alex/p' person.txt
 101,zhangsan,CEO
 103,Alex,COO
@@ -306,6 +317,7 @@ seq 8 | sed -n '2~3p'
 排查日志时经常要"行号 + 内容"一起给出来，`=` 指令配合块命令即可：
 
 ```bash
+# 花括号是块命令：先执行 = 输出行号，再执行 p 输出内容，两者顺序不能反
 printf 'ok\nerror: disk full\nok\n' | sed -n '/error/{=;p}'
 # 输出：
 # 2
@@ -319,6 +331,7 @@ printf 'ok\nerror: disk full\nok\n' | sed -n '/error/{=;p}'
 **在文件第一行添加信息：**
 
 ```bash
+# 1i 表示在第 1 行之前插入，默认输出会把插入内容一并打印出来
 [root@linux-node1 ~]# sed  '1i100,lucy,UFO' person.txt
 100,lucy,UFO
 101,zhangsan,CEO
@@ -332,6 +345,7 @@ printf 'ok\nerror: disk full\nok\n' | sed -n '/error/{=;p}'
 **在文件最后一行添加信息：**
 
 ```bash
+# $a 表示在最后一行之后追加，$ 是文件末尾的定址符
 [root@linux-node1 ~]# sed  '$a108,lucy,UFO' person.txt
 101,zhangsan,CEO
 102,lisi,CTO
@@ -347,18 +361,22 @@ printf 'ok\nerror: disk full\nok\n' | sed -n '/error/{=;p}'
 
 ```bash
 # 01. 在第三行后面添加 test.txt 信息
+# 3a 表示在第 3 行后追加，a 与文本之间不能有空格
 sed '3atest.txt' person.txt
 
 # 02. 在第二行前面添加 test.txt 信息
+# 2i 表示在第 2 行前插入
 sed '2itest.txt' person.txt
 
 # 03. 在有 zhangsan 行的前面添加 lucy，后面添加 jack 信息
+# -e 串接多条指令，每条 -e 后面跟一个完整的"定址+指令"
 sed -e '/zhangsan/ilucy' -e  '/zhangsan/ajack' person.txt
 ```
 
 第 3 题的执行效果（`-e` 用于识别多个操作指令）：
 
 ```bash
+# 两条 -e 分别负责"前面插 lucy"和"后面插 jack"，作用于同一个正则定址
 [root@linux-node1 ~]# sed -e '/zhangsan/ilucy' -e  '/zhangsan/ajack' person.txt
 lucy
 101,zhangsan,CEO
@@ -405,6 +423,7 @@ sed '$aIPaddress=10.10.10.1\nmask=255.255.255.0\ngateway=10.10.10.254' 文件名
 **01. 删除单行信息**
 
 ```bash
+# d 是删除指令：定址命中的行被丢弃，其余行照常输出
 [root@linux-node1 ~]# # 删除文件中第三行信息
 [root@linux-node1 ~]# sed '3d' person.txt
 100,lucy,UFO
@@ -418,6 +437,7 @@ sed '$aIPaddress=10.10.10.1\nmask=255.255.255.0\ngateway=10.10.10.254' 文件名
 **02. 删除多行信息（连续）**
 
 ```bash
+# 范围定址 2,6 命中第 2 到第 6 行，含首尾
 [root@linux-node1 ~]# # 删除文件中第二行到第六行内容
 [root@linux-node1 ~]# sed '2,6d' person.txt
 100,lucy,UFO
@@ -434,6 +454,7 @@ sed '/zhangsan/d' person.txt
 **04. 删除不连续的多行（删除第三行和第六行）**
 
 ```bash
+# 分号分隔两个行号定址，两行都被删除
 [root@linux-node1 ~]# sed '3d;6d' person.txt
 100,lucy,UFO
 101,zhangsan,CEO
@@ -456,6 +477,7 @@ printf 'a\nBEGIN\nx\nEND\nb\n' | sed '/BEGIN/,/END/d'
 
 ```bash
 # 方式一：只输出含有任意字符的行
+# . 匹配任意一个字符，空行没有字符可匹配因此被排除
 [root@linux-node1 ~]# sed -n '/./p' person.txt
 100,lucy,UFO
 101,zhangsan,CEO
@@ -466,6 +488,7 @@ printf 'a\nBEGIN\nx\nEND\nb\n' | sed '/BEGIN/,/END/d'
 106,zhangsan,CIO
 
 # 方式二：删除空行
+# ^$ 锚定行首与行尾，中间无字符即空行
 [root@linux-node1 ~]# sed '/^$/d' person.txt
 100,lucy,UFO
 101,zhangsan,CEO
@@ -476,6 +499,7 @@ printf 'a\nBEGIN\nx\nEND\nb\n' | sed '/BEGIN/,/END/d'
 106,zhangsan,CIO
 
 # 方式三：对空行取反输出
+# 定址后加 ! 表示"不匹配的行"，等价于方式一但语义更直白
 [root@linux-node1 ~]# sed -n '/^$/!p' person.txt
 100,lucy,UFO
 101,zhangsan,CEO
@@ -497,8 +521,10 @@ sed 's#原有内容#修改后内容#g' 文件信息
 分隔符可以自定义，但不要和要替换的内容冲突，否则会报错：
 
 ```bash
+# 分隔符与内容冲突时 sed 会直接报语法错误，不会做部分替换
 [root@linux-node1 ~]# sed 's##lucy#lucy-new#g' person.txt
 sed: -e expression #1, char 12: unknown option to `s'
+# 换成 / 作分隔符后，模式里的 # 就是普通字符
 [root@linux-node1 ~]# sed 's/#lucy/lucy-new/g' person.txt
 100,lucy-new,UFO
 
@@ -523,14 +549,17 @@ sed: -e expression #1, char 12: unknown option to `s'
 
 ```bash
 # & 的用法：把匹配到的内容用方括号包起来
+# & 在替换串里代表"整个匹配到的内容"，输出字面 & 要写 \&
 echo abc | sed 's/b/[&]/'
 # 输出：a[b]c
 
 # 只替换每行第 3 个匹配
+# 替换次数写在最后一个分隔符之后，不加 g 就是只替换一次
 echo "a a a a" | sed 's/a/b/3'
 # 输出：a a b a
 
 # 从第 2 个匹配起全部替换
+# 2g 表示从第 2 次匹配开始一直替换到行尾（GNU 扩展）
 echo "a a a a" | sed 's/a/b/2g'
 # 输出：a b b b
 
@@ -553,6 +582,8 @@ inet 10.0.0.200/24 brd 10.0.0.255 scope global noprefixroute eth0
 **第二个历程：取出 IP 地址（分步）**
 
 ```bash
+# 第一个 sed 用贪婪匹配把 net 之前的内容丢掉，\1 取括号里的分组
+# 第二个 sed 再把 /24 之后的内容切掉，只剩 IP 地址
 [root@linux-node1 ~]# ip a s eth0|sed -n '3p'|sed -r 's#^.*net (.*)#\1#g'
 10.0.0.200/24 brd 10.0.0.255 scope global noprefixroute eth0
 [root@linux-node1 ~]# ip a s eth0|sed -n '3p'|sed -r 's#^.*net (.*)#\1#g'|sed -r 's#(.*)/24.*#\1#g'
@@ -562,6 +593,7 @@ inet 10.0.0.200/24 brd 10.0.0.255 scope global noprefixroute eth0
 **第三个历程：整合两个 sed 命令**
 
 ```bash
+# 把两步替换合并成一个正则：^.* 匹配到 net，/24.* 匹配到行尾
 sed -r 's#^.*net (.*)#\1#g'|sed -r 's#(.*)/24.*#\1#g'   进行整合
 ip a s eth0|sed -n '3p'|sed -r 's#^.*net (.*)/24.*#\1#g'
 ```
@@ -591,10 +623,12 @@ sed -rn '3s#^.*net (.*)/24.*#\1#gp'
 
 ```bash
 # & 只能整体引用
+# .* 是贪婪匹配，会吃掉整行，所以 & 展开成 "hello world"
 echo "hello world" | sed 's/hello.*/[&]/'
 # 输出：[hello world]
 
 # \1 可以拆出字段并交换顺序
+# -E 启用扩展正则，() 无需转义；\2 \1 按逆序重组
 echo "hello world" | sed -E 's/(hello) (world)/\2 \1/'
 # 输出：world hello
 ```
@@ -603,6 +637,7 @@ echo "hello world" | sed -E 's/(hello) (world)/\2 \1/'
 {: .sec-ext}
 
 ```bash
+# -i.bak 中 .bak 必须紧跟 -i，原文件会被备份成 person.txt.bak
 [root@linux-node1 ~]# sed -i.bak  's#zhangsan#zhangsan-new#g' person.txt
 [root@linux-node1 ~]# ll person.txt.bak
 -rw-r--r--. 1 root root 104 Oct 10 11:40 person.txt.bak
@@ -630,6 +665,7 @@ echo "hello world" | sed -E 's/(hello) (world)/\2 \1/'
 {: .sec-ext}
 
 ```bash
+# -n 与 -i 同时出现：文件里只剩 p 指令打印的那一行
 [root@linux-node1 ~]# sed -ni 's#Alex#aaaa#gp' person.txt
 103,aaaa,COO
 [root@linux-node1 ~]# cat person.txt
@@ -660,6 +696,8 @@ echo "hello world" | sed -E 's/(hello) (world)/\2 \1/'
 需求：把 `testxx.txt` 扩展名修改为 `testxx.jpg`。先用 sed 拼接出 `mv` 命令确认无误，再交给 `bash` 执行：
 
 ```bash
+# 先把 mv 命令打印出来人工核对，确认无误再管道给 bash 执行
+# & 是原文件名，\1 是去掉 txt 后的部分
 [root@linux-node1 test]# ls test*.txt|sed -r 's#(.*)txt#mv & \1jpg#g'
 mv test01.txt test01.jpg
 mv test02.txt test02.jpg
@@ -690,6 +728,7 @@ rename  .txt                           .jpg                 test*.txt
 ### 11.6 `-i` 不能直接处理管道数据
 
 ```bash
+# -i 跟在管道后面时没有输入文件可编辑，sed 直接报错退出
 [root@linux-node1 ~]# cat person.txt|sed -i 's#COO#CEO#g'
 sed: no input files
 [root@linux-node1 ~]# sed -i 's#COO#CEO#g' person.txt
@@ -723,7 +762,9 @@ linux-node-01
 `-f` 脚本文件的用法：把多条指令写进文件，一行一条，`#` 开头为注释：
 
 ```bash
+# printf 的 \n 是换行，先把两条替换指令写成脚本文件
 printf 's/zhangsan/lucy/g\ns/lisi/jack/g\n' >edit.sed
+# -f 读取脚本文件，文件里一行一条指令，# 开头为注释
 sed -f edit.sed person.txt
 # 输出：
 # 101,lucy,CEO
@@ -736,8 +777,10 @@ sed -f edit.sed person.txt
 `-s` 的效果（对比 `=` 行号在两个文件中的编号方式）：
 
 ```bash
+# 先造两个内容不同的文件
 printf '1\n2\n' >m1.txt
 printf '3\n4\n' >m2.txt
+# -s 让每个文件独立计数，行号从 1 重新开始
 sed -s '=' m1.txt m2.txt
 # 输出：1 1 2 2 1 3 2 4（每个文件的行号都从 1 重新开始）
 # 若不加 -s，第二个文件的行号会接着第一个文件继续编号（3 4 5 6）
@@ -772,6 +815,7 @@ sed -s '=' m1.txt m2.txt
 
 ```bash
 # y：逐字符转换
+# 两个字符集合长度必须一致，否则报语法错误
 echo "hello" | sed 'y/helo/Helo/'
 # 输出：Hello
 
@@ -788,6 +832,7 @@ echo "hello" | sed 'r /tmp/person.txt'
 # 输出：hello 后接 person.txt 的全部内容
 
 # q：匹配到就退出，不再读取后续行（大文件加速）
+# 行号定址 2 命中后执行 q，sed 直接结束
 seq 5 | sed '2q'
 # 输出：1 2
 ```
@@ -816,6 +861,7 @@ cat /tmp/err.log
 典型用法一：两行合并成一行（`N` + `s/\n/ /`）
 
 ```bash
+# N 把下一行追加进模式空间，s 把中间的换行换成空格
 printf 'a\nb\nc\nd\n' | sed 'N;s/\n/ /'
 # 输出：a b / c d（每两行合并为一行）
 ```
@@ -823,6 +869,7 @@ printf 'a\nb\nc\nd\n' | sed 'N;s/\n/ /'
 典型用法二：压缩连续空行（`N` + `D` 组合）
 
 ```bash
+# 花括号内两条指令：N 读下一行，D 删掉模式空间第一行并重新执行
 printf 'a\n\n\n\nb\n' | sed '/^$/{N;/^\n$/D}'
 # 输出：a、一个空行、b（多个连续空行被压成一个）
 ```
@@ -832,6 +879,7 @@ printf 'a\n\n\n\nb\n' | sed '/^$/{N;/^\n$/D}'
 典型用法三：只打印每对行的第一行（`N` + `P`）
 
 ```bash
+# N 追加下一行，P 只打印模式空间的第一行，-n 关掉自动输出
 printf 'a\nb\nc\nd\n' | sed -n 'N;P'
 # 输出：a c
 ```
@@ -842,6 +890,7 @@ printf 'a\nb\nc\nd\n' | sed -n 'N;P'
 实战里最出名的一行式是"整个文件合并成一行"：
 
 ```bash
+# :a 是标签，$!ba 是"不是最后一行就跳回 a"，末尾的 s 一次性替换所有换行
 printf 'a\nb\nc\n' | sed ':a;N;$!ba;s/\n/ /g'
 # 输出：a b c
 ```
@@ -880,9 +929,11 @@ printf 'a\nb\nc\nd\n' | sed -n 'N;s/\n/-/p'
 
 ```bash
 # 给文件所有行加 # 注释（危险操作，慎用）
+# ^ 锚定行首，s/// 把行首替换成 #，没有 g 也只改行首一处
 sed -i 's/^/#/' file.conf
 
 # 只给"尚未注释"的行加 #（已是注释行、空行不动）
+# ! 取反：已含 # 的行被排除在替换之外
 sed -i '/^[[:space:]]*#/!s/^/#/' file.conf
 
 # 取消所有 # 开头的注释
@@ -895,7 +946,9 @@ sed -i '5,10s/^/#/' file.conf
 以 nginx.conf 为例：
 
 ```bash
+# 先造一个带注释的测试文件
 printf '# comment\nserver=1\n# another\nport=80\n' >nginx.conf
+# 正则没加 # 的行才会被加注释，所以原来的注释行会变成两个 #
 sed '/^[[:space:]]*#/!s/^/#/' nginx.conf
 # 输出：
 # # comment
@@ -911,9 +964,11 @@ sed '/^[[:space:]]*#/!s/^/#/' nginx.conf
 sed -i '/^$/d' file.conf
 
 # 删除"只有空格/制表符"的空白行（更彻底，生产环境推荐）
+# [[:space:]] 是字符类，匹配空格、制表符等所有空白字符
 sed -i '/^[[:space:]]*$/d' file.conf
 
 # 删除文件开头的连续空行
+# /./,$ 定位到第一个有字符的行，取反后把前面的空行删掉
 printf '\n\na\nb\n' | sed '/./,$!d'
 # 输出：a b
 ```
@@ -921,6 +976,7 @@ printf '\n\na\nb\n' | sed '/./,$!d'
 顺带处理另一头的"文件末尾多余换行"。平时 `\n` 是行分隔符，sed 碰不到它；换成 `-z` 按 NUL 分行后，整个文件变成"一行"，`\n` 降级为普通字符，就能一口气清掉末尾所有空行：
 
 ```bash
+# -z 按 NUL 分行，整个文件成为一行，\n 变成普通字符可被替换
 printf 'a\n\n\n' | sed -z 's/\n*$//'
 # 输出：a（末尾空行全部清掉）
 ```
@@ -937,6 +993,7 @@ sed -i 's/^/PRE /' file.txt
 sed -i 's/$/ SUFFIX/' file.txt
 
 # 一条命令同时加前后缀
+# 分号分隔两条替换指令，按顺序依次作用于同一行
 echo hello | sed 's/^/PRE /;s/$/ SUFFIX/'
 # 输出：PRE hello SUFFIX
 
@@ -952,6 +1009,7 @@ sed 脚本用双引号包裹，Shell 变量就能被展开：
 ```bash
 OLD=zhangsan
 NEW=zhangsan-new
+# 双引号让 $OLD $NEW 先被 Shell 展开，再交给 sed 当作模式与替换串
 sed -i "s/$OLD/$NEW/g" person.txt
 ```
 
@@ -964,6 +1022,7 @@ NEW=10.0.0.201
 sed -i "s#$OLD#$NEW#g" ifcfg-eth0
 
 # 变量里可能含 & 或 \ 时，先转义更安全（也可改用 awk -v）
+# 字符类 [&/\] 匹配这三个特殊字符，\\& 表示"把匹配到的内容原样输出"
 esc() { printf '%s' "$1" | sed 's/[&/\]/\\&/g'; }
 sed -i "s/$(esc "$OLD")/$(esc "$NEW")/g" file
 ```

@@ -93,7 +93,9 @@ fsck -n /dev/sdb1             # ext 系列
 {: .callout-trouble}
 
 ```bash
+# emergency 模式下根分区是只读的，先 remount 成可写才能改文件
 mount -o remount,rw /
+# 改 fstab 前先备份，改坏了还能退回去
 cp /etc/fstab /etc/fstab.bak
 vim /etc/fstab                # 注释错误行，或改为 UUID=xxx ... defaults,nofail 0 0
 mount -a                      # 验证无报错
@@ -150,12 +152,16 @@ blkid
 3. 挂载原系统根分区并 chroot：
 
 ```bash
+# 建一个挂载点，把原系统的根分区挂进来
 mkdir -p /mnt/sysroot
 mount /dev/mapper/rl-root /mnt/sysroot
+# /boot 单独分区时也要单独挂上
 mount /dev/sda1 /mnt/sysroot/boot
+# bind 挂载伪文件系统，chroot 后才能在里面操作设备与内核接口
 mount --bind /dev  /mnt/sysroot/dev
 mount --bind /proc /mnt/sysroot/proc
 mount --bind /sys  /mnt/sysroot/sys
+# chroot 把根目录切到新系统，此时执行的命令作用于原系统
 chroot /mnt/sysroot
 ```
 
@@ -221,11 +227,15 @@ mount | grep sysroot
 {: .callout-trouble}
 
 ```bash
+# rd.break 进单用户时根分区是只读的，先改成可写
 mount -o remount,rw /sysroot
+# chroot 切到原系统根目录，后面的命令都作用于原系统
 chroot /sysroot
 passwd root                   # 输入两次新口令
 touch /.autorelabel           # SELinux 开启时必须执行，否则重启后无法登录
+# 退出 chroot 回到救援 shell
 exit
+# 重启进入新系统
 reboot
 ```
 
@@ -836,10 +846,13 @@ findmnt
 
 ```bash
 # a. 通知进程重新打开日志（推荐，影响最小）
+# USR1 是应用自定义信号，nginx 收到后会重开日志文件并保持连接
 kill -USR1 <PID>              # nginx 等支持 USR1 重开日志
+# -f 强制执行一次轮转，不等到计划时间
 logrotate -f /etc/logrotate.d/nginx
 
 # b. 直接清空被占用的文件（保留 fd，空间立即释放）
+# 对 /proc 下的 fd 写空，等于截断文件但进程持有的 fd 仍然有效
 > /proc/<PID>/fd/<FD号>
 
 # c. 重启服务（最后手段）
@@ -1360,9 +1373,13 @@ arping -I eth0 10.0.0.8
 {: .callout-trouble}
 
 ```bash
+# con show 列出所有连接配置，先看清连接名
 nmcli con show
+# con up 激活连接使配置生效
 nmcli con up eth0
+# con mod 改连接属性：地址与网关一次写全
 nmcli con mod eth0 ipv4.addresses 10.0.0.8/24 ipv4.gateway 10.0.0.1
+# 改完必须再 up 一次让新配置生效
 nmcli con up eth0
 ```
 
@@ -1614,10 +1631,13 @@ dhclient -v eth0
 {: .callout-trouble}
 
 ```bash
+# autoconnect yes 让连接开机自动激活，避免重启后网卡拿不到 IP
 nmcli con mod eth0 connection.autoconnect yes
+# ipv4.method manual 改为静态地址（auto 表示 DHCP）
 nmcli con mod eth0 ipv4.method manual ipv4.addresses 10.0.0.7/24
 nmcli con mod eth0 ipv4.gateway 10.0.0.1
 nmcli con mod eth0 ipv4.dns "223.5.5.5"
+# 全部改完再激活一次
 nmcli con up eth0
 ```
 
@@ -1735,10 +1755,14 @@ nmcli dev status
 {: .callout-trouble}
 
 ```bash
+# 建绑定连接：con-name 是配置名，ifname 是生成的逻辑网卡名
+# mode active-backup 是主备模式，切换时只丢一个方向的连接
 nmcli con add type bond con-name bond0 ifname bond0 mode active-backup \
   ipv4.method manual ipv4.addresses 10.0.0.7/24 ipv4.gateway 10.0.0.1
+# bond-slave 把物理网卡挂进 bond0，master 指定主设备
 nmcli con add type bond-slave ifname eth0 master bond0
 nmcli con add type bond-slave ifname eth1 master bond0
+# 全部配好后激活 bond0
 nmcli con up bond0
 ```
 
@@ -1864,11 +1888,15 @@ arping -D -I eth0 10.0.0.7
 {: .callout-trouble}
 
 ```bash
+# /^UUID=/d 按行删除以 UUID= 开头的整行；克隆机必须清掉，否则与模板机身份重复
 sed -i '/^UUID=/d' /etc/sysconfig/network-scripts/ifcfg-eth0
+# 同理清掉 HWADDR（MAC 地址）
 sed -i '/^HWADDR=/d' /etc/sysconfig/network-scripts/ifcfg-eth0
+# s 命令整行替换 IPADDR
 sed -i 's/^IPADDR=.*/IPADDR=10.0.0.8/' /etc/sysconfig/network-scripts/ifcfg-eth0
 uuidgen                       # 如需可重新写入
 hostnamectl set-hostname web02
+# 改完重启让配置生效；逐台改、逐台启动，同时开机会 IP 冲突
 reboot
 ```
 
@@ -1997,9 +2025,12 @@ getenforce
 {: .callout-trouble}
 
 ```bash
+# 目录必须有 x 位才能进入，缺了就补上
 chmod 755 /data/wwwroot
+# -exec ... + 是批量模式，一次执行比逐个 -exec {} \; 快得多
 find /data/wwwroot -type f -exec chmod 644 {} +
 find /data/wwwroot -type d -exec chmod 755 {} +
+# -R 递归改属主属组
 chown -R www.www /data/wwwroot
 ```
 
@@ -2039,9 +2070,12 @@ restorecon -Rv /data/wwwroot
 1. 查看账号的 shell 与密码状态：
 
 ```bash
+# /etc/passwd 看 shell 与家目录，/etc/shadow 看口令与有效期
 grep 用户名 /etc/passwd
 grep 用户名 /etc/shadow
+# passwd -S 快速看口令状态（P=可用、L=锁定）
 passwd -S 用户名
+# chage -l 查看口令老化策略：有效期、警告天数、过期时间
 chage -l 用户名
 ```
 
@@ -2068,9 +2102,12 @@ ls -l /etc/nologin
 {: .callout-trouble}
 
 ```bash
+# 把 shell 改成 bash，否则用户登录后立刻退出
 usermod -s /bin/bash 用户名
+# 交互式设置口令
 passwd 用户名
 passwd -u 用户名                 # 若账号被锁定
+# /etc/nologin 存在会阻止所有普通用户登录
 rm -f /etc/nologin
 ```
 
@@ -2602,10 +2639,13 @@ systemctl enable --now php-fpm
 Unix Socket 写法：
 
 ```nginx
+# ~ 是正则匹配，\.php$ 表示以 .php 结尾的 URI
 location ~ \.php$ {
     root           /html/www;
+    # unix: 表示走 Unix Socket，比 TCP 少一层网络栈、开销更低
     fastcgi_pass   unix:/run/php-fpm/www.sock;
     fastcgi_index  index.php;
+    # 告诉 PHP 脚本的真实路径，缺失会导致 Primary script unknown
     fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
     include        fastcgi_params;
 }
@@ -2675,6 +2715,7 @@ nginx -T | grep -E "proxy_read_timeout|proxy_connect_timeout|fastcgi_read_timeou
 ```nginx
 location / {
     proxy_pass         http://backend;
+    # 三个超时分别对应建连、发请求、等响应，read 要覆盖后端最慢处理耗时
     proxy_connect_timeout 5s;
     proxy_send_timeout    30s;
     proxy_read_timeout    60s;
@@ -2810,9 +2851,11 @@ server {
     listen       80;
     server_name  www.example.com;
     root         /html/www;
+    # index 列出首页候选，命中第一个存在的文件
     index        index.php index.html;
 
     location / {
+        # 伪静态：静态文件不存在时转交 PHP 处理，$args 保留原查询参数
         try_files $uri $uri/ /index.php?$args;
     }
 }
@@ -3011,9 +3054,12 @@ tail -30 /var/log/php-fpm/www-slow.log
 {: .callout-trouble}
 
 ```ini
+# listen 指向 socket 路径，与 Nginx 的 fastcgi_pass 写法要一致
 listen = /run/php-fpm/www.sock
+# owner/group 指定 socket 的属主属组，必须与 Nginx 运行用户一致
 listen.owner = www
 listen.group = www
+# 0660 表示属主属组可读写，其他用户无权限
 listen.mode = 0660
 ```
 
@@ -3221,8 +3267,11 @@ df -i
 {: .callout-trouble}
 
 ```bash
+# 数据目录属主必须是 mysql，否则服务写不了文件
 chown -R mysql.mysql /var/lib/mysql
+# 700 表示只有属主可访问，保护数据目录
 chmod 700 /var/lib/mysql
+# /tmp 保持 1777（sticky 位），别改成 777 的普通权限
 chmod 755 /tmp
 systemctl start mariadb
 ```
@@ -3393,8 +3442,10 @@ firewall-cmd --list-services
 {: .callout-trouble}
 
 ```bash
+# --now 相当于 start 加 enable，一步做到"启动并开机自启"
 systemctl enable --now rpcbind
 systemctl enable --now nfs-server
+# --permanent 只写规则不立即生效，必须再 --reload 才真正加载
 firewall-cmd --permanent --add-service=nfs
 firewall-cmd --permanent --add-service=rpc-bind
 firewall-cmd --permanent --add-service=mountd
@@ -3538,6 +3589,7 @@ firewall-cmd --reload
 云环境改用单播：
 
 ```conf
+# 云环境不发组播，改用单播：指定本机源地址与对端地址
 unicast_src_ip 10.0.0.5
 unicast_peer {
     10.0.0.6
@@ -3598,7 +3650,9 @@ tcpdump -i eth0 vrrp -nn
 vrrp_script chk_nginx {
     script       "/server/scripts/check_nginx.sh"
     interval     2
+    # weight 为负：脚本失败时优先级下调 20，把 VIP 让给对端
     weight      -20
+    # fall 连续失败 3 次才判定失败，rise 连续成功 2 次才判定恢复
     fall         3
     rise         2
 }
@@ -3614,6 +3668,7 @@ vrrp_instance VI_1 {
         auth_pass 1111
     }
     virtual_ipaddress {
+        # dev 指定 VIP 落在哪块网卡上
         10.0.0.3/24 dev eth0
     }
     track_script {
@@ -3672,13 +3727,17 @@ journalctl -u crond -n 30 --no-pager
 {: .callout-trouble}
 
 ```bash
+# cron 环境变量极少，PATH 要显式写全，否则脚本里找不到命令
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# MAILTO 置空表示不发送任务输出邮件，避免撑爆 mail 目录
 MAILTO=""
 
 # 每天 00:00 执行备份
+# 五段时间字段依次是 分 时 日 月 周；&>/dev/null 丢弃输出
 00 00 * * * /bin/sh /server/scripts/backup.sh &>/dev/null
 
 # 带日期的命令，% 必须转义
+# cron 会把 % 当作换行符，date 的 %F 不转义会导致任务被截断
 00 01 * * * /bin/tar zcf /backup/data_$(date +\%F).tar.gz /data
 ```
 
@@ -3737,8 +3796,11 @@ tail -50 /var/log/zabbix/zabbix_server.log
 {: .callout-trouble}
 
 ```bash
+# s/^Server=.*/.../ 整行替换 Server 值，必须是 server 的 IP
 sed -i 's/^Server=.*/Server=172.16.1.71/' /etc/zabbix/zabbix_agentd.conf
+# 改完必须重启 agent 才生效
 systemctl restart zabbix-agent
+# --permanent 写永久规则，--reload 才让规则实际加载
 firewall-cmd --permanent --add-port=10050/tcp
 firewall-cmd --reload
 ```
@@ -3797,9 +3859,13 @@ ls -l /var/run/yum.pid
 {: .callout-trouble}
 
 ```bash
+# 先确认真的没有 yum 在跑，别误杀别人的安装任务
 kill -9 <残留PID>
+# 删掉残留的锁文件
 rm -f /var/run/yum.pid
+# clean all 清缓存，makecache 重建元数据
 yum clean all && yum makecache
+# 补装 EPEL 源，部分包只在 EPEL 里
 yum install -y epel-release
 yum provides 命令名                 # 定位命令属于哪个包
 ```
@@ -3862,12 +3928,14 @@ ansible web -m ping
 {: .callout-trouble}
 
 ```yaml
+# 一个 - name 下只挂一个模块任务，挂着多个是常见的语法错误来源
 - name: 01-install rsync
   yum:
     name: ['rsync', 'tree', 'wget']
     state: installed
 
 - name: 02-push config
+  # template 渲染 j2 模板，内容不变时任务为 ok，handler 不触发
   template:
     src: rsyncd.conf.j2
     dest: /etc/rsyncd.conf
@@ -3938,8 +4006,10 @@ dig www.example.com
 {: .callout-trouble}
 
 ```nginx
+# upstream 必须写在 http 块内，不能放进 server 里
 http {
     upstream web_pools {
+        # max_fails/fail_timeout 组合决定摘除节点的条件
         server 10.0.0.7:80 weight=1 max_fails=3 fail_timeout=10s;
         server 10.0.0.8:80 weight=1 max_fails=3 fail_timeout=10s;
     }
@@ -3950,6 +4020,7 @@ http {
 
         location / {
             proxy_pass http://web_pools;
+            # 传真实 Host 与真实客户端 IP，否则后端统计不到访客来源
             proxy_set_header Host $host;
             proxy_set_header X-Forwarded-For $remote_addr;
         }
@@ -4266,12 +4337,18 @@ ulimit -n
 {: .callout-trouble}
 
 ```bash
+# 写入 /etc/sysctl.d/ 下的文件比直接改 /etc/sysctl.conf 更规范
 cat > /etc/sysctl.d/99-net.conf <<'EOF'
+# 扩大本地临时端口范围，缓解端口耗尽
 net.ipv4.ip_local_port_range = 10000 65000
+# 增大监听队列上限
 net.core.somaxconn = 1024
+# 允许 TIME_WAIT 状态复用（NAT 环境下慎用）
 net.ipv4.tcp_tw_reuse = 1
+# 开启 SYN Cookie，缓解 SYN Flood
 net.ipv4.tcp_syncookies = 1
 EOF
+# --system 加载 /etc/sysctl.d/ 下所有配置文件并立即生效
 sysctl --system
 ```
 
@@ -4326,9 +4403,12 @@ sysctl net.ipv4.tcp_max_tw_buckets
 {: .callout-trouble}
 
 ```bash
+# >> 追加而不是覆盖，避免覆盖掉文件里已有的其他参数
 cat >> /etc/sysctl.d/99-net.conf <<'EOF'
 net.ipv4.tcp_tw_reuse = 1
+# 开启时间戳，TCP 往返时间测量更准
 net.ipv4.tcp_timestamps = 1
+# 缩短 FIN_WAIT_2 状态的等待时间
 net.ipv4.tcp_fin_timeout = 30
 EOF
 sysctl --system
@@ -4339,11 +4419,14 @@ Nginx  upstream 开启 keepalive：
 ```nginx
 upstream web_pools {
     server 10.0.0.7:80;
+    # keepalive 32 表示每条到后端的连接最多缓存 32 个空闲请求
     keepalive 32;
 }
 
 location / {
+    # 必须用 HTTP/1.1，HTTP/1.0 不支持连接复用
     proxy_http_version 1.1;
+    # 清空 Connection 头，Nginx 才能真正复用这条连接
     proxy_set_header Connection "";
     proxy_pass http://web_pools;
 }
@@ -4467,6 +4550,8 @@ systemctl restart nginx
 全局调整：
 
 ```bash
+# limits.d 下的文件是 limits.conf 的补充，优先被读取
+# 四列含义：适用对象(- 表示所有用户) 软限制 硬限制 资源类型 取值
 cat > /etc/security/limits.d/99-nofile.conf <<'EOF'
 *       soft    nofile  65535
 *       hard    nofile  65535
@@ -4535,9 +4620,13 @@ sysctl --system
 临时应急可扩 swap（仅为缓冲，不能替代加内存）：
 
 ```bash
+# dd 造一个 1G 的交换文件：if 输入源、of 输出文件、bs 块大小、count 块数
 dd if=/dev/zero of=/tmp/1G bs=100M count=10
+# swap 文件权限必须是 600，否则 swapon 会拒绝
 chmod 600 /tmp/1G
+# mkswap 写入 swap 签名（会覆盖文件前几 KB）
 mkswap /tmp/1G
+# swapon 启用；用文件做 swap 只是应急，不如独立分区可靠
 swapon /tmp/1G
 ```
 

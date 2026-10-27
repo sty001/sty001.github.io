@@ -28,6 +28,8 @@ Linux 中的一条命令可以是四种身份之一：shell 内部命令（内�
 用 `type` 区分四种身份：
 
 ```bash
+# type 是 shell 内建命令，能识别内建、别名、函数、外部命令四种身份
+# which 只能查 PATH 里的可执行文件，查不到 cd 这类内建命令
 [root@web01 ~]# type cd
 cd is a shell builtin
 [root@web01 ~]# type rm

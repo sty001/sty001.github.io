@@ -68,6 +68,8 @@ awk [参数] '模式{动作}' 文件
 {: .sec-ver}
 
 ```bash
+# 四列依次是：姓、名、ID 号码、三次捐款记录（:第一次:第二次:第三次）
+# 空白是默认字段分隔符，所以姓与名、姓名与 ID 之间都是空格
 [root@linux-node1 ~]# cat awk_test.txt
 Zhang   Wei         41001       :250:100:175
 Zhang   Xiaoming    22011       :155:90:201
@@ -111,6 +113,7 @@ awk 的执行顺序是固定的，可以概括为"三段式"：
 `$0` 与字段是联动的：引用 `$n` 时 awk 才按 `FS` 切分；反过来，修改任一字段（或 `$0`）时，awk 会用 `OFS` 重新拼接 `$0`，字段数也会跟着变：
 
 ```bash
+# 引用 $n 时 awk 才按 FS 切分；一旦改动某个字段，$0 会用 OFS 重新拼接
 # 修改 $1 后，$0 用 OFS 重建
 echo "a b c" | awk 'BEGIN{OFS="-"}{$1="X"; print $0}'
 # 输出：X-b-c
@@ -139,6 +142,7 @@ echo "a b" | awk '{$5="e"; print NF": "$0}'
 `NR` 与 `FNR` 的差异只在多文件时出现，是"双文件关联"写法的根基：
 
 ```bash
+# FILENAME 是当前处理的文件名；FNR 是文件内行号（换文件后归 1）；NR 是跨文件累计行号
 printf '1\n2\n' >f1.txt
 printf '3\n' >f2.txt
 awk '{print FILENAME, FNR, NR, $0}' f1.txt f2.txt
@@ -171,6 +175,8 @@ awk 'NR=2' awk_test.txt
 ```
 
 ```bash
+# NR=2 是赋值（条件恒为真），NR==2 才是比较，所以前者输出整个文件
+# 范围用逗号（连续区间），不连续的多个区间用分号
 [root@linux-node1 ~]# awk 'NR=2' awk_test.txt
 Zhang   Wei         41001       :250:100:175
 Zhang   Xiaoming    22011       :155:90:201
@@ -199,6 +205,8 @@ Wu      Guoqing     44021       :250:80:75
 ## 八、按字符（正则）查询信息
 
 ```bash
+# /模式/ 是正则匹配，匹配到就执行默认动作 print
+# 逗号表示连续范围，分号表示不连续的多个区间
 [root@linux-node1 ~]# awk '/Xiaoming/' awk_test.txt
 Zhang   Xiaoming    22011       :155:90:201
 [root@linux-node1 ~]# awk '/Xiaoming/,/Guoqing/' awk_test.txt
@@ -226,6 +234,8 @@ awk 默认以空白（空格、制表符）作为分隔符，也可以用 `-F` �
 空行没有字段，`NF` 为 0，`$NF` 就是 `$0`（空）：
 
 ```bash
+# 空行没有任何字段，NF=0，此时 $NF 等价于 $0（空串）
+# 用 NF 当条件判断是否空行比写正则更省事
 printf 'a\n\nb\n' | awk '{print NR": NF="NF" ["$0"]"}'
 # 输出：
 # 1: NF=1 [a]
@@ -237,6 +247,7 @@ printf 'a\n\nb\n' | awk '{print NR": NF="NF" ["$0"]"}'
 {: .sec-prac}
 
 ```bash
+# print 里用逗号分隔走 OFS，用 "," 引起来才是原样输出一个逗号字符
 [root@linux-node1 ~]# awk '/Xiaoming/{print $1","$3}' awk_test.txt
 Zhang,22011
 [root@linux-node1 ~]# awk '/Xiaoming/{print $1,$3}' awk_test.txt
@@ -249,6 +260,8 @@ Zhang 22011
 {: .sec-prac}
 
 ```bash
+# $NF 取最后一列；再用 awk -F ":" 重新按冒号切分，取 $3 就是第二次捐款金额
+# 管道里第二段 awk 读的是第一段的输出，不是文件
 [root@linux-node1 ~]# awk '/Zhang/{print $4}' awk_test.txt
 :250:100:175
 :155:90:201
@@ -263,6 +276,8 @@ Zhang 22011
 上面的做法是两次 awk 管道处理，也可以一次完成：
 
 ```bash
+# 一次 awk 直接按冒号切分即可拿到第三次捐款，不用跑两遍管道
+# -F ":" 指定冒号为字段分隔符，$3 就是第三次捐款
 awk '/Zhang/{print $NF}'
 awk -F ":" '{print $3}'
 [root@linux-node1 ~]# awk -F ":" '/^Zhang/{print $3}' awk_test.txt
@@ -273,6 +288,8 @@ awk -F ":" '{print $3}'
 用 `-F` 指定多个分隔符（正则形式的"一个或多个空格或冒号"）：
 
 ```bash
+# -F 后面可以跟正则表达式，"[ :]+" 表示"一个或多个空格或冒号"
+# 用正则分隔符时行首的分隔符会产生一个空的 $1，字段编号整体后移
 [root@linux-node1 ~]# awk -F "[ :]+" '/^Zhang/{print $1,$2,$5}' awk_test.txt
 Zhang Wei 100
 Zhang Xiaoming 90
@@ -305,6 +322,8 @@ awk '$3~/1$|5$/{print $1,$2}' awk_test.txt
 ```
 
 ```bash
+# $3~/1$|5$/ 表示第 3 列以 1 或 5 结尾，等价的字符组写法是 [15]$
+# column -t 把输出按列对齐，只影响显示不影响数据
 [root@linux-node1 ~]# awk '$3~/1$|5$/{print $1,$2}' awk_test.txt|column -t
 Zhang  Xiaoming
 Wu     Guoqing
@@ -332,6 +351,8 @@ Lao    Haiyang
 {: .sec-prac}
 
 ```bash
+# gsub(正则, 替换文本, 目标列) 是全局替换，第三个参数指定改哪一列
+# 省略第三个参数时替换的是 $0，并会按 OFS 重建所有字段
 [root@linux-node1 ~]# awk '$2~/Xiaoming/{print $NF}' awk_test.txt
 :155:90:201
 [root@linux-node1 ~]# # gsub(/需要替换的信息/,"修改成什么信息",将哪列信息进行修改)
@@ -367,6 +388,8 @@ awk  '$0!~/^#|^$/' 文件信息
 假设测试文件中带有一条注释行和空行：
 
 ```bash
+# 模式写成 $0!~/^#|^$/ 表示"既不是注释行也不是空行"
+# 取反要放在整个正则前面，^#|^$ 实际是 (^#)|(^$)
 [root@linux-node1 ~]# awk '$0~/^#|^$/'  awk_test.txt
 #Liu    Jianguo 41002    :250:100:175
 
@@ -404,6 +427,8 @@ Lao    Haiyang   88105    :250:100:175
 用 BEGIN 输出表头：
 
 ```bash
+# BEGIN{} 在读数据之前执行，适合打印表头；后面的大括号里只放动作
+# column -t 让表头与数据按列对齐
 [root@linux-node1 ~]# awk 'BEGIN{print "姓","名","ID号","捐款记录"}{print $0}' awk_test.txt |column -t
 姓      名         ID号     捐款记录
 Zhang   Wei        41001    :250:100:175
@@ -428,6 +453,7 @@ awk -F ":" '{print $2}' awk_test.txt
 `BEGIN{FS=":"}` 与 `-F:` 完全等价——两者都在第一条记录读取前生效：
 
 ```bash
+# BEGIN{FS=":"} 与 -F ":" 都在第一条记录读取前生效，因此完全等价
 printf 'a:b\n' | awk -F: '{print $2}'
 # 输出：b
 printf 'a:b\n' | awk 'BEGIN{FS=":"}{print $2}'
@@ -437,6 +463,8 @@ printf 'a:b\n' | awk 'BEGIN{FS=":"}{print $2}'
 用 END 做收尾动作：
 
 ```bash
+# BEGIN 打印表头、主体逐行输出、END 输出收尾信息，三段各司其职
+# END 在所有记录处理完后执行，此时累加变量才有最终值
 [root@linux-node1 ~]# awk 'BEGIN{print "姓","名","ID号","捐款记录"}{print $0}END{print "操作结束"}' awk_test.txt |column -t
 姓      名         ID号     捐款记录
 Zhang   Wei        41001    :250:100:175
@@ -477,6 +505,8 @@ awk 的运算符按优先级从高到低排列如下（同一行优先级相同�
 三个容易踩的顺序问题：
 
 ```bash
+# 运算符优先级：括号最高，乘除高于加减，字符串连接比加法还"松"
+# ^ 是幂运算且右结合，2^3^2 等于 2^(3^2) 而不是 (2^3)^2
 awk 'BEGIN{print 2+3*4}'
 # 输出：14（乘法优先于加法）
 awk 'BEGIN{print (2+3)*4}'
@@ -490,6 +520,8 @@ awk 'BEGIN{print 2^3^2}'
 比较运算的隐式规则：两个操作数都是数值常量按数值比较；若涉及字符串常量，字段、输入等"数值字符串"也会退化为字符串比较：
 
 ```bash
+# 输入字段带"数值字符串"属性：与数值常量比按数值，与字符串常量比按字符串
+# 想强制按数值比较就写成 $1+0
 echo 10 | awk '{print ($1==10.0), ($1=="10.0"), ($1==10)}'
 # 输出：1 0 1      ← 字段 10 与数值 10.0 相等；与字符串 "10.0" 不相等
 echo 10.0 | awk '{print ($1=="10.0"), ($1=="10")}'
@@ -501,6 +533,8 @@ echo 10.0 | awk '{print ($1=="10.0"), ($1=="10")}'
 awk 是完整的编程语言，常用控制结构如下：
 
 ```bash
+# if/else 与 else if 都要用分号隔开语句，大括号不要省
+# do-while 是先执行再判断，for-in 遍历关联数组顺序不保证
 # if-else 与 else if
 awk 'BEGIN{x=5; if(x>3) print "big"; else print "small"}'
 awk 'BEGIN{x=5; if(x>10) print "a"; else if(x>3) print "b"; else print "c"}'

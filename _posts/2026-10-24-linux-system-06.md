@@ -47,6 +47,7 @@ slug: "linux-system-06"
 {: .sec-expl}
 
 ```bash
+# 提示符中显示的是当前主机名与所属目录，命令执行前先看清自己在哪台机器上
 [root@linux-node1 ~]# vi test.txt   # 利用 vi 命令打开一个文件
 # 输入 i                             # 进入编辑状态
 # 编辑文件内容
@@ -128,9 +129,11 @@ Vim 有三种模式：**命令模式**、**插入模式（编辑模式）**、**
 两个命令确认系统版本与内核信息：
 
 ```bash
+# /etc/redhat-release 写的是发行版名称与版本，面试报系统版本常用它
 [root@linux-node1 ~]# cat /etc/redhat-release
 CentOS Linux release 7.5.1804 (Core)        # 系统发行版本和具体系统版本信息
 
+# uname -a 依次输出：内核名、主机名、内核版本、编译信息、架构
 [root@linux-node1 ~]# uname -a
 Linux linux-node1 3.10.0-862.el7.x86_64 #1 SMP Fri Apr 20 16:44:24 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
 ```
@@ -163,8 +166,10 @@ testuser --- 老百姓（普通用户，只管理指定数据）
 ### 普通用户切换身份
 
 ```bash
+# 普通用户提示符结尾是 $，root 是 #，用它一眼区分当前身份
 [testuser@linux-node1 ~]$ su - root
 Password:
+# Last login 记录上次登录的时间与来源 IP，审计时用得上
 Last login: Mon Apr  8 09:04:09 CST 2019 from 10.0.0.1 on pts/1
 [root@linux-node1 ~]#
 ```
@@ -173,6 +178,7 @@ Last login: Mon Apr  8 09:04:09 CST 2019 from 10.0.0.1 on pts/1
 
 ```bash
 # 查看用户是否存在
+# id 会依次输出 uid、主组 gid、附加组列表
 [root@linux-node1 ~]# id testuser
 uid=1000(testuser) gid=1000(testuser) groups=1000(testuser)
 [root@linux-node1 ~]# id nosuchuser
@@ -297,9 +303,11 @@ yum repolist
 {: .sec-ver}
 
 ```bash
+# -y 自动确认，安装后用 sl 与 cowsay 验证源是否正常
 [root@linux-node1 ~]# yum install sl cowsay -y    # 需要提前优化好 epel 扩展源
 [root@linux-node1 ~]# sl
 [root@linux-node1 ~]# cowsay hello
+# animalsay 是 cowsay 包附带的另一个命令，图形风格不同
 [root@linux-node1 ~]# animalsay hello
 ```
 
@@ -348,16 +356,20 @@ SELinux 的上下文是长这样的：`ls -Z 文件名` 能看到 `unconfined_u:
 ### firewalld（CentOS 7 默认防火墙）
 
 ```bash
+# 查看类命令：--state 返回 running/not running，脚本里判断状态用它最方便
 systemctl status firewalld                  # 查看运行状态
 firewall-cmd --state                        # 查看是否运行
 firewall-cmd --get-default-zone             # 查看默认区域
 firewall-cmd --list-all                     # 查看当前区域放行的全部规则
 firewall-cmd --list-ports                   # 查看放行的端口
 
+# 端口必须带协议后缀，否则 firewalld 会要求补全
 firewall-cmd --add-port=8080/tcp            # 临时放行 8080（reload 后失效）
 firewall-cmd --permanent --add-port=8080/tcp # 永久放行
+# reload 会把临时规则清掉并加载永久规则，两者不能混用
 firewall-cmd --reload                       # 重新加载规则（临时规则失效）
 
+# --add-service 用预置服务名，比手写端口省事
 firewall-cmd --permanent --add-service=http # 永久放行 http 服务
 firewall-cmd --permanent --remove-port=8080/tcp  # 移除端口
 ```
@@ -387,6 +399,7 @@ iptables -D INPUT 3                        # 删除第 3 条规则
 iptables -F                                # 清空所有规则（慎用）
 iptables -P INPUT DROP                     # 设置默认策略为丢弃（先放行 22 再执行，否则自断连接）
 
+# 规则只在内存中，重启即失效，必须保存到文件才持久
 iptables-save > /etc/sysconfig/iptables    # 保存规则，重启后生效
 service iptables save                      # 等价的保存命令
 ```
@@ -484,6 +497,7 @@ systemctl restart sshd            # 重启 sshd 使配置生效
 ```bash
 ulimit -a                          # 查看当前所有限制
 ulimit -n                          # 查看文件描述符上限
+# 临时调整只对当前 shell 及其子进程有效，重新登录即恢复默认
 ulimit -n 65535                    # 临时调整文件描述符上限（当前 shell 有效）
 ulimit -u                          # 查看进程数上限
 ```
@@ -495,10 +509,12 @@ vi /etc/security/limits.conf
 ```
 
 ```ini
+# * 表示对所有用户生效；soft 是软限制，hard 是硬限制（软限制的天花板）
 *               soft    nofile          65535
 *               hard    nofile          65535
 *               soft    nproc           65535
 *               hard    nproc           65535
+# root 单独放开 nproc，root 需要创建大量子进程
 root            soft    nproc           unlimited
 ```
 

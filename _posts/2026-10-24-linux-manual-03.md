@@ -91,6 +91,14 @@ PREFIX=24
 GATEWAY=10.0.0.1
 DNS1=223.5.5.5
 DNS2=114.114.114.114
+# TYPE：网卡类型，以太网固定写 Ethernet
+# BOOTPROTO：地址获取方式，none/static 手动指定（默认 none）、dhcp 自动获取
+# NAME：连接的逻辑名称；DEVICE：设备名，必须与 ip addr 看到的真实网卡一致
+# ONBOOT：是否随开机自动激活，默认 no，生产环境必须写 yes
+# IPADDR：静态地址，配合 BOOTPROTO=none 使用
+# PREFIX：子网前缀长度，默认 24；等价写法是 NETMASK=255.255.255.0
+# GATEWAY：默认网关，漏写会导致无法访问外网
+# DNS1/DNS2：主备 DNS，NetworkManager 会据此生成 /etc/resolv.conf
 ```
 
 ```conf
@@ -98,15 +106,20 @@ DNS2=114.114.114.114
 UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  /data    xfs    defaults,nofail   0 0
 172.16.1.31:/data/www                      /mnt/www nfs    defaults,_netdev  0 0
 tmpfs                                      /dev/shm tmpfs  defaults          0 0
+# 第 1 列设备：优先写 UUID，设备名会随插拔顺序变
+# 第 4 列参数：nofail 表示挂不上不阻断开机，_netdev 表示等网络就绪后再挂
+# 第 5 列 dump 与第 6 列 fsck：非系统盘一律写 0 0
 ```
 
 ```bash
 # 别名的规范位置：/etc/profile.d/alias.sh（全局）或 ~/.bashrc（个人）
+# heredoc 追加内容，每个文件一个 .sh，互不干扰，卸载软件时直接删掉该文件
 cat >> /etc/profile.d/alias.sh <<'EOF'
 alias grep='grep --color=auto'
 alias ll='ls -l --color=auto'
 export PS1='[\u@\h \W]\$ '
 EOF
+# source 让当前终端立即生效；重开终端由 profile.d 自动加载
 source /etc/profile.d/alias.sh
 ```
 
@@ -155,9 +168,11 @@ www:!:19800:0:99999:7:::
 
 ```bash
 # /etc/sudoers 必须用 visudo 编辑（自带语法检查，改坏会拒绝保存）
+# 直接编辑主文件出错会导致所有人无法提权
 visudo
 
 # 推荐写法：独立授权文件放 /etc/sudoers.d/ 下
+# -f 指定要编辑的文件；该文件权限必须是 0440，否则 sudo 拒绝加载
 visudo -f /etc/sudoers.d/ops
 ```
 
@@ -206,8 +221,10 @@ chmod 0440 /etc/sudoers.d/ops
 # 顶部关闭邮件输出，防止 /var/spool/mail 膨胀与 inode 耗尽
 MAILTO=""
 # 分 时 日 月 周 命令
+# */5 表示每 5 分钟；cron 的 PATH 极简，命令一律写绝对路径
 */5 * * * * /usr/sbin/ntpdate ntp.example.com >/dev/null 2>&1
 0 2 * * * /bin/sh /server/scripts/backup.sh &>/dev/null
+# 第 5 列 0-6 表示周日到周六，0 即周日
 0 3 * * 0 /bin/sh /server/scripts/clean_log.sh &>/dev/null
 ```
 
@@ -264,40 +281,59 @@ rsync 有两种工作方式：走 SSH 的远程 shell 模式（不需要配置�
 
 ```conf
 # /etc/rsyncd.conf
+# uid / gid：守护进程读写文件的身份，默认 nobody，建议专用账号 rsync
 uid = rsync
 gid = rsync
+# use chroot：是否把进程根目录锁进模块 path，默认 yes；容器或跨路径访问时设 no
 use chroot = no
+# fake super：以普通 uid 运行时仍保留 root 文件属性，默认 no
 fake super = yes
+# max connections：最大并发连接数，默认 0（不限制），按带宽定
 max connections = 200
+# timeout：连接与 I/O 超时秒数，默认 600
 timeout = 300
 pid file = /var/run/rsyncd.pid
 lock file = /var/run/rsync.lock
 log file = /var/log/rsyncd.log
+# ignore errors：传输中忽略 IO 错误，默认 no
 ignore errors = yes
+# read only：模块是否只读，默认 yes；客户端要推送必须改成 false
 read only = false
+# list：是否允许列出模块名，默认 no，保持 false 不暴露模块清单
 list = false
+# hosts allow / hosts deny：来源白名单与黑名单，多个网段用逗号分隔
 hosts allow = 10.0.0.0/24, 172.16.1.0/24
 hosts deny = 0.0.0.0/0
+# auth users：模块认证用的虚拟用户，与系统用户无关
 auth users = rsync_backup
+# secrets file：口令文件路径，格式 用户:口令，权限必须 600
 secrets file = /etc/rsync.password
 
+# 方括号里是模块名，客户端用 ::backup 引用
 [backup]
+# path：模块对应的后端目录，属主必须是上面 uid 指定的账号
 path = /backup
 comment = central backup module
 ```
 
 ```bash
 # 配套动作：虚拟用户口令文件与目录属主
+# 服务端口令文件格式是"用户:口令"
 echo "rsync_backup:<your-password>" > /etc/rsync.password
+# 权限必须是 600，否则 rsync 报 password file must not be other-accessible
 chmod 600 /etc/rsync.password
+# path 目录属主要与配置里的 uid 一致，否则写入报 permission denied
 mkdir -p /backup && chown -R rsync.rsync /backup
+# enable --now 表示同时设为开机自启并立即启动
 systemctl enable --now rsyncd
 ```
 
 ```bash
 # 客户端推送（免交互：--password-file 指向仅含口令的文件）
+# 客户端口令文件只写口令、不写用户名，与服务端格式不同
 echo "<your-password>" > /etc/rsync.client.password
 chmod 600 /etc/rsync.client.password
+# ::backup 对应服务端配置里的 [backup] 模块名
 rsync -avz /data/ rsync_backup@172.16.1.31::backup --password-file=/etc/rsync.client.password
 ```
 
@@ -339,18 +375,25 @@ NFS 通过 `/etc/exports` 把目录共享给指定网段，客户端挂载后当
 
 ```bash
 # 服务端配套动作
+# uid/gid 必须与 exports 里的 anonuid/anongid 对上，否则客户端看到的属主是数字
 groupadd -g 1002 www && useradd -u 1002 -g www -M -s /sbin/nologin www
+# -M 不建家目录，-s nologin 禁止登录，服务账号的标准写法
 mkdir -p /data/www && chown -R www.www /data/www
+# rpcbind 必须先于 nfs-server 启动
 systemctl enable --now rpcbind nfs-server
 exportfs -rv        # 改配置后平滑生效，无需重启
+# showmount -e 列出当前导出的共享，用来验证配置是否真的生效
 showmount -e localhost
 ```
 
 ```bash
 # 客户端挂载（fstab 持久化时加 _netdev）
+# 服务端与客户端都要装 nfs-utils，否则没有 mount.nfs 命令
 yum install -y nfs-utils
 mount -t nfs 172.16.1.31:/data/www /mnt/www
+# fstab 里加 _netdev，保证开机时等网络就绪后再挂 NFS
 echo "172.16.1.31:/data/www /mnt/www nfs defaults,_netdev 0 0" >> /etc/fstab
+# mount -a 按 fstab 挂载未挂载的项，写错会立刻报错，别跳过这一步直接重启
 mount -a
 ```
 
@@ -388,29 +431,45 @@ sshd_config 是远程管理的第一道闸门。加固三板斧：改端口、�
 
 ```conf
 # /etc/ssh/sshd_config 有效行
+# Port：监听端口，默认 22；改高位端口需同步放行防火墙与安全组
 Port 52113
+# ListenAddress：监听地址，不写则监听所有地址；多网卡时建议绑定内网地址
 ListenAddress 0.0.0.0
+# Protocol：协议版本，新版 sshd 只支持 2，写 1 会启动失败
 Protocol 2
 
+# PermitRootLogin：是否允许 root 直登，默认 prohibit-password（禁口令但可密钥）
 PermitRootLogin no
+# PasswordAuthentication：是否允许口令登录，默认 yes；密钥就绪后改 no
 PasswordAuthentication no
+# PubkeyAuthentication：是否允许密钥登录，默认 yes
 PubkeyAuthentication yes
+# AuthorizedKeysFile：公钥存放位置，相对路径基于用户家目录
 AuthorizedKeysFile .ssh/authorized_keys
 
+# UseDNS：是否对客户端 IP 做反向解析，默认 no；设 yes 在无 PTR 时登录会卡十几秒
 UseDNS no
+# GSSAPIAuthentication：Kerberos 认证，默认 no；内网关闭可省去协商耗时
 GSSAPIAuthentication no
+# MaxAuthTries：单连接最大认证尝试次数，默认 6，调小可缩短暴力破解窗口
 MaxAuthTries 3
+# LoginGraceTime：登录超时秒数，默认 120
 LoginGraceTime 30
 
+# AllowUsers：登录白名单，不在名单里的用户一律拒绝登录
 AllowUsers user
 ```
 
 ```bash
 # 加固上线流程：先发密钥，再收紧配置，全程不断开当前会话
+# -N '' 表示密钥不加口令，便于自动化；-b 4096 是 RSA 密钥长度
 ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa
+# 分发公钥，-p 22 是当前端口；换端口前先用旧端口分发
 ssh-copy-id -i ~/.ssh/id_rsa.pub -p 22 user@10.0.0.7
+# 改配置前先备份，改坏了可以用它还原
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 vim /etc/ssh/sshd_config
+# sshd -t 检查语法，通过后 reload；reload 不断开已有会话，restart 会断
 sshd -t && systemctl reload sshd
 # 新开终端验证新端口能登录后，旧会话才算可以退出
 ssh -p 52113 user@10.0.0.7
@@ -451,11 +510,17 @@ Ansible 的全局配置在 `/etc/ansible/ansible.cfg`，主机清单默认在 `/
 ```ini
 # /etc/ansible/ansible.cfg [defaults] 段
 [defaults]
+# inventory：主机清单路径，默认 /etc/ansible/hosts
 inventory      = /etc/ansible/hosts
+# host_key_checking：首次连接是否确认指纹，默认 True；批量管理关掉，否则脚本会假死
 host_key_checking = False
+# roles_path：角色搜索路径，角色目录不在其中会报 role not found
 roles_path     = /etc/ansible/roles
+# remote_user：默认连接用户，指定运维账号而不是 root
 remote_user    = user
+# forks：并发主机数，默认 5；机器多时可调到 20-50
 forks          = 10
+# log_path：执行日志路径，便于事后追溯
 log_path       = /var/log/ansible.log
 ```
 
@@ -488,8 +553,11 @@ http_port=80
 
 ```bash
 # 前置：控制机与被控端免密，再验证清单
+# -p 端口要与清单里 ansible_port 一致，否则连不上
 ssh-copy-id -i ~/.ssh/id_rsa.pub -p 52113 user@10.0.0.7
+# ping 模块只测连通性，不做任何修改，适合当体检命令
 ansible all -m ping
+# --list-hosts 只列出命中的主机，执行前先确认范围对不对
 ansible web --list-hosts
 ```
 
@@ -529,32 +597,46 @@ nginx.conf 由 main、events、http 三层骨架与若干 `server` 虚拟主机�
 
 ```nginx
 # /etc/nginx/nginx.conf 主配置骨架
+# user：worker 进程的运行身份，必须与站点目录属主一致，否则 403
 user  www;
+# worker_processes：worker 数量，auto 表示与 CPU 核数相同
 worker_processes  auto;
+# error_log：错误日志与级别，warn 表示只记 warning 及以上
 error_log  /var/log/nginx/error.log warn;
+# pid：master 进程 PID 文件位置
 pid        /var/run/nginx.pid;
 
 events {
+    # worker_connections：单个 worker 的最大连接数，与 worker 数相乘是并发上限
     worker_connections  10240;
+    # use epoll：事件驱动模型，Linux 上推荐 epoll
     use epoll;
 }
 
 http {
+    # include 引入 MIME 类型表，缺了它静态文件的 Content-Type 会不对
     include       /etc/nginx/mime.types;
+    # default_type 是无法识别类型时的兜底
     default_type  application/octet-stream;
+    # log_format 定义日志格式，$ 开头的是 nginx 运行时变量
     log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                       '$status $body_bytes_sent "$http_referer" "$http_user_agent"';
     access_log  /var/log/nginx/access.log  main;
+    # sendfile on：零拷贝发送静态文件，减少内核态与用户态之间的数据搬运
     sendfile        on;
+    # keepalive_timeout：客户端长连接保持时间，默认 75
     keepalive_timeout  65;
+    # server_tokens off：隐藏版本号，减少信息泄露
     server_tokens off;
     gzip  on;
+    # include 把虚拟主机拆到 conf.d/，一个业务一个文件
     include /etc/nginx/conf.d/*.conf;
 }
 ```
 
 ```nginx
 # /etc/nginx/conf.d/www.example.conf：upstream + 完整 server
+# upstream 定义后端池，weight 按比例分流；down 标记暂不参与分发
 upstream web_pool {
     server 10.0.0.7:8080 weight=3;
     server 10.0.0.8:8080 weight=1;
@@ -565,9 +647,11 @@ upstream web_pool {
 server {
     listen       80;
     server_name  www.example.com;
+    # root 站点根目录；index 默认首页候选列表，按顺序取第一个存在的
     root   /data/www/blog;
     index  index.php index.html;
 
+    # 反代到 upstream 组，请求头必须显式传递
     location / {
         proxy_pass http://web_pool;
         proxy_set_header Host              $host;
@@ -575,6 +659,7 @@ server {
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
     }
 
+    # PHP 请求转交 php-fpm；SCRIPT_FILENAME 必须带 $document_root 前缀
     location ~ \.php$ {
         fastcgi_pass  127.0.0.1:9000;
         fastcgi_index index.php;
@@ -582,10 +667,12 @@ server {
         include       fastcgi_params;
     }
 
+    # 静态资源设置浏览器缓存时间
     location ~* \.(jpg|png|css|js)$ {
         expires 7d;
     }
 
+    # 禁止访问隐藏文件
     location ~ /\.ht {
         deny all;
     }
@@ -634,24 +721,34 @@ php-fpm 用「主进程 + worker 池」处理动态请求，进程池参数全�
 
 ```ini
 # /etc/php-fpm.d/www.conf 有效行
+# 段名 [www] 对应一个进程池，同一文件里可以有多个池
 [www]
+# listen：监听地址或 unix socket 路径；用 socket 需同步设置 listen.owner/group
 listen = 127.0.0.1:9000
 ;listen = /run/php-fpm/www.sock
 ;listen.owner = www
 ;listen.group = www
 
+# user / group：worker 运行身份，要与 nginx 站点目录属主一致
 user = www
 group = www
 
+# pm：进程管理模式，dynamic 常驻一批进程，ondemand 按需拉起（省内存但首个请求要等）
 pm = dynamic
+# max_children：并发上限，按"单进程峰值内存 × 数量 ≤ 可用内存"估算，盲目调大会 OOM
 pm.max_children = 50
+# start_servers：启动时预热的进程数；min/max_spare 控制空闲进程的伸缩区间
 pm.start_servers = 5
 pm.min_spare_servers = 5
 pm.max_spare_servers = 10
+# max_requests：单个 worker 处理多少请求后重启，用进程轮换兜住第三方库的内存泄漏
 pm.max_requests = 1000
 
+# status_path：状态页路径，配合 ping.path 可查看进程池情况
 pm.status_path = /fpm_status
+# slowlog：慢请求日志路径
 slowlog = /var/log/php-fpm/www-slow.log
+# request_slowlog_timeout：超过该阈值的请求记入慢日志，默认 0（不记录）
 request_slowlog_timeout = 3s
 php_admin_value[error_log] = /var/log/php-fpm/www-error.log
 php_admin_flag[log_errors] = on
@@ -659,8 +756,10 @@ php_admin_flag[log_errors] = on
 
 ```bash
 # 生效与验证
+# php-fpm -t 检查语法，通过后再 reload；reload 不断开进行中的请求
 php-fpm -t
 systemctl reload php-fpm
+# 确认 9000 端口在监听，nginx 的 fastcgi_pass 地址要与它一致
 ss -lntp | grep 9000
 ```
 
@@ -700,21 +799,32 @@ my.cnf 按 `[段名]` 组织：`[mysqld]` 管服务端，`[client]` 管客户端
 
 ```ini
 # /etc/my.cnf
+# [mysqld] 管服务端，[client] 管客户端默认值，[mysqldump] 管备份工具行为
 [mysqld]
+# datadir 数据目录，迁移时改这里并同步改属主与 SELinux 上下文
 datadir=/var/lib/mysql
+# socket 本地连接路径，客户端不指定端口时走它
 socket=/var/lib/mysql/mysql.sock
 port=3306
+# bind-address 只监听内网地址，写 0.0.0.0 等于把数据库暴露给所有网卡
 bind-address=172.16.1.31
 
+# 字符集要在服务端、库、表、连接四层统一，否则中文乱码
 character-set-server=utf8mb4
 collation-server=utf8mb4_general_ci
 
+# max_connections 最大连接数，连接打满后新连接被拒
 max_connections=500
+# InnoDB 缓冲池，通常取物理内存的 50%~70%
 innodb_buffer_pool_size=1G
+# 1=每次提交都刷盘（最安全最慢），2=每秒刷盘，0=交给 OS 决定
 innodb_flush_log_at_trx_commit=1
 
+# binlog 是主从复制与时间点恢复的基础，必须开
 log-bin=mysql-bin
+# server-id 在主从架构内必须唯一，重复会导致复制异常
 server-id=31
+# binlog 保留天数，过期自动清理，避免日志盘被撑满
 expire_logs_days=7
 
 [client]
@@ -723,13 +833,17 @@ socket=/var/lib/mysql/mysql.sock
 
 [mysqldump]
 default-character-set=utf8mb4
+# quick 不建临时表直接逐行导出，大表更省资源
 quick
+# 单条 SQL 包大小上限，默认 4M，导大对象时需要调大
 max_allowed_packet=64M
 ```
 
 ```bash
 # 生效与验证（改 datadir 等目录类参数需要重启并迁移数据）
+# 改这类参数必须重启，只 reload 不生效；restart 会中断业务连接
 systemctl restart mariadb
+# 用 show variables 逐层确认配置真的生效，比翻配置可靠
 mysql -uroot -p'<your-password>' -e "show variables like 'character%';"
 mysql -uroot -p'<your-password>' -e "show variables like 'max_connections';"
 ```
@@ -771,24 +885,31 @@ keepalived 通过 VRRP 协议在多台机器间漂移 VIP，实现服务高可�
 
 ```bash
 # 健康检查脚本：chmod 755 /etc/keepalived/check_nginx.sh
+# 脚本以退出码报告结果：0 表示健康，非 0 表示失败，keepalived 据此判断
 cat > /etc/keepalived/check_nginx.sh <<'EOF'
 #!/bin/sh
+# killall -0 只探测进程是否存在，不会真的发信号
 if ! killall -0 nginx >/dev/null 2>&1; then
     systemctl restart nginx
+    # 给服务一点启动时间，否则紧接着的检查仍会失败
     sleep 2
     killall -0 nginx >/dev/null 2>&1 || exit 1
 fi
 exit 0
 EOF
+# 脚本必须可执行，否则 keepalived 报权限错误
 chmod 755 /etc/keepalived/check_nginx.sh
 ```
 
 ```conf
 # /etc/keepalived/keepalived.conf（主机 linux-node01，备机改 priority 为 80）
 global_defs {
+    # router_id 是节点标识，同一集群内必须唯一
     router_id linux-node01
 }
 
+# vrrp_script 定义健康检查：interval 检查间隔秒、fall 连续失败几次才判故障、rise 连续成功几次才恢复
+# weight 为负数表示检查失败时降低优先级，降幅要足以让主备优先级反转
 vrrp_script chk_nginx {
     script "/etc/keepalived/check_nginx.sh"
     interval 2
@@ -797,29 +918,39 @@ vrrp_script chk_nginx {
     rise 2
 }
 
+# vrrp_instance 定义一个 VRRP 组：state 初始角色、interface 通告网卡、VRID 同组必须一致
 vrrp_instance VI_1 {
     state BACKUP
     interface eth0
+    # virtual_router_id 取值 0-255，同网段内不能与其他集群冲突
     virtual_router_id 51
+    # priority 主高备低，差值要大于 weight 降幅才能触发切换
     priority 100
+    # advert_int 是 VRRP 通告间隔秒数，默认 1
     advert_int 1
     authentication {
         auth_type PASS
+        # auth_pass 只取前 8 个字符，主备必须写一致
         auth_pass 11111111
     }
+    # 漂移的 VIP，带掩码与网卡名
     virtual_ipaddress {
         10.0.0.100/24 dev eth0
     }
+    # 关联上面定义的检查脚本
     track_script {
         chk_nginx
     }
+    # nopreempt：恢复后不抢占 MASTER，配合两边都写 BACKUP 使用
     nopreempt
 }
 ```
 
 ```bash
 # 生效与验证
+# enable --now 表示同时设开机自启并立即启动
 systemctl enable --now keepalived
+# VIP 只出现在持有方网卡上，先在当前这台机上确认
 ip addr | grep 10.0.0.100          # 主机上能看到 VIP
 journalctl -u keepalived -f        # 观察切换日志
 ```
@@ -859,31 +990,45 @@ agent 的核心是三个地址类参数与 `UserParameter` 自定义监控。被
 
 ```conf
 # /etc/zabbix/zabbix_agentd.conf 有效行
+# Server：被动模式允许来取数的地址；ServerActive：主动模式上报的地址
 Server=172.16.1.71
 ServerActive=172.16.1.71
+# Hostname 必须与服务端界面配置逐字符一致（含大小写），否则数据不上报
 Hostname=linux-node01
 
+# LogFile：agent 日志路径；LogFileSize 是大小上限（MB），超限后轮转
 LogFile=/var/log/zabbix/zabbix_agentd.log
 LogFileSize=10
+# EnableRemoteCommands：允许服务端下发远程命令，默认 0，按需开启并限制权限
 EnableRemoteCommands=1
+# UnsafeUserParameters：允许自定义参数使用特殊字符，默认 0
 UnsafeUserParameters=1
+# Include 引入自定义配置目录，把自定义项放这里，主配置保持干净
 Include=/etc/zabbix/zabbix_agentd.d/*.conf
 ```
 
 ```conf
 # /etc/zabbix/zabbix_agentd.d/custom.conf：UserParameter 自定义监控
+# 语法是"键名[,参数],命令"三段式；带 * 的键可用 $1、$2 引用传入的参数
 UserParameter=web_state,ps -ef | grep -c [n]ginx
+# [n]ginx 用方括号掐断 grep 自身的匹配，避免把 grep 进程算进去
 UserParameter=port_check[*],ss -lnt | grep -c ":$2 "
 UserParameter=disk_root_used,df / | awk '/\/$/{gsub(/%/,"");print $5}'
+# awk 取根目录那一行的第 5 列（使用率），去掉 % 后返回纯数字
 ```
 
 ```bash
 # 生效与排错：服务端用 zabbix_get 远程取值验证
 systemctl restart zabbix-agent
+# 10050 是 agent 被动模式监听端口，不监听说明 agent 没起来
 ss -lntp | grep 10050
+# 本地测试自定义键是否可执行
 zabbix_agentd -t web_state
+# 从服务端远程取值，-s 指定被管端地址、-k 指定键名
 zabbix_get -s 10.0.0.7 -k 'web_state'
+# 带参数的键，参数写在方括号里
 zabbix_get -s 10.0.0.7 -k 'port_check[80]'
+# 最后看日志，agent 的报错都在这里
 tail -20 /var/log/zabbix/zabbix_agentd.log
 ```
 
