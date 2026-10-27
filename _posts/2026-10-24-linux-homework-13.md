@@ -47,7 +47,7 @@ slug: "linux-homework-13"
 
 **验证方法**：完整复现步骤见 day12 题 1，按其中脚本真跑后对比 `-f` 输出 4 行、`-F` 输出 6 行及 `has been replaced; following new file` 提示即可。
 
-> **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail-f-与-tail-f-的区别)
+> **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail--f-与-tail--f-的区别)
 
 ## 题 2：总结 find 命令
 {: .sec-sum}

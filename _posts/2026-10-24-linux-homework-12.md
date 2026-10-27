@@ -227,7 +227,7 @@ $ cat a.err
 > - `-f` 对"被 mv 走的旧文件"的后续追加仍会显示（`line4`），容易误以为它还在追原文件——其实追的是 inode，文件已经换了；
 > - 面试标准答案：追日志用 `tail -F`，因为它按名追踪、能扛住日志轮转；临时看静态文件两者皆可。
 
-> **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail-f-与-tail-f-的区别)
+> **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail--f-与-tail--f-的区别)
 
 ## 题 2：tr 命令替换信息的原理
 {: .sec-know}
