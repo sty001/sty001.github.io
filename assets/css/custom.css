@@ -425,10 +425,9 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
   transition: opacity 0.25s ease;
   will-change: transform;
 }
-@media (prefers-reduced-motion: reduce) {
-  .click-ripple, .click-snow, .click-wave { display: none; }
-  #snow-fx, #cursor-glow, #cursor-ring { display: none; }
-}
+/* 说明：飘雪、点击水波纹、鼠标跟随光晕均为装饰性 overlay（pointer-events:none，
+   不拦截任何点击/选中/滚动），用户明确要求常驻显示，故即便系统开启“减少动态效果”
+   也保持开启，不因无障碍偏好而整体消失。 */
 
 /* ==========================================================================
    阅读增强 v2：标题层级配色 + 内容区块（辨析/知识卡片/变式追问/原理/坑位/注意）区分

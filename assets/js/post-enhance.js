@@ -226,7 +226,8 @@
       var fine = !!(mqFine && mqFine.matches);
 
       /* --- 6.1 飘雪：JS 生成少量雪花 + CSS 动画；靠两侧飘，避免压住正文栏 --- */
-      if (!reduce) {
+      /* 不受系统“减少动态效果”影响：用户要求常驻显示 */
+      if (true) {
         var layer = document.createElement("div");
         layer.id = "snow-fx";
         layer.setAttribute("aria-hidden", "true");
@@ -251,8 +252,8 @@
         document.body.appendChild(layer);
       }
 
-      /* --- 6.2 鼠标跟随光晕：给指针"着色"；仅精确指针设备启用 --- */
-      if (fine && !reduce) {
+      /* --- 6.2 鼠标跟随光晕：给指针"着色"；仅精确指针设备启用（触屏不启用） --- */
+      if (fine) {
         var glow = document.createElement("div");
         glow.id = "cursor-glow";
         glow.setAttribute("aria-hidden", "true");
