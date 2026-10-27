@@ -496,7 +496,7 @@ $ ansible nfs_client -m shell -a "touch /mnt/testfile && ls -l /mnt/testfile"
 7. 权限值（`"0644"`、`"0600"`、`"0755"`）一律加引号，防止 YAML 把八进制解析成数字；验证要过三关——端口在听（`ss -lntup`）、功能测试（推送/读写）、结果落盘（服务端能看到文件）。
 8. 含口令的任务记得 `no_log: true`，进阶做法是口令走 `ansible-vault` 加密的变量文件，剧本和代码仓库里都不留明文。
 
-> **参见**：批量管理 Ansible（中） · Ansible 剧本实战 · 备份服务 rsync · 存储服务 NFS
+> **参见**：[批量管理Ansible（中）](/posts/linux-arch-08/)、[Ansible剧本实战](/posts/linux-arch-11/)、[备份服务rsync](/posts/linux-arch-02/)、[存储服务NFS](/posts/linux-arch-04/)
 
 
 {% endraw %}

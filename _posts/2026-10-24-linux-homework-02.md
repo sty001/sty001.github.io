@@ -132,7 +132,7 @@ sda      8:0    0  100G  0 disk
 > - 以为 93.13 GiB 全部可用：文件系统开销和保留块（ext4 默认 5%）会再占一部分。
 > - 采购 SSD 时还要注意 OP 预留空间与磨损均衡，实际可用同样小于标称。
 
-> **参见**：Linux 系统概念 的"硬盘的数据存储单位"。
+> **参见**：[Linux系统概念](/posts/linux-basics-02/) 的[硬盘的数据存储单位](/posts/linux-basics-02/#硬盘的数据存储单位)。
 
 ### 辨析：GB 与 GiB
 
@@ -236,7 +236,7 @@ State 为 Optimal 表示阵列健康；Degraded 表示有盘掉线正在降级�
 > - 在配置界面误选 Clear Configuration：会清掉已有阵列配置，操作前务必确认服务器上无业务数据。
 > - 远程 iDRAC 用默认口令不修改：管理网暴露等于把服务器钥匙挂在门上，首次登录必须改密码。
 
-> **参见**：Linux 系统概念 的"RAID 卡""远程管理卡"；计算机硬件组成 的"RAID：把多块磁盘整合起来"。
+> **参见**：[Linux系统概念](/posts/linux-basics-02/) 的[RAID 卡](/posts/linux-basics-02/#raid-卡)[远程管理卡](/posts/linux-basics-02/#远程管理卡)、[计算机硬件组成](/posts/linux-basics-01/) 的[RAID：把多块磁盘整合起来](/posts/linux-basics-01/#raid把多块磁盘整合起来)。
 
 ## 题 3：进行课程知识总结
 {: .sec-sum}
@@ -368,7 +368,7 @@ awk 'BEGIN{printf "标称100G ≈ %.2f GiB，少了 %.2f GiB\n", 100*1000^3/1024
 > - RAID 容量估算忘记扣校验盘：RAID 5 是 (N-1) 块盘的容量，不是 N 块。
 > - 容量单位混用：对外说 GB（厂商口径），对内看 GiB（系统口径），换算别用错进制。
 
-> **参见**：Linux 系统概念 全文；计算机硬件组成 的"知识卡片"。
+> **参见**：[Linux系统概念](/posts/linux-basics-02/) 全文、[计算机硬件组成](/posts/linux-basics-01/) 的[知识卡片](/posts/linux-basics-01/#知识卡片)。
 
 ## 题 4（扩展作业）：如何通过网络安装系统（PXE / Kickstart）
 {: .sec-ext}
@@ -491,7 +491,7 @@ df -h
 > - 安装源与 ks.cfg 地址不可达：先用 `curl -I http://10.0.0.1/kickstart/ks.cfg` 确认客户机视角下地址有效。
 > - 生成 ks.cfg 的捷径：装完一台机器后，root 家目录的 anaconda-ks.cfg 就是本次安装的应答记录，可改作模板复用。
 
-> **参见**：系统安装部署 的"Kickstart 自动安装"。
+> **参见**：[系统安装部署](/posts/linux-basics-03/) 的[Kickstart 自动安装](/posts/linux-basics-03/#kickstart-自动安装)。
 
 ## 本篇小结
 {: .sec-sum}

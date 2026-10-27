@@ -434,7 +434,7 @@ linux-node02 反超成为 MASTER，VIP `10.0.0.3/24` 出现在它的 `eth0` 上�
 5. 最直接的故障证据是 `ip a`：切换前 VIP 在 linux-node01（secondary eth0:1），切换后在 linux-node02；用 `arping` 验证 VIP 的 MAC 是否随节点变化，比单看 `ip a` 更可靠。
 6. 仿真脚本 `sim_upstream.sh` 已在本环境真实运行，`ip_a_*.txt` 四份为真实产物，可直接 `bash /tmp/hw/day43/sim_upstream.sh` 复现全部调度与剔除推演。
 
-> **参见**：day43 nginx 与 keepalived 联动监控作业实操 · keepalived 高可用原理 · nginx upstream 模块
+> **参见**：[day43 nginx 与 keepalived 联动监控作业实操](/posts/linux-homework-46/)、[keepalived高可用原理](/posts/linux-arch-18/)、[nginxupstream模块](/posts/linux-arch-13/)
 
 
 {% endraw %}

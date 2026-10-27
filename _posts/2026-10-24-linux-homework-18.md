@@ -327,7 +327,7 @@ ABC
 > - `[a-z]` 的范围受 locale 影响，想稳定就用 `[[:lower:]]`；
 > - 写 `*` 前一定要想清楚它修饰的是「前一个字符」，`.` 本身没有「通配多个」的意思，`.*` 才有。
 
-> **参见**：基础正则表达式、扩展正则表达式与 grep
+> **参见**：[基础正则表达式](/posts/linux-fileattr-06/)、[扩展正则表达式与grep](/posts/linux-fileattr-07/)
 
 ## 题 2：总结 sed 命令
 {: .sec-sum}
@@ -656,7 +656,7 @@ web02 10.0.0.2 stopped
 > - 路径替换时分隔符冲突（`s/a/b/` 里含 `/`），换用 `#` 作分隔符；
 > - Mac/BSD sed 与 GNU sed 在 `-i`、`a`/`i` 语法上有差异，写跨平台脚本要注意。
 
-> **参见**：sed 命令详解、基础正则表达式
+> **参见**：[sed命令详解](/posts/linux-textproc-01/)、[基础正则表达式](/posts/linux-fileattr-06/)
 
 ## 题 3：总结 find / tar / date
 {: .sec-sum}
@@ -1072,7 +1072,7 @@ $ ls -l backup/
 > - `tar` 的 `f` 参数必须紧跟包名、通常放参数串最后（`zcf` 不能写成 `fcz`）；
 > - 文件名含空格时 `$(find ...)` 会被 shell 按空格拆开，正确做法是 `find ... -print0 | xargs -0 tar zcf pkg.tar.gz`。
 
-> **参见**：文件属性与 inode、常用文件操作命令、附录-命令速查表
+> **参见**：[文件属性与inode](/posts/linux-fileattr-03/)、[常用文件操作命令](/posts/linux-system-02/)、[附录-命令速查表](/posts/linux-appendix-01/)
 
 ## 本篇小结
 {: .sec-sum}

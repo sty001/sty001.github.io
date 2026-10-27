@@ -433,7 +433,7 @@ Filesystem      Inodes  IUsed   IFree IUse% Mounted on
 7. `du` 统计不出来的「已占空间」有两类：已删除但被进程占用的文件（`lsof +L1` 定位，重启或截断）与海量小文件吃光 inode（`df -i` + `find | wc -l` 定位）；清理正在写入的日志用截断 `> 文件名` 而不是 `rm`。
 8. RAID 0 快但不安全、RAID 1 安全但容量减半、RAID 5 折中（3 块起、坏 1 块）、RAID 10 安全与性能兼顾（4 块起、容量减半）；RAID 不是备份，重要数据必须有独立备份。
 
-> **参见**：磁盘管理基础 · 磁盘管理进阶 · day15 磁盘 block 与存储原理作业实操
+> **参见**：[磁盘管理基础](/posts/linux-disk-01/)、[磁盘管理进阶](/posts/linux-disk-02/)、[day15 磁盘 block 与存储原理作业实操](/posts/linux-homework-15/)
 
 
 {% endraw %}

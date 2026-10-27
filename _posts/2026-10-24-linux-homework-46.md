@@ -435,7 +435,7 @@ linux-node01 脚本失败 -> 状态 FAULT，生效优先级 0，VIP 立即释放
 5. 真实 `monitor.log` 完整记录「nginx 故障→漂移→恢复→抢回」时间线，配合 `ip a` 的 VIP 落点与 keepalived 日志三层交叉验证，是排障的标准动作。VIP 漂移交给 vrrp_script，告警交给外部脚本，职责分开最稳。
 6. 仿真脚本 `sim_monitor.sh` + `mock_nginx.sh` 已在本环境真实运行，可 `bash /tmp/hw/day43/sim_monitor.sh` 复现全部联动日志；`nginx.pid` 示例值 `1871` 与日志恢复行一一对应。
 
-> **参见**：day43 keepalived 实时监控与上游切换作业实操 · keepalived 高可用原理 · nginx 健康检查与 upstream
+> **参见**：[day43 keepalived 实时监控与上游切换作业实操](/posts/linux-homework-44/)、[keepalived高可用原理](/posts/linux-arch-18/)、[nginx健康检查与upstream](/posts/linux-arch-13/)
 
 
 {% endraw %}

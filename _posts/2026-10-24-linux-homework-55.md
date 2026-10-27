@@ -87,7 +87,7 @@ mount: /dev/sr0 is write-protected, mounting read-only
 
 > **易错点**：误以为"把文件复制进了 /mnt 就是写进磁盘"——没挂载时写进 /mnt 的数据其实落在根分区上，卸载后会被"遮住"。另外卸载时提示 `target is busy` 是因为当前 shell 正处在挂载点目录里，需先 `cd /` 再 `umount`。
 >
-> **参见**：目录结构与挂载
+> **参见**：[目录结构与挂载](/posts/linux-system-03/)
 
 ---
 
@@ -150,7 +150,7 @@ lrwxrwxrwx 1 user user 0 Oct 24 05:26 /proc/self -> 1146
 
 > **易错点**：把 `/bin` 与 `/sbin` 记反——`s` 可以理解为 super/root 专用（如 `fdisk`、`ifconfig`、`reboot`）。`/usr` 不是"用户目录"（用户目录是 /home），而是 Unix System Resources，放的是软件程序。`/proc` 下的数据重启即消失，不能当成配置存放地。
 >
-> **参见**：目录结构与挂载
+> **参见**：[目录结构与挂载](/posts/linux-system-03/)
 
 ---
 
@@ -247,7 +247,7 @@ DNS1=223.5.5.5
 
 > **易错点**：`BOOTPROTO=none` 与 `dhcp` 混用会导致配置不生效；只改了 IPADDR 却忘了改 GATEWAY/PREFIX 会造成能连通内网但出不了网；`ONBOOT=no` 会导致重启后网卡不起。另外 CentOS 7 网卡名不一定是 eth0，需在 `/etc/sysconfig/network-scripts/` 下先 `ls` 确认真实文件名。
 >
-> **参见**：虚拟软件与远程连接
+> **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)
 
 ---
 
@@ -358,7 +358,7 @@ drwxr-xr-x 1 user user 0 Oct 24 05:31 /tmp/hw/day5/mnt
 
 > **易错点**：没在虚拟机设置里勾选"已连接/加载镜像"，导致 `/dev/cdrom` 不存在；挂载点目录非空时会被"遮盖"；卸载时报 `target is busy` 是因为当前路径还在 `/mnt` 里。光盘挂载后是只读的，`touch` 会报 `Read-only file system`。
 >
-> **参见**：目录结构与挂载
+> **参见**：[目录结构与挂载](/posts/linux-system-03/)
 
 ---
 
@@ -419,7 +419,7 @@ grep -nE 'IPADDR|PREFIX|GATEWAY' /tmp/hw/day5/ifcfg-eth0
 
 > **易错点**：改完文件不重启服务就以为生效了；远程改 IP 时 `systemctl restart network` 会让连接断一下，若新 IP 配错会直接失联（建议先在控制台留好后路，或用 `ifdown && ifup` 单卡操作）。另外 CentOS 7 上 NetworkManager 与 network 服务并存时可能互相干扰，排障时先看 `systemctl status network`。
 >
-> **参见**：虚拟软件与远程连接
+> **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)
 
 ---
 

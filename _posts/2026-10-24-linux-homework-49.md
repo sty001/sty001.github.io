@@ -310,7 +310,7 @@ $ du -h --max-depth=1 / | sort -rh | head -5
 4. 面试答题套路：先给一句结论（标准答案），再给验证命令或实验，最后补一个生产案例或原理细节（加分点）——比背概念更有说服力。
 5. 后续路线按「巩固 → 深化 → 规模化 → 可观测 → 安全自动化」推进，每阶段以「能讲清 + 有实验」为过关标准，不贪快。
 
-> **参见**：day40 secure 日志安全分析实操 · awk 命令详解 · find、tar、权限与 inode
+> **参见**：[day40 secure 日志安全分析实操](/posts/linux-homework-41/)、[awk命令详解](/posts/linux-textproc-02/)、[find](/posts/linux-fileattr-03/)、[tar](/posts/linux-fileattr-05/)、[权限与inode](/posts/linux-fileattr-03/)
 
 
 {% endraw %}

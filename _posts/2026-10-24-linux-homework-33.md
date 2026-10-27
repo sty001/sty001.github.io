@@ -426,7 +426,7 @@ Status for the jail: sshd
 6. 这道题的通用价值：同一套流水线换个 `awk` 匹配条件，就能统计 Nginx access 日志的 PV/UV、Top IP、Top URL——面试里的「awk 统计访问日志」与本题同源。
 7. 生产上把这条流水线做成 cron 脚本加阈值告警，比出事后翻日志靠谱得多；日志本身记得配 logrotate，别让分析对象膨胀到 GB 级。
 
-> **参见**：awk 命令详解 · 扩展正则表达式与 grep · SSH 服务与密钥登录
+> **参见**：[awk命令详解](/posts/linux-textproc-02/)、[扩展正则表达式与grep](/posts/linux-fileattr-07/)、[ssh服务与密钥登录](/posts/linux-arch-06/)
 
 
 {% endraw %}

@@ -90,7 +90,7 @@ EFI              GPL   isolinux  Packages  RPM-GPG-KEY-CentOS-7  TRANS.TBL
 
 > **易错点**：一是文件系统类型漏填或填错（正确值 `iso9660`，不是 `auto` 也不是 `xfs`）；二是挂载点目录不存在；三是改完 fstab 不执行 `mount -a` 验证直接重启，配置写错可能导致系统无法启动；四是光驱行 fsck 写成 `1` 或 `2`，开机磁盘检查会卡在光驱上。
 
-> **参见**：系统目录结构与挂载
+> **参见**：[系统目录结构与挂载](/posts/linux-system-03/)
 
 ## 题 2：总结系统 7 个运行级别作用（CentOS 7 查看与永久设置）
 {: .sec-sum}
@@ -180,7 +180,7 @@ multi-user.target
 
 > **易错点**：一是把 CentOS 6 的习惯带到 CentOS 7——改 `/etc/inittab` 在 CentOS 7 上完全无效；二是分不清临时（`init N`，重启失效）与永久（`set-default`，重启仍在）；三是忘记 `rescue.target` 就是单用户模式，排查系统故障时不知从哪进。
 
-> **参见**：重要系统文件与运行级别
+> **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
 
 ## 题 3：利用单用户模式重置密码（CentOS 7）
 
@@ -234,7 +234,7 @@ sh-4.2# exec /sbin/init
 
 > **易错点**：一是忘记 `mount -o remount,rw /`，只读文件系统下 `passwd` 报错；二是忘记 `touch /.autorelabel`，SELinux 上下文异常导致登录故障；三是 `init=/bin/sh` 加错了行（必须加在内核引导行 `linux16` 行尾，不能加在 `initrd` 行）。物理机能接触到的机器均可此法重置，因此机房物理安全与 grub 密码也是生产规范的一部分。
 
-> **参见**：重要系统文件与运行级别、系统安装部署
+> **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)、[系统安装部署](/posts/linux-basics-03/)
 
 ## 题 4：如何永久设置别名（如 rm 别名）
 
@@ -451,7 +451,7 @@ NET-TYPE=Ethernet
 
 > **易错点**：一是别名写在 `/etc/profile` 里——环境变量该放 profile，别名函数该放 bashrc，混写会因 shell 类型（登录 / 非登录）不同而"有时生效有时不生效"；二是期望别名在脚本里生效——非交互 shell 不展开别名，脚本里要么写全命令，要么 `shopt -s expand_aliases`；三是给 `rm` 配了防误删别名后，自己做批量删除时也被拦住，记得用 `\rm` 或 `unalias rm` 临时绕过。
 
-> **参见**：重要系统文件与运行级别
+> **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
 
 ## 自测
 {: .sec-prac}

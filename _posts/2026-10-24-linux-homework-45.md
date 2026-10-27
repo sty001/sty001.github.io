@@ -299,7 +299,7 @@ $ ip a s eth0 | grep 10.0.0.3
 > - 检测脚本必须 `chmod +x` 且有可执行权限，否则 keepalived 调不起来会报脚本错误。
 > - `fall` 建议设为 2~3，避免瞬时抖动把 VIP 误漂走；`interval` 别太短，一般 2~3 秒。
 
-> **参见**：高可用服务 keepalived、反向代理与负载均衡作业实操
+> **参见**：[高可用服务keepalived](/posts/linux-arch-18/)、[反向代理与负载均衡作业实操](/posts/linux-homework-43/)
 
 ## 本篇小结
 {: .sec-sum}

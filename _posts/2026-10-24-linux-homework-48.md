@@ -301,7 +301,7 @@ UserParameter=mem.free.rate,/tmp/hw/day45/scripts/mem_check.sh
 5. 告警链路五环节：监控项 → 触发器 → 媒介类型 → 用户媒介绑定 → 动作，断在任意一环都收不到告警；脚本类媒介的入参固定为发送目标、主题、内容。
 6. 模板是配置复用的载体：主机链接模板即继承全部监控配置，通用需求沉淀进模板、改一处全局生效；主机级直接改动继承项会断开联动，应尽量避免。
 
-> **参见**：监控服务 Zabbix（下） · 监控服务 Zabbix（上） · day44 部署作业实操
+> **参见**：[监控服务Zabbix（下）](/posts/linux-arch-20/)、[监控服务Zabbix（上）](/posts/linux-arch-19/)、[day44 部署作业实操](/posts/linux-homework-47/)
 
 
 {% endraw %}

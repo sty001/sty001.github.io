@@ -435,7 +435,7 @@ EOF
 7. hosts 与 resolv.conf 一个管「本地写死」、一个管「去问谁」，hosts 命中不问 DNS，`dig` 不查 hosts。
 8. OSI 七层用于教学与协议归类，TCP/IP 四层用于实际排错；发送封装、接收解封装，交换机解到二层、路由器解到三层，TTL 防环路；MTU 决定要不要分片，排查「大包不通」先想到它。
 
-> **参见**：运维网络基础（上） · day23 磁盘管理作业实操
+> **参见**：[运维网络基础（上）](/posts/linux-network-01/)、[day23 磁盘管理作业实操](/posts/linux-homework-23/)
 
 
 {% endraw %}

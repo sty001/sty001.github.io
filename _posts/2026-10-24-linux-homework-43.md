@@ -349,7 +349,7 @@ $ ip a s eth0 | grep 10.0.0.3
 > - VIP 漂移依赖组播心跳（目的地址 224.0.0.18），防火墙要放行 VRRP 协议，否则会「脑裂」（两台都持有 VIP）。
 > - 云环境（如公有云）通常不转发 VRRP 组播，需用 `unicast_src_ip` / `unicast_peer` 改成单播模式，或改用云厂商自带高可用产品。
 
-> **参见**：负载均衡服务、高可用服务 keepalived
+> **参见**：[负载均衡服务](/posts/linux-arch-17/)、[高可用服务keepalived](/posts/linux-arch-18/)
 
 ## 本篇小结
 {: .sec-sum}

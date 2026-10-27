@@ -168,7 +168,7 @@ python07
 > 3. 只替换不保存：替换后必须 `:wq`，否则退出后文件内容不变。
 > 4. 只想改真机文件用 `sed -i`，但 `-i` 不可逆，建议先 `sed` 不带 `-i` 预览。
 
-> **参见**：文档编辑软件使用技巧
+> **参见**：[文档编辑软件使用技巧](/posts/linux-system-08/)
 
 ### 题 04：Linux 内核引导时，从（）文件中读取要加载的文件系统信息；文件属性中每个普通文件用（）来标识
 
@@ -215,7 +215,7 @@ UUID=2c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f swap    swap    defaults        0 0
 > 2. 把「普通文件标识 `-`」答成文件权限位，类型位是 `ls -l` 输出的**第 1 个字符**，权限是后面 9 个字符。
 > 3. fstab 写错会导致开机进入 emergency 模式，修改前务必备份。
 
-> **参见**：重要系统文件与运行级别
+> **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
 
 ### 题 05：vim 中如何忽略大小写搜索指定信息（至少两种方法）
 
@@ -312,7 +312,7 @@ sed 's#^name=#address=#' config.txt
 > 3. 替换内容含 `/` 时还在用 `/` 做分隔符，导致语法错误，应换成 `#` 或 `@`。
 > 4. 用 `sed -i` 修改正在被服务读取的配置，可能引发配置重载问题。
 
-> **参见**：sed 命令详解
+> **参见**：[sed命令详解](/posts/linux-textproc-01/)
 
 ### 题 07：管道符号 `|` 的含义说明
 {: .sec-expl}
@@ -354,7 +354,7 @@ rm: missing operand
 > 3. 管道会**丢失**前一个命令的退出状态码：`cmd1 | cmd2` 的 `$?` 是 `cmd2` 的，判断 cmd1 结果要用 `PIPESTATUS[0]`。
 > 4. `grep` 无匹配时返回 1，会导致管道后续 `set -e` 脚本中断。
 
-> **参见**：常用文件操作命令
+> **参见**：[常用文件操作命令](/posts/linux-system-02/)
 
 ### 题 08：搜索文件中指定文本内容的方法（至少三种）
 
@@ -503,7 +503,7 @@ cat: /tmp/linux_link.txt: No such file or directory
 > 3. 目标已存在同名目录时，`ln -s src dst` 会在 dst 目录里再建一个链接，用 `ln -sfn` 强制替换。
 > 4. 软链接权限永远显示 `lrwxrwxrwx`，实际权限由源文件决定。
 
-> **参见**：[文件属性与 inode
+> **参见**：[文件属性与inode](/posts/linux-fileattr-03/)
 
 ---
 
@@ -570,7 +570,7 @@ success
 > 4. 禁用 root 登录前必须先验证普通用户能 sudo 成功。
 > 5. **变式追问**：改完 sshd_config 后 `reload` 与 `restart` 怎么选？（reload 重读配置不断开已有连接，远程改 SSH 配置更稳；restart 会重置连接。无论如何，改完先另开窗口验证新配置能登录，再退出当前会话。）
 
-> **参见**：用户权限与提权
+> **参见**：[用户权限与提权](/posts/linux-userperm-02/)
 
 ### 题 13：防火墙配置完毕后，如何检查防火墙已关闭且没有开机自启动
 {: .sec-ver}
@@ -684,7 +684,7 @@ source /etc/profile
 > 3. 脚本中执行 `alias` 默认不展开，需 `shopt -s expand_aliases`，这是脚本里别名「不起作用」的常见原因。
 > 4. 想临时绕过 `rm -i` 别名，用 `\rm file` 或 `/bin/rm file` 或 `unalias rm`。
 
-> **参见**：系统优化实践-上
+> **参见**：[系统优化实践-上](/posts/linux-system-06/)
 
 ### 题 15：字符集进行优化方法
 
@@ -846,7 +846,7 @@ Change: 2026-10-24 05:26:12.679712200 +0800
 > 3. 硬链接数对目录而言 = 2 + 子目录数量，不能按普通文件理解。
 > 4. `ctime` 不是创建时间（creation），是 inode 属性变更时间。
 
-> **参见**：文件属性与 inode
+> **参见**：[文件属性与inode](/posts/linux-fileattr-03/)
 
 ---
 
@@ -890,7 +890,7 @@ ops01:x:1001:1001::/home/ops01:/bin/bash
 > 2. `useradd -M` 创建的用户无家目录，切换后会在 `/` 下，提示符异常。
 > 3. 家目录权限为 `700`，属主属组为该用户，手动 `cp -r` 复制会导致权限/属主错误，应 `cp -a` 或用 `useradd -m`。
 
-> **参见**：用户管理
+> **参见**：[用户管理](/posts/linux-userperm-01/)
 
 ### 题 19：说出下面几个文件的作用
 
@@ -956,7 +956,7 @@ lrwxrwxrwx. 1 root root 13 /etc/rc.local -> rc.d/rc.local
 > 3. 日志由 logrotate 轮转，直接 `cat messages` 可能看到的是旧内容，最新日志要看 `messages-20261024` 或直接 `tail -f messages`。
 > 4. `/etc/hosts` 修改后无需重启网络，立即生效；但 `nscd`/`systemd-resolved` 有缓存时可能延迟。
 
-> **参见**：重要系统文件与运行级别
+> **参见**：[重要系统文件与运行级别](/posts/linux-system-04/)
 
 ### 题 20：将配置文件中注释信息去除掉显示，有什么办法（至少三种）
 {: .sec-expl}
@@ -1106,7 +1106,7 @@ Account expires                                         : never
 > 3. 简单密码会触发 `BAD PASSWORD` 警告，但仍能设置成功（root 强制）。
 > 4. 批量创建应用 `newusers`（读取与 /etc/passwd 同格式的文件），逐条 `useradd` 效率低。
 
-> **参见**：用户管理
+> **参见**：[用户管理](/posts/linux-userperm-01/)
 
 ### 题 23：如何批量创建 linux01 … linux20 共 20 个文件
 
@@ -1221,7 +1221,7 @@ openssh-clients-7.4p1-21.el7.x86_64
 > 3. 最小化安装的 CentOS 7 没有 `ifconfig`/`netstat`，正是本题典型场景，答案都是 `net-tools` 包。
 > 4. `rpm -qf` 只能查**已安装**的文件，未安装的命令要用 `yum provides`。
 
-> **参见**：软件安装与硬件信息查看
+> **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
 
 ### 题 25：统计 linux.txt 文件中 linux 信息出现的行数总计有多少
 
@@ -1372,7 +1372,7 @@ Model name:            Intel Core i5
 > 3. `df -h` 看的是磁盘空间，`df -i` 看的是 inode，两者要分开看。
 > 4. 最小化系统没有 `lscpu`/`dmidecode`，需 `yum install -y util-linux dmidecode`。
 
-> **参见**：软件安装与硬件信息查看
+> **参见**：[软件安装与硬件信息查看](/posts/linux-system-05/)
 
 ### 题 28：`echo "linux" | tr "linux101" "python123"` 请写出命令结果
 
@@ -1470,7 +1470,7 @@ zh_CN.UTF-8
 > 3. 系统字符集与远程工具字符集不一致仍会乱码。
 > 4. `LC_ALL` 优先级最高，一旦被设置会覆盖 `LANG` 的所有分项，排查时要注意。
 
-> **参见**：系统优化实践-上
+> **参见**：[系统优化实践-上](/posts/linux-system-06/)
 
 ### 题 30：写出目前所学的 20 个命令及其作用
 
@@ -1537,7 +1537,7 @@ grep   -> /usr/bin/grep
 > 3. `chmod 777` 图省事等于放弃权限控制，是典型错误做法。
 > 4. `find` 不加路径默认从当前目录开始，在大目录下极慢，应明确路径与 `-maxdepth`。
 
-> **参见**：命令速查表
+> **参见**：[命令速查表](/posts/linux-homework-05/#命令速查表)
 
 ---
 

@@ -47,7 +47,7 @@ slug: "linux-homework-13"
 
 **验证方法**：完整复现步骤见 day12 题 1，按其中脚本真跑后对比 `-f` 输出 4 行、`-F` 输出 6 行及 `has been replaced; following new file` 提示即可。
 
-> **参见**：tail -f 与 tail -F 的区别
+> **参见**：[tail -f 与 tail -F 的区别](/posts/linux-fileattr-03/#tail-f-与-tail-f-的区别)
 
 ## 题 2：总结 find 命令
 {: .sec-sum}
@@ -265,7 +265,7 @@ old.log
 > - `\;` 是每个结果执行一次，`+` 是聚合一次执行，结果一致但效率不同；删除类操作先用 `-ok` 演练更稳；
 > - find 默认递归整个子树，在大目录上先加 `-maxdepth` 限制范围。
 
-> **参见**：文件相关扩展命令 find、文件属性实战
+> **参见**：[文件相关扩展命令find](/posts/linux-fileattr-04/)、[文件属性实战](/posts/linux-fileattr-05/)
 
 ## 题 3：总结文件属性信息
 {: .sec-sum}
@@ -426,7 +426,7 @@ $ chmod 755 /tmp/hw/day13/perm.txt && stat -c "%a %A" /tmp/hw/day13/perm.txt
 > - `ls -l` 默认显示 mtime，`stat` 的 ctime 改名改权限都会动，排查"文件被动过"要看 ctime；
 > - 文件名不在自己的 inode 里，删掉文件名（硬链接减到 0）inode 才真正释放，这是"删了文件空间却不释放"（进程还占着 fd）的知识源头。
 
-> **参见**：ls -l 输出十段逐段拆解、文件属性进阶
+> **参见**：[ls-l输出十段逐段拆解](/posts/linux-fileattr-04/)、[文件属性进阶](/posts/linux-fileattr-04/)
 
 ## 题 4（扩展）：如何产生随机字符信息
 {: .sec-ext}
@@ -514,7 +514,7 @@ $ openssl rand -hex 8
 > - 密码复杂度有策略要求时（必须含大写、小写、数字、符号），先把字符集写全再过滤，如 `tr -dc 'A-Za-z0-9!@#%^*' < /dev/urandom | head -c 12`；
 > - `/dev/random` 会阻塞，脚本里生成密码别用它，用 `/dev/urandom`。
 
-> **参见**：用 /dev/urandom 生成随机密码
+> **参见**：[用/dev/urandom生成随机密码](/posts/linux-fileattr-05/)
 
 ## 题 5（扩展）：批量创建 10 个运维账号并设置随机密码
 {: .sec-ext}
@@ -598,7 +598,7 @@ $ wc -l < /tmp/hw/user_pass.txt
 > - `useradd` 默认不建家目录行为因发行版而异，CentOS 7 默认创建家目录；要显式控制就加 `-m`/`-M` 参数；
 > - 生产环境建议给这类临时账号加有效期（`useradd -e 日期`）并纳入统一密码管理。
 
-> **参见**：阶段回顾：用户信息的批量管理、用户管理
+> **参见**：[阶段回顾：用户信息的批量管理](/posts/linux-homework-24/)、[用户管理](/posts/linux-userperm-01/)
 
 ## 本篇小结
 {: .sec-sum}

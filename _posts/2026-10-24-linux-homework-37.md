@@ -542,7 +542,7 @@ $ ansible rsync_server -m shell -a "ls -l /backup/realtime_test.txt"
 6. 口令类任务统一 `<your-password>` 占位 + `no_log: true`，真实环境应接入 ansible-vault，生产清单中不写任何明文口令。
 7. 验证按组件分关：备份看 crontab、远端目录与日志；NFS 看 exportfs、df 与读写测试；实时同步看进程存活与「造文件秒级到达」。
 
-> **参见**：Ansible 剧本实战 · 批量管理 Ansible（下） · day34 剧本部署 rsync/nfs · 备份项目实战
+> **参见**：[Ansible剧本实战](/posts/linux-arch-11/)、[批量管理Ansible（下）](/posts/linux-arch-10/)、[day34 剧本部署 rsync/nfs](/posts/linux-homework-35/)、[备份项目实战](/posts/linux-arch-03/)
 
 
 {% endraw %}

@@ -415,7 +415,7 @@ UUID 与 MAC 是两个不同层面的东西，别搞混：UUID 是 NetworkManage
 6. 克隆机上线三件事：`hostnamectl set-hostname` 改主机名、sed 批量改两张网卡 IP、`sed -i '/UUID/d'` 删 UUID；`diff -u` 前后对比确认无误伤后再 `systemctl restart network`。追求完整的话，machine-id 也一并重置。
 7. 克隆机逐台顺序启动是铁律，同时启动必然 IP 冲突；改配置前先备份（`.bak`），重启网络前先保存会话，这是网络类操作的两条保命习惯。
 
-> **参见**：综合架构开篇：架构组成、环境规划、模板机优化与 rsync 入门 · 备份服务 rsync · day14 文件批量压缩作业实操
+> **参见**：[综合架构开篇架构组成](/posts/linux-arch-01/)、[环境规划](/posts/linux-arch-01/)、[模板机优化与rsync入门](/posts/linux-arch-01/)、[备份服务rsync](/posts/linux-arch-02/)、[day14 文件批量压缩作业实操](/posts/linux-homework-14/)
 
 
 {% endraw %}

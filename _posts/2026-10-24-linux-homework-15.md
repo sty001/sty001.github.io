@@ -251,7 +251,7 @@ df -h /data                           # 确认挂载成功
 2. 建一个 1 字节文件，`du --block-size=1` 显示的值等于 block 大小的整数倍；建一个「block 大小 + 1」字节的文件，应占用 2 个 block（本机 5000 字节占 8192，即 2×4096，已验证）；
 3. `mkfs` 输出的 `Block size=` 行与预期一致；`tune2fs -l` 或 `xfs_info` 复查一致。
 
-> **参见**：block 大小的查看与调整 · 文件系统类型与格式化命令
+> **参见**：[block大小的查看与调整](/posts/linux-fileattr-05/)、[文件系统类型与格式化命令](/posts/linux-fileattr-05/)
 
 ## 题 2：总结数据存储与读取原理
 {: .sec-know}
@@ -392,7 +392,7 @@ $ du --block-size=1 big.txt
 
 **验证方法**：能不查资料回答下面四个问题即为掌握——①文件名存在哪里（目录的 block）；②文件内容存在哪里（数据 block）；③怎么从路径找到内容（目录项 → inode 号 → inode 表 → block 指针 → 数据块）；④为什么硬链接的两个文件 size 相同而软链接不同（前者同 inode，后者是新 inode 存路径串）。
 
-> **参见**：inode：索引节点 · block：数据块 · 磁盘的结构体系
+> **参见**：[inode：索引节点](/posts/linux-fileattr-05/#inode索引节点)、[block：数据块](/posts/linux-fileattr-05/#block数据块)、[磁盘的结构体系](/posts/linux-fileattr-05/)
 
 ## 题 3：磁盘满无法存储数据的原因
 
@@ -615,7 +615,7 @@ systemctl restart nginx
 2. 本机 500 空文件实验中，`du -sh` 与 `du -sh --apparent-size` 的差异能说明 inode 与 block 是两套独立资源（已实操）；
 3. 本机句柄实验中能看到 `(deleted)` 标记，并知道在 CentOS 7 上用 `lsof +L1` 得到同样的信息（已实操）。
 
-> **参见**：企业常见问题：磁盘满 · 容量查看：df 与 du · du 命令详解
+> **参见**：[企业常见问题磁盘满](/posts/linux-fileattr-05/)、[容量查看df与du](/posts/linux-fileattr-05/)、[du命令详解](/posts/linux-fileattr-05/)
 
 ## 本篇小结
 {: .sec-sum}
@@ -630,7 +630,7 @@ systemctl restart nginx
 6. inode 数量格式化时固定，海量小文件会在磁盘还剩很多空间时把 inode 吃光；需要更多 inode 用 `mkfs.ext4 -i 2048` 或 `-N` 重新格式化。
 7. 清理正在被写入的日志用截断 `> 文件名` 而不是 `rm`，否则空间不会释放；已发生则用 `lsof +L1` 定位进程后重启。
 
-> **参见**：文件系统类型与格式化命令 · 格式化操作与磁盘满 · inode/block 概念
+> **参见**：[文件系统类型与格式化命令](/posts/linux-fileattr-05/)、[格式化操作与磁盘满](/posts/linux-fileattr-05/)、[inode/block概念](/posts/linux-fileattr-05/)
 
 
 {% endraw %}

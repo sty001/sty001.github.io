@@ -67,7 +67,7 @@ exit=0
 >
 > **变式追问**：`mkdir -p /data/{app,logs,backup}` 依赖的是哪个 shell 特性？（花括号展开，bash 内建行为，dash/sh 里不生效，脚本首行记得写 `#!/bin/bash`。）
 
-> **参见**：02-常用文件操作命令
+> **参见**：[02-常用文件操作命令](/posts/linux-system-02/)
 
 ---
 
@@ -111,7 +111,7 @@ Filename				Type		Size	Used	Priority
 
 > **易错点**：记反规则——"内存小于 8G 给 8G"是错的，那是大内存场景的规则。swap 也不是越大越好：空间换不来性能，只会让内核更晚触发 OOM，把内存泄漏捂到不可收拾；生产上可用 `vm.swappiness` 调节内核使用 swap 的倾向。
 
-> **参见**：01-计算机硬件组成
+> **参见**：[01-计算机硬件组成](/posts/linux-basics-01/)
 
 ---
 
@@ -210,7 +210,7 @@ sr0     11:0    1 1024M  0 rom
 
 > **易错点**：swap 按 16G×1.5=24G 来分（错，≥8G 内存统一 8G）；把 `/boot` 分得过大浪费空间；忘记 `/boot` 必须在主分区。
 
-> **参见**：03-系统安装部署
+> **参见**：[03-系统安装部署](/posts/linux-basics-03/)
 
 ---
 
@@ -328,7 +328,7 @@ ifconfig
 
 > **易错点**：在 CentOS 7 最小化安装上敲 `ifconfig` 报 `command not found`；网卡名不是 eth0 而是 ens33（BIOS 命名规则），详见题 22。
 
-> **参见**：01-运维网络基础-上
+> **参见**：[01-运维网络基础-上](/posts/linux-network-01/)
 
 ---
 
@@ -417,7 +417,7 @@ md0 : active raid1 sdb1[1] sda1[0]
 >
 > 生产注意点：RAID 5 坏一块盘进入降级后，重建要连续读全盘，此时第二块盘跟着坏的概率陡增，重要业务更倾向 RAID 10。
 
-> **参见**：01-磁盘管理基础
+> **参见**：[01-磁盘管理基础](/posts/linux-disk-01/)
 
 ---
 
@@ -488,7 +488,7 @@ MemTotal:       33231524 kB
 
 > **易错点**：说"内存是永久存储"——内存断电即丢，永久存储只有磁盘（以及带掉电保护的 RAID 卡缓存）。
 
-> **参见**：01-计算机硬件组成
+> **参见**：[01-计算机硬件组成](/posts/linux-basics-01/)
 
 ---
 
@@ -618,7 +618,7 @@ sshd.service - OpenSSH server daemon
 >
 > **变式追问**：ping 通但 telnet 22 不通，说明什么？（链路没问题，问题出在端口层——服务没监听，或防火墙/安全组拦了 TCP 22。）
 
-> **参见**：01-虚拟软件与远程连接
+> **参见**：[01-虚拟软件与远程连接](/posts/linux-system-01/)
 
 ---
 
@@ -687,7 +687,7 @@ hello linux
 
 > **易错点**：漏掉"解释器/ shell"这一层；把内核和发行版混为一谈（CentOS、Ubuntu 是发行版，Linux 才是内核）。
 
-> **参见**：02-Linux系统概念
+> **参见**：[02-Linux系统概念](/posts/linux-basics-02/)
 
 ---
 
@@ -801,7 +801,7 @@ default via 10.0.0.254 dev eth0 proto static metric 100
 
 > **易错点**：把网关写成 Broadcast（广播地址），网关与广播地址是两回事；认为端口是物理接口——端口是传输层逻辑概念。
 
-> **参见**：01-运维网络基础-上
+> **参见**：[01-运维网络基础-上](/posts/linux-network-01/)
 
 ---
 
@@ -947,7 +947,7 @@ done
 
 > **易错点**：只在 grub 里加参数却不改网卡配置文件，重启后网卡起不来；`grub2-mkconfig` 输出路径 UEFI 模式下是 `/boot/efi/EFI/centos/grub.cfg`。
 
-> **参见**：03-系统安装部署
+> **参见**：[03-系统安装部署](/posts/linux-basics-03/)
 
 ---
 
@@ -1076,7 +1076,7 @@ echo "$PS1"
 
 > **易错点**：把 `#` 当成注释符号——在**提示符**里 `#` 表示 root 权限；只有在 shell 脚本中 `#` 才是注释。
 
-> **参见**：02-Linux系统概念
+> **参见**：[02-Linux系统概念](/posts/linux-basics-02/)
 
 ---
 
@@ -1281,7 +1281,7 @@ inet 10.0.0.200/24 brd 10.0.0.255 scope global noprefixroute eth0
 
 > **易错点**：改完配置忘记改 `ONBOOT=yes` 导致重启后网卡不起；在远程连接时执行 `systemctl restart network` 可能瞬间断网（务必留好带外管理或先 `ifdown/ifup` 单网卡）；CentOS 8 已改用 `nmcli` 与 `NetworkManager`。
 
-> **参见**：01-运维网络基础-下
+> **参见**：01-[运维网络基础-下](/posts/linux-network-02/)
 
 ---
 

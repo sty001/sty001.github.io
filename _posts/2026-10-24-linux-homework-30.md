@@ -404,7 +404,7 @@ exports 里的 `(rw,sync)` 之 `sync` 管的是**服务端什么时候落盘**�
 6. `/var/lib/nfs/etab` 记录实际生效参数：即使只写 `(rw,sync)`，默认也带 `root_squash,no_all_squash,anonuid=65534,anongid=65534`，这就是 root 身份被转换成 nfsnobody 的出处；`root_squash` 是 NFS 信任模型下唯一的安全垫，生产上别关。`sync` 管服务端落盘时机，保持默认。
 7. 共享目录最终权限由三处共同决定：目录自身权限、exports 导出参数、客户端 mount 参数，排查权限问题时按这三层自上而下过一遍。
 
-> **参见**：存储服务 NFS · 备份服务 rsync · day29 全网备份项目作业实操
+> **参见**：[存储服务NFS](/posts/linux-arch-04/)、[备份服务rsync](/posts/linux-arch-02/)、[day29 全网备份项目作业实操](/posts/linux-homework-29/)
 
 
 {% endraw %}

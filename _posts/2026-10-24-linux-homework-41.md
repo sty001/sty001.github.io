@@ -440,7 +440,7 @@ Requests: 59280 susceed, 0 failed.
 5. 压测两板斧：ab 用 `-n 总数 -c 并发`，重点读 QPS、平均耗时与 95%/99% 百分位长尾；webbench 用 `-c 并发 -t 秒数`，适合极限并发摸顶。
 6. 压测纪律：只压自己的测试环境，从低并发逐级加压；Failed requests 不为 0 的报告直接作废；调优前后用相同参数对比才有意义，压测数字要定期重刷。
 
-> **参见**：Nginx 网站服务实战 · awk 命令详解 · day17 三剑客与批量建用户
+> **参见**：[Nginx网站服务实战](/posts/linux-arch-15/)、[awk命令详解](/posts/linux-textproc-02/)、[day17 三剑客与批量建用户](/posts/linux-homework-17/)
 
 
 {% endraw %}

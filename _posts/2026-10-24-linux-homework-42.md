@@ -414,7 +414,7 @@ DB Connect OK, server version: 5.5.68-MariaDB
 5. LNMP 部署四关：yum 装齐并启动自启 → php-fpm 用户改成 nginx → nginx 配 `fastcgi_pass 127.0.0.1:9000` 与 SCRIPT_FILENAME → `mysql_secure_installation` 初始化。
 6. 排障口诀：502 查 php-fpm 与 9000 端口（找「死」），504 查超时与慢查询（找「慢」），File not found 查 SCRIPT_FILENAME，403 查权限与 index，数据库起不来查 /var/log/mariadb/；phpinfo 验证页打通后尽快删除，免得暴露服务器敏感配置。
 
-> **参见**：LNMP 网站架构实战 · Nginx 网站服务部署 · day38 Nginx 部署与 301/302 跳转
+> **参见**：[LNMP网站架构实战](/posts/linux-arch-16/)、[Nginx网站服务部署](/posts/linux-arch-13/)、[day38 Nginx 部署与 301/302 跳转](/posts/linux-homework-39/)
 
 
 {% endraw %}

@@ -115,7 +115,7 @@ $ date "+%F %T"
 > - `%` 在 crontab 命令里是特殊符号（第一个未转义的 `%` 之后的内容会作为标准输入送给命令），必须写 `\%` 或放进脚本；
 > - `20/10` 表示「从第 20 分钟起每隔 10 分钟」（20、30、40、50 分），不是「每 10 分钟」的等价写法。
 
-> **参见**：定时任务与 crond
+> **参见**：[定时任务与crond](/posts/linux-cron-01/)
 
 ## 题 2：每天凌晨 1 点打包备份 /data/linux 的定时任务
 
@@ -273,7 +273,7 @@ Oct 25 01:00:01 linux-node1 CROND[4021]: (root) CMD (/bin/sh /server/scripts/bac
 > - 脚本路径、命令一律绝对路径（`/bin/sh /server/scripts/backup.sh`），脚本内部变量也用绝对路径；
 > - 上线前先手工跑一遍脚本并解压回读，确认无误再挂 crontab。
 
-> **参见**：定时任务与 crond · day14 tar 打包真跑
+> **参见**：[定时任务与crond](/posts/linux-cron-01/)、[day14 tar 打包真跑](/posts/blogmap/)
 
 ## 题 3：定时任务排错三板斧
 {: .sec-ts}
@@ -378,7 +378,7 @@ grep "MAIL" /var/log/cron | tail                      # 看哪些任务在发邮
 > - 日志里出现 `MAIL (mailed ... but got status 0x004b...)` 说明 postfix 有问题，先按第三板斧清理，再统一 `MAILTO=""`；
 > - 排错时可在 crontab 里临时加一条每分钟任务把变量打印到文件（`* * * * * echo $PATH > /tmp/cron_env.txt`），两分钟后对比手工环境的 `echo $PATH`，差异一目了然。
 
-> **参见**：定时任务与 crond
+> **参见**：[定时任务与crond](/posts/linux-cron-01/)
 
 ## 题 4：crontab -e/-l/-r 与 /etc/crontab、/etc/cron.d 的区别
 
@@ -431,7 +431,7 @@ grep "MAIL" /var/log/cron | tail                      # 看哪些任务在发邮
 > - `crontab -r` 没有 `-u` 时删的是**当前用户**的任务，root 执行就是删 root 的全部任务；
 > - 用户级任务文件（`/var/spool/cron/用户名`）不要用 vi 直接改，一律走 `crontab -e`，否则 crond 可能不重载。
 
-> **参见**：定时任务与 crond
+> **参见**：[定时任务与crond](/posts/linux-cron-01/)
 
 ## 小结
 {: .sec-sum}

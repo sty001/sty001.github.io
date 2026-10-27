@@ -558,7 +558,7 @@ find data -type f -name "*.txt" -print0 | xargs -0 tar -czf txt_final.tar.gz
 6. 文件数量大时不要用 `-czf` 一次成包，改为 `-rf` 追加到未压缩归档再 `gzip`，避免分批调用导致的覆盖丢数据。
 7. 打包一律用相对路径，给 tar 传绝对路径会被剥掉开头的 `/`；打包完成必须 `tar -tzf` 列清单 + 解压抽样验证。
 
-> **参见**：find、tar、权限与 inode · tar 三件套与 inode/block · day13 find 命令真跑
+> **参见**：[find](/posts/linux-fileattr-03/)、[tar](/posts/linux-fileattr-05/)、[权限与inode](/posts/linux-fileattr-03/)、[tar三件套与inode/block](/posts/linux-fileattr-05/)、[day13 find 命令真跑](/posts/linux-homework-13/)
 
 
 {% endraw %}

@@ -486,7 +486,7 @@ $ curl -s http://127.0.0.1/ | head -3
 5. HTTP 报文四段结构与状态码五分类是 Web 运维的地基；`curl -v` 用 `>` / `<` 前缀把请求与响应原样打印，是预习阶段性价比最高的实操工具。
 6. 环境无 ansible / nginx 时，扩展示例与角色文件用 pyyaml 做语法真跑校验、Nginx 行为用标准命令 + 预期输出描述，既保证内容可执行，又不伪造真实输出。
 
-> **参见**：Ansible 剧本扩展功能 · 批量管理 Ansible（下） · HTTP 协议原理 · Nginx 网站服务部署
+> **参见**：[Ansible剧本扩展功能](/posts/linux-arch-09/)、[批量管理Ansible（下）](/posts/linux-arch-10/)、[HTTP协议原理](/posts/linux-arch-12/)、[Nginx网站服务部署](/posts/linux-arch-13/)
 
 
 {% endraw %}

@@ -388,7 +388,7 @@ grep -c '1005[01]' ports.txt
 5. 部署自测可以前置：把配置片段落成文件，用 grep 校验关键参数、比对 DBPassword 与授权口令一致性，比到真机上报错再回头查省一倍时间。
 6. zabbix_get 是服务端侧自测 agent 的第一工具，agent.ping 返回 1 即存活；不通时按「Server 白名单 → 10050 监听 → 网络连通」三步排查。历史数据保留策略上线前定好，别等磁盘满了再补课。
 
-> **参见**：监控服务 Zabbix（上） · 监控服务 Zabbix（下） · day45 自定义监控作业实操
+> **参见**：[监控服务Zabbix（上）](/posts/linux-arch-19/)、[监控服务Zabbix（下）](/posts/linux-arch-20/)、[day45 自定义监控作业实操](/posts/linux-homework-48/)
 
 
 {% endraw %}

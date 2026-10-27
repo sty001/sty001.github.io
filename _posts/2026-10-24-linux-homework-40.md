@@ -174,7 +174,7 @@ $ systemctl reload php-fpm
 > - 限制尽量写在具体的 `location`（如 `/upload`）而不是全局 `http`，既满足业务又不过度放开攻击面。
 > - `client_body_buffer_size` 与 `client_max_body_size` 不是一回事：前者是内存缓冲，超过部分会写入磁盘临时目录，受其影响的是性能而非能否上传。
 
-> **参见**：Nginx 网站服务实战、负载均衡服务
+> **参见**：[Nginx网站服务实战](/posts/linux-arch-15/)、[负载均衡服务](/posts/linux-arch-17/)
 
 ## 题 2：图片存在哪里，如何集中存到存储服务器
 

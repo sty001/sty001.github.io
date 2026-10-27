@@ -107,7 +107,7 @@ slug: "linux-homework-08"
 
 **验证方法**：合上书能按六大主题各复述出三句话结论；对任一主题能说出对应的验证命令（如"挂载生效怎么验证"→ `df -h`；"别名永久生效怎么验证"→ `alias | grep`）。
 
-> **参见**：虚拟软件与远程连接、常用文件操作命令、系统目录结构与挂载、重要系统文件与运行级别
+> **参见**：[虚拟软件与远程连接](/posts/linux-system-01/)、[常用文件操作命令](/posts/linux-system-02/)、[系统目录结构与挂载](/posts/linux-system-03/)、[重要系统文件与运行级别](/posts/linux-system-04/)
 
 ## 题 2：总结命令与参数
 {: .sec-sum}
@@ -149,7 +149,7 @@ slug: "linux-homework-08"
 | 挂载 | `blkid` / `df` | `blkid /dev/sdb1` 查 UUID、`df -h` 看挂载 | — |
 | 编辑 | `vi` / `vim` | `vim 文件` 打开编辑 | 见题 3 |
 
-> **参见**：附录-命令速查表
+> **参见**：[附录-命令速查表](/posts/linux-appendix-01/)
 
 ## 题 3：vim 使用技巧
 
@@ -331,7 +331,7 @@ Swap file ".config.txt.swp" already exists!
 
 > **易错点**：一是模式混淆——不知道自己在哪个模式、改错后无法退出，先按 `Esc` 回普通模式再 `:q!`；二是从别处粘贴的代码缩进全乱——autoindent 与粘贴内容缩进叠加，粘贴前 `:set paste`、粘贴后 `:set nopaste`；三是保存报 `E45: 'readonly'`——当前用户没有写权限，换账号或用 `:w !sudo tee %` 借 sudo 保存。
 
-> **参见**：文档编辑软件使用技巧、常用文件操作命令、sed 命令详解
+> **参见**：[文档编辑软件使用技巧](/posts/linux-system-08/)、[常用文件操作命令](/posts/linux-system-02/)、[sed命令详解](/posts/linux-textproc-01/)
 
 ## 自测
 {: .sec-prac}

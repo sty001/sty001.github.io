@@ -505,7 +505,7 @@ ipconfig /flushdns                  # Windows 清缓存（PowerShell/cmd）
 
 > **易错点**：改了 DNS 记录后要等 TTL 过期才能全局生效，「改了没生效」绝大多数是缓存，不是没配好——所以改之前**先把 TTL 调小**（如改成 60 秒），改完再调回来，这是运维上线 DNS 变更的标准动作；`/etc/resolv.conf` 最多写 3 个 nameserver，且 CentOS 7 里它由 NetworkManager 管理，手工改完重启网络会被覆盖，正确做法是在网卡配置里加 `DNS1=`/`DNS2=`；`dig` 与 `ping` 是两个独立协议，防火墙禁了 ICMP 会出现「ping 不通但 dig 正常、网站照样能开」，不能只用 ping 判断网络。
 
-> **参见**：运维网络基础-上、运维网络基础-下
+> **参见**：[运维网络基础-上](/posts/linux-network-01/)、[运维网络基础-下](/posts/linux-network-02/)
 
 ## 题 2：总结命令
 {: .sec-sum}
@@ -578,7 +578,7 @@ Content-Type: text/html; charset=UTF-8
 | 进程性能 | `ps -ef`、`top`、`kill -15/-9`、`free -h`、`ss -tulnp` | 看进程、看内存盯 `available`、看端口用 `ss` |
 | 软件包 | `rpm -qa/-ql/-qf`、`yum install/provides/remove` | `yum provides '*/命令'` 反查该装哪个包 |
 
-> **参见**：day24 阶段复习：命令总汇、附录-命令速查表
+> **参见**：[day24 阶段复习：命令总汇](/posts/linux-homework-24/)、[附录-命令速查表](/posts/linux-appendix-01/)
 
 ## 题 3：复习之前测验（文件属性 / 定时任务 / 三剑客 / 权限）
 {: .sec-prac}

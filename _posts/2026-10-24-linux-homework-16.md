@@ -664,7 +664,7 @@ find /var/log -name "*.log.*" -mtime +30 -exec rm -f {} +
 6. `df` 读超级块看整个分区，`du` 遍历文件看指定目录；`df` 明显大于 `du` 时优先查 `lsof +L1` 的 deleted 句柄。
 7. 收尾一条最容易被忽略的坑：正在被写入的日志要截断（`> 日志文件`），直接 `rm` 空间并不释放。
 
-> **参见**：容量查看：df 与 du · 企业常见问题：磁盘满 · inode 与 block · day15 磁盘 block 与存储原理
+> **参见**：[容量查看df与du](/posts/linux-fileattr-05/)、[企业常见问题磁盘满](/posts/linux-fileattr-05/)、[inode与block](/posts/linux-homework-15/)、[day15 磁盘 block 与存储原理](/posts/linux-homework-15/)
 
 
 {% endraw %}

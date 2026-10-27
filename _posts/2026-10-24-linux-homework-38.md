@@ -309,7 +309,7 @@ Last-Modified: Sat, 24 Oct 2026 01:19:52 GMT
 6. Host 区分站点、User-Agent 标识客户端、Content-Type/Length 描述主体、Location 配合重定向——这几个首部是 Nginx 日志与排错的常客。
 7. HTTP 无状态，Cookie 存客户端、Session 存服务端，靠 Set-Cookie 下发的 Session ID 关联；禁用 Cookie 即禁用 Session，加固用 HttpOnly/Secure/SameSite 三件套。
 
-> **参见**：HTTP 协议原理 · Nginx 网站服务部署 · day14 文件批量压缩作业实操
+> **参见**：[HTTP协议原理](/posts/linux-arch-12/)、[Nginx网站服务部署](/posts/linux-arch-13/)、[day14 文件批量压缩作业实操](/posts/linux-homework-14/)
 
 
 {% endraw %}

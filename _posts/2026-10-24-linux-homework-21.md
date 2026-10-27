@@ -273,7 +273,7 @@ $ wc -l < /tmp/hw/day21/stu_pass.txt
 > - 密码清单含口令，必须 `chmod 600` 且交付后删除，绝不入库、不贴群；
 > - `tr ... < /dev/urandom | head -c 10` 在部分系统上 `head` 提前退出会让 `tr` 收到 SIGPIPE（`tr: write error: Broken pipe`），属正常现象可忽略；用 `/dev/urandom`，别用会阻塞的 `/dev/random`。
 
-> **参见**：用户管理 · day17 批量建用户真跑
+> **参见**：[用户管理](/posts/linux-userperm-01/)、[day17 批量建用户真跑](/posts/linux-homework-17/)
 
 ## 题 2：/etc/passwd 与 /etc/shadow 每列含义对照
 {: .sec-expl}
@@ -360,7 +360,7 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 > - 登录不了先查两处：第七列是不是 `/sbin/nologin`、shadow 第二列是不是 `!`（被锁）；
 > - 属主显示为纯数字 uid，说明对应账号被删了（`userdel` 不带 `-r` 的常见后遗症）。
 
-> **参见**：用户管理 · 用户权限与提权
+> **参见**：[用户管理](/posts/linux-userperm-01/)、[用户权限与提权](/posts/linux-userperm-02/)
 
 ## 题 3：给指定用户配置 sudo 权限
 {: .sec-expl}
@@ -441,7 +441,7 @@ uid=1011(stu11) gid=1011(stu11) groups=1011(stu11)
 > - 永远不要授权 shell 类命令（`/bin/bash`、`vi`、`find`），在它们内部都能逃逸出 root shell；
 > - sudo 校验的是**用户自己的密码**，不是 root 密码；校验通过后默认 5 分钟内免密，`sudo -k` 立即作废。
 
-> **参见**：用户权限与提权
+> **参见**：[用户权限与提权](/posts/linux-userperm-02/)
 
 ## 题 4：su 与 su - 的区别
 
@@ -512,7 +512,7 @@ HOME=/root
 > - `su` 与 `su -` 之间不加用户名默认切 root，但生产环境强烈建议显式写清目标用户；
 > - 排查「su 之后环境不对」统一用 `env | egrep 'USER=|PATH=|PWD='` 对照检查。
 
-> **参见**：用户权限与提权
+> **参见**：[用户权限与提权](/posts/linux-userperm-02/)
 
 ## 小结
 {: .sec-sum}
