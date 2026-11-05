@@ -877,3 +877,25 @@ code { background: rgba(110, 118, 129, 0.22) !important; }
 
 
 
+
+/* ===== 访问统计（不蒜子 busuanzi）页脚样式 ===== */
+.site-visitors {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+  letter-spacing: 0.01em;
+}
+.site-visitors .visitors-item {
+  white-space: nowrap;
+}
+.site-visitors .visitors-item i {
+  margin-right: 0.2rem;
+  opacity: 0.85;
+}
+.site-visitors span[id^="busuanzi_value"] {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--link-color, #2a9d8f);
+}
+:root[data-bs-theme='dark'] .site-visitors span[id^="busuanzi_value"] {
+  color: #7fd1c4;
+}

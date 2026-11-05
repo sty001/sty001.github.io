@@ -48,4 +48,27 @@
 
     {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
   </p>
+
+  {%- if site.busuanzi.enabled -%}
+  <!-- 访问统计：不蒜子 busuanzi（站点 PV / UV） -->
+  <p class="site-visitors text-center mb-1">
+    <span id="busuanzi_container_site_pv" class="visitors-item me-3" title="站点总访问量">
+      <i class="fas fa-eye"></i> 总访问 <span id="busuanzi_value_site_pv">—</span> 次
+    </span>
+    <span id="busuanzi_container_site_uv" class="visitors-item" title="站点独立访客数">
+      <i class="fas fa-users"></i> 访客 <span id="busuanzi_value_site_uv">—</span> 人
+    </span>
+  </p>
+
+  {%- if page.layout == 'post' -%}
+  <!-- 文章页：本文阅读次数 -->
+  <p class="site-visitors text-center mb-1">
+    <span id="busuanzi_container_page_pv" class="visitors-item" title="本文阅读次数">
+      <i class="fas fa-file-alt"></i> 本文阅读 <span id="busuanzi_value_page_pv">—</span> 次
+    </span>
+  </p>
+  {%- endif -%}
+
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  {%- endif -%}
 </footer>

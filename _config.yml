@@ -81,6 +81,12 @@ analytics:
 pageviews:
   provider: # now only supports 'goatcounter'
 
+# 访问人数统计（不蒜子 busuanzi，零后端、纯 JS 计数）
+# 设为 false 可随时关闭整站统计。线上与本地预览均会加载并计数。
+# 显示：站点总访问量(PV) + 站点访客数(UV) + 文章页「本文阅读次数」。
+busuanzi:
+  enabled: true
+
 # Prefer color scheme setting.
 #
 # Available options: light — Use the light color scheme / dark — Use the dark color scheme
